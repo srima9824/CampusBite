@@ -205,6 +205,10 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Claude Code project settings and skills
+.claude/
+claude/
+
 # Ruff stuff:
 .ruff_cache/
 
