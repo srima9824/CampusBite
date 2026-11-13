@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Button, ConfirmDialog, EmptyState, Input, Pagination, Skeleton } from '../components/ui'
+import { Badge, Button, ConfirmDialog, EmptyState, Input, Pagination, Skeleton, useToast } from '../components/ui'
 import styles from './Styleguide.module.css'
 
 const COLOR_TOKENS = [
@@ -55,6 +55,20 @@ function ConfirmExample() {
         />
       )}
     </>
+  )
+}
+
+function ToastExample() {
+  const toast = useToast()
+  return (
+    <div className={styles.row}>
+      <Button variant="secondary" onClick={() => toast.success('Added to your cart')}>
+        Show success toast
+      </Button>
+      <Button variant="secondary" onClick={() => toast.error('The kitchen did not answer. Try again.')}>
+        Show error toast
+      </Button>
+    </div>
   )
 }
 
@@ -188,6 +202,10 @@ export default function Styleguide() {
 
       <Section title="Modal and confirm dialog">
         <ConfirmExample />
+      </Section>
+
+      <Section title="Toast">
+        <ToastExample />
       </Section>
 
       <Section title="Skeleton">
