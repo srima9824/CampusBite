@@ -157,6 +157,21 @@ One table lives in `src/api/orderStatus.js`. Later units use it to guard status 
 | OUT_FOR_DELIVERY | DELIVERED | Assigned delivery partner |
 | PLACED | CANCELLED | Customer who owns the order |
 
+### `owner.getRestaurantStats()`
+Requires an `OWNER`; counts only their own restaurant, live from the store.
+
+```
+{ total_orders, revenue, orders_today,
+  by_status: { PLACED, ACCEPTED, PREPARING, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED },
+  top_items: [{ menu_item_id, name, quantity }] }
+```
+- `revenue` sums `total` of orders that are not `CANCELLED`.
+- `orders_today` counts orders created on the current local calendar day (any status).
+- `by_status` always has all seven keys.
+- `top_items` sums quantities of non-cancelled orders per menu item, highest first (ties by name), at most 5.
+
+Errors: `401 unauthenticated`, `403 forbidden` for non-owners.
+
 ## Shared errors
 | Status | Code | Meaning |
 | --- | --- | --- |
