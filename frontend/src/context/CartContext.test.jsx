@@ -1,4 +1,5 @@
 import { render, screen, act } from '@testing-library/react'
+import { useEffect } from 'react'
 import { describe, expect, it } from 'vitest'
 import { CartProvider, useCart } from './CartContext.jsx'
 
@@ -11,7 +12,10 @@ const noodles = { id: 8, name: 'Veg Hakka Noodles', price: 140 }
 
 let cart
 function Probe() {
-  cart = useCart()
+  const current = useCart()
+  useEffect(() => {
+    cart = current
+  })
   return null
 }
 
