@@ -24,3 +24,16 @@ Used on `/restaurants/:restaurantId`.
 - The price range is inclusive. If min is above max, the page shows an inline `role="alert"` message and does not call the api (which would answer `422 invalid_price_range`).
 - Results are grouped by category with an `h2` per group; the page title is the only `h1`.
 - A dish that cannot be ordered stays visible with a "Sold out" text badge and a muted card, so status never relies on colour alone.
+
+## Confirm dialog
+Used for destructive or surprising choices (start a new cart, empty the cart).
+- `ConfirmDialog` (`components/ui`) wraps `Modal`, a native `<dialog>` opened with `showModal()`. Mounting it opens it and unmounting closes it, so the caller owns one boolean.
+- The browser traps focus inside and makes the page behind inert. Escape and a click on the dimmed area both cancel. Focus returns to the control that opened it.
+- It is labelled by its title. The safe choice is the secondary button on the left, the action is on the right; `tone="danger"` marks destructive actions. While `loading` both buttons are disabled.
+- Titles are a question ("Start a new cart?"); button labels name the outcome ("Start new cart", "Keep my cart"), never a bare Yes or No.
+
+## Toast
+Used for success and error feedback after an action that has no inline result.
+- `ToastProvider` renders one `aria-live="polite"` region; `useToast()` gives `toast.success(message)` and `toast.error(message)`. Errors carry `role="alert"`.
+- A toast never takes focus. It has a Dismiss button, disappears after 4 seconds and pauses while hovered or focused.
+- Success text is short and plain ("Added to your cart"). Errors say what happened and what to do next.
