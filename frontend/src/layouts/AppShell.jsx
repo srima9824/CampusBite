@@ -1,12 +1,34 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Button } from '../components/ui'
+import { useAuth } from '../context/AuthContext.jsx'
 import styles from './AppShell.module.css'
 
-const NAV_LINKS = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/styleguide', label: 'Styleguide' },
-]
+const HOME_LINK = { to: '/', label: 'Home', end: true }
+const STYLEGUIDE_LINK = { to: '/styleguide', label: 'Styleguide' }
+
+// Only routes that exist are linked; later units add their links here.
+const ROLE_LINKS = {
+  guest: [{ to: '/login', label: 'Log in' }],
+  CUSTOMER: [],
+  OWNER: [{ to: '/owner', label: 'Orders' }],
+  DELIVERY_PARTNER: [{ to: '/delivery', label: 'Deliveries' }],
+}
+
+function linksFor(user) {
+  return [HOME_LINK, ...ROLE_LINKS[user?.role ?? 'guest'], STYLEGUIDE_LINK]
+}
 
 export default function AppShell() {
+  const { user, logout } = useAuth()
+  const { state } = useLocation()
+  const navigate = useNavigate()
+  const notice = state?.notice
+
+  function handleLogout() {
+    logout()
+    navigate('/')
+  }
+
   return (
     <div className={styles.shell}>
       <a className={styles.skipLink} href="#main">
@@ -17,18 +39,31 @@ export default function AppShell() {
           <span className={styles.wordmark}>CampusBite</span>
           <nav aria-label="Main">
             <ul className={styles.nav}>
-              {NAV_LINKS.map(({ to, label, end }) => (
+              {linksFor(user).map(({ to, label, end }) => (
                 <li key={to}>
                   <NavLink to={to} end={end} className={styles.navLink}>
                     {label}
                   </NavLink>
                 </li>
               ))}
+              {user && (
+                <li className={styles.account}>
+                  <span className={styles.userName}>{user.name}</span>
+                  <Button variant="secondary" onClick={handleLogout}>
+                    Log out
+                  </Button>
+                </li>
+              )}
             </ul>
           </nav>
         </div>
       </header>
       <main id="main" className={styles.main}>
+        {notice && (
+          <p className={styles.notice} role="status">
+            {notice}
+          </p>
+        )}
         <Outlet />
       </main>
       <footer className={styles.footer}>
