@@ -14,7 +14,7 @@ export default function MenuItemCard({ item, action }) {
       <div className={styles.footer}>
         <Badge>{item.category}</Badge>
         {soldOut && <Badge tone="warning">Sold out</Badge>}
-        {action}
+        {action && <div className={styles.action}>{action}</div>}
       </div>
     </article>
   )

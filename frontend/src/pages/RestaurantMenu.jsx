@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import AddToCartButton from '../components/AddToCartButton.jsx'
 import MenuItemCard from '../components/MenuItemCard.jsx'
 import { Badge, Button, EmptyState, Input, Skeleton } from '../components/ui'
 import useMenu from '../hooks/useMenu.js'
@@ -164,7 +165,14 @@ export default function RestaurantMenu() {
             <ul className={styles.items}>
               {items.map((item) => (
                 <li key={item.id}>
-                  <MenuItemCard item={item} />
+                  <MenuItemCard
+                    item={item}
+                    action={
+                      item.is_available && (
+                        <AddToCartButton item={item} restaurant={data.restaurant} />
+                      )
+                    }
+                  />
                 </li>
               ))}
             </ul>

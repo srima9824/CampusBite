@@ -44,3 +44,7 @@
   gap: var(--space-2);
   margin-top: auto;
 }
+
+.action {
+  margin-inline-start: auto;
+}
