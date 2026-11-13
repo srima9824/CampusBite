@@ -19,9 +19,8 @@ The full specification is in [docs/SPEC.md](docs/SPEC.md).
 ```
 backend/    FastAPI application and its tests
 frontend/   React application
-e2e/        End-to-end specs run against Docker Compose
 docs/       Specification, ADRs, API docs, contributing guide
-.github/    Workflows, issue and pull request templates, CODEOWNERS
+.github/    Workflows, issue templates, CODEOWNERS
 ```
 
 ## Quick start

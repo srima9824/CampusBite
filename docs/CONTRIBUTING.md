@@ -24,7 +24,7 @@ The commit author is the repository owner only. No `Co-authored-by` trailer and 
 ## Pull requests
 
 - Title: `type(scope): imperative summary`, at most 72 characters, one scope per PR.
-- One PR per slice. Fill in `.github/PULL_REQUEST_TEMPLATE.md`.
+- One PR per slice.
 - Merge: rebase-merge only, after required checks pass, to keep a linear history.
 
 ## Code style charter
@@ -34,6 +34,6 @@ The commit author is the repository owner only. No `Co-authored-by` trailer and 
 - **Comments**: only for the why or a non-obvious constraint. No comments that restate the code, no banners or step-by-step narration, no docstring on every function, no emoji, no TODO without a reason.
 - **Abstractions**: add one when there are two real callers. No base classes or interfaces "for later", no helper used once. Prefer plain functions plus small Pydantic models or dataclasses.
 - **Errors**: validate at the boundary (Pydantic, router dependencies) and raise domain exceptions that one handler maps to HTTP responses. No blanket `try/except`, no defensive checks for states that cannot happen.
-- **Types**: full type hints in the backend (mypy on `app/`). JavaScript stays JavaScript, with JSDoc only where a shape is not obvious.
+- **Types**: full type hints in the backend. JavaScript stays JavaScript, with JSDoc only where a shape is not obvious.
 - **Tests**: names that read as behaviour (`test_customer_cannot_cancel_after_acceptance`), arrange-act-assert, parametrised tables, never mock the thing under test.
-- **Automated**: ruff (`E,F,I,B,UP,SIM,C4,N,C90`), mypy, ESLint (`react`, `react-hooks`, `jsx-a11y`), Prettier, run in pre-commit and CI.
+- **Automated**: keep checks direct and minimal: Ruff and pytest for the backend, ESLint and Vitest for the frontend. Avoid extra test layers and orchestration unless a real feature needs them.

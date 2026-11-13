@@ -5,6 +5,15 @@ Rules for any agent working in this repository. Read this first.
 ## Project
 CampusBite is a restaurant ordering and delivery platform. Spec: [docs/SPEC.md](docs/SPEC.md). Plan and slice cards: `docs/roadmap/`.
 
+## Development workflow
+- One iteration delivers one small, independently reviewable unit. Do not bundle multiple features or start the next unit in the same iteration.
+- Develop the frontend first, feature by feature. Keep frontend work independent of unfinished backend APIs; use simple local or mock data where needed.
+- After each iteration, leave the app viewable on localhost and report the command and route (or a sample localhost request for backend-only work). Explain what was built and why the main design decisions were made so the owner can review it before the next unit starts.
+- Complete the planned frontend units before starting backend implementation. Write automated tests in a dedicated phase after the frontend and backend implementation phases.
+- Keep the project structure, test setup, and pipeline small. Use the existing project commands and tools; add a tool or file only when the current unit needs it.
+- Do not create E2E tests, gitleaks configuration, `.gitkeep` placeholders, or PR templates. Do not recreate removed scaffolding.
+- At the end of every iteration, summarize the unit delivered, the reason for its design decisions, how to preview it locally, and any unresolved limitation.
+
 ## Mandated stack
 - Frontend: React, JavaScript (ES6+), Hooks, React Router DOM, Fetch API, Vite
 - Backend: Python, FastAPI, Pydantic, SQLAlchemy, JWT auth, bcrypt, Docker and Docker Compose
@@ -31,7 +40,7 @@ Format: `type(scope): imperative subject`. One line, no body, no trailers, heade
 ## Pull requests
 - Agents never push and never open a PR unless the owner asks.
 - Title: `type(scope): imperative summary`, at most 72 characters, one scope per PR, one PR per slice.
-- Body follows `.github/PULL_REQUEST_TEMPLATE.md`. No agent footer.
+- No agent footer.
 - Merge is rebase-merge only.
 
 ## Code style
@@ -41,11 +50,10 @@ Follow the charter in [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md): domain names
 Follow the UX spec in `docs/ux/` when it exists. Preview UI changes on localhost before building further.
 
 ## Commands
-- `make lint`
-- `make test`
-- `make up`
+- Use the simplest available project command for the current check. Keep lint and test commands direct and avoid duplicating test layers.
+- `make up` starts the local stack when it is available.
 
-These arrive with slices 0.2 to 0.4.
+Project commands arrive with the tooling and Docker slices.
 
 ## Never
 - Commit secrets. Only placeholder values go in `.env.example` files.
