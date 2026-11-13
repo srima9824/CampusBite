@@ -1,14 +1,16 @@
+import { buildSeedOrders } from './fixtures/orders.js'
 import { menuItems } from './fixtures/menuItems.js'
 import { restaurants } from './fixtures/restaurants.js'
 import { users } from './fixtures/users.js'
 
 function buildStore() {
+  const orders = buildSeedOrders()
   return {
     users: structuredClone(users),
     restaurants: structuredClone(restaurants),
     menuItems: structuredClone(menuItems),
-    orders: [],
-    nextOrderId: 1,
+    orders,
+    nextOrderId: orders.length + 1,
   }
 }
 
