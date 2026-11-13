@@ -104,7 +104,7 @@ describe('Register page', () => {
 
     await userEvent.click(submit())
 
-    expect(await screen.findByRole('heading', { level: 1, name: /kitchen is still warming up/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /pick your kitchen/i })).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Main' })
     expect(await within(nav).findByText('Nia Ortiz')).toBeInTheDocument()
     expect(getSession().user.role).toBe('CUSTOMER')

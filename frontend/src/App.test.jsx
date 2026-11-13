@@ -34,7 +34,7 @@ describe('App routing with auth', () => {
     renderWithAuth(<App />, { entries: ['/owner'] })
 
     expect(await screen.findByText(/reserved for someone else/i)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1, name: /kitchen is still warming up/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: /pick your kitchen/i })).toBeInTheDocument()
   })
 
   it('sends a delivery partner away from /owner to /delivery', async () => {
@@ -58,7 +58,7 @@ describe('App routing with auth', () => {
 
     renderWithAuth(<App />, { entries: ['/register'] })
 
-    expect(await screen.findByRole('heading', { level: 1, name: /kitchen is still warming up/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /pick your kitchen/i })).toBeInTheDocument()
   })
 
   it('still shows not-found for an unknown path', () => {

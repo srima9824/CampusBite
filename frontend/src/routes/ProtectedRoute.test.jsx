@@ -20,6 +20,7 @@ function renderGuarded(path) {
   return renderWithAuth(
     <Routes>
       <Route path="/" element={<Where name="home" />} />
+      <Route path="/restaurants" element={<Where name="restaurants" />} />
       <Route path="/login" element={<Where name="login" />} />
       <Route path="/owner" element={<Where name="owner home" />} />
       <Route element={<ProtectedRoute roles={['OWNER']} />}>
@@ -65,7 +66,7 @@ describe('ProtectedRoute', () => {
 
     renderGuarded('/secret')
 
-    expect(await screen.findByText('at home')).toBeInTheDocument()
+    expect(await screen.findByText('at restaurants')).toBeInTheDocument()
     expect(screen.getByTestId('notice')).not.toBeEmpty()
   })
 
@@ -80,7 +81,7 @@ describe('ProtectedRoute', () => {
 
 describe('roleHome', () => {
   it.each([
-    ['CUSTOMER', '/'],
+    ['CUSTOMER', '/restaurants'],
     ['OWNER', '/owner'],
     ['DELIVERY_PARTNER', '/delivery'],
     ['SOMETHING_ELSE', '/'],
