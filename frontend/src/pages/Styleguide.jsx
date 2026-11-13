@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Button, ConfirmDialog, EmptyState, Input, Pagination, Select, Skeleton, useToast } from '../components/ui'
+import { Badge, Button, ConfirmDialog, EmptyState, Input, Pagination, Select, Skeleton, Table, useToast } from '../components/ui'
 import styles from './Styleguide.module.css'
 
 const COLOR_TOKENS = [
@@ -203,6 +203,22 @@ export default function Styleguide() {
             options={[{ value: '', label: 'Choose a slot' }]}
           />
         </div>
+      </Section>
+
+      <Section title="Table">
+        <Table
+          caption="Sample orders"
+          getRowKey={(row) => row.id}
+          columns={[
+            { key: 'id', header: 'Order', render: (row) => `#${row.id}` },
+            { key: 'dish', header: 'Dish', render: (row) => row.dish },
+            { key: 'status', header: 'Status', render: (row) => row.status },
+          ]}
+          rows={[
+            { id: 12, dish: 'Masala Dosa', status: 'Preparing' },
+            { id: 11, dish: 'Veg Hakka Noodles', status: 'Delivered' },
+          ]}
+        />
       </Section>
 
       <Section title="Badge">
