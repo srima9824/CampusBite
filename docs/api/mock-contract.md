@@ -38,6 +38,18 @@ Reads the saved token. Response: the user object above.
 | --- | --- | --- |
 | 401 | `unauthenticated` | No token, malformed token or unknown user id |
 
+## Restaurants
+
+### `restaurants.listRestaurants({ q, page = 1, page_size = 6 })`
+Public. `q` matches restaurant name or cuisine, case-insensitive substring. Response: the list envelope `{ items, total, page, page_size }`, each item `{ id, name, cuisine, description, owner_id, is_open, created_at }`. A page past the end returns empty `items` with the real `total`.
+
+### `restaurants.getRestaurant(id)`
+Public. Response: one restaurant object.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 404 | `not_found` | No restaurant with that id |
+
 ## Shared errors
 | Status | Code | Meaning |
 | --- | --- | --- |
