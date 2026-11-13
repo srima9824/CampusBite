@@ -3,6 +3,7 @@ import AppShell from './layouts/AppShell.jsx'
 import Home from './pages/Home.jsx'
 import Styleguide from './pages/Styleguide.jsx'
 import Login from './pages/Login.jsx'
+import OwnerStats from './pages/OwnerStats.jsx'
 import OwnerOrders from './pages/OwnerOrders.jsx'
 import DeliveryHome from './pages/DeliveryHome.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
@@ -35,6 +36,7 @@ export default function App() {
         </Route>
         <Route element={<ProtectedRoute roles={['OWNER']} />}>
           <Route path="owner" element={<OwnerOrders />} />
+          <Route path="owner/stats" element={<OwnerStats />} />
         </Route>
         <Route element={<ProtectedRoute roles={['DELIVERY_PARTNER']} />}>
           <Route path="delivery" element={<DeliveryHome />} />
