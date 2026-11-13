@@ -10,6 +10,7 @@ Each route, who may open it, and the states it has. Each unit appends its routes
 | `/owner` | `OWNER` | Loading skeleton while the session restores, placeholder empty state |
 | `/delivery` | `DELIVERY_PARTNER` | Loading skeleton while the session restores, placeholder empty state |
 | `/restaurants` | Everyone (customer home) | Loading (six skeleton cards), success (grid, 1 column at 375px, 2 at 768px, 3 at 1024px, pagination when more than 6), empty ("No kitchens match that" with Clear search), error (`role="alert"` with Retry). Search and page live in `?q=&page=` |
+| `/restaurants/:restaurantId` | Everyone | Loading (skeleton blocks), success (header, items grouped under one `h2` per category, unavailable items carry a "Sold out" text badge), empty ("Nothing on the menu matches" with Clear filters), error (`role="alert"` with Retry), inline `role="alert"` when min price is above max (the range is not sent), not found for an unknown id (link back to the list). Filters live in `?q=&min_price=&max_price=` |
 
 ## Access rules
 - Guests opening a protected route go to `/login` and return to the original path after signing in.

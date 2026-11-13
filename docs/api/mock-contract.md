@@ -50,6 +50,14 @@ Public. Response: one restaurant object.
 | --- | --- | --- |
 | 404 | `not_found` | No restaurant with that id |
 
+### `restaurants.listMenu(restaurantId, { q, min_price, max_price, page = 1, page_size = 50 })`
+Public. `q` matches item name or category, case-insensitive substring. `min_price` and `max_price` are inclusive and optional. Unavailable items are included with `is_available: false` for every caller. Response: the list envelope, each item `{ id, restaurant_id, name, description, category, price, is_available, created_at }`; `price` is a number with at most two decimals.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 404 | `not_found` | No restaurant with that id |
+| 422 | `invalid_price_range` | `min_price` is greater than `max_price` |
+
 ## Shared errors
 | Status | Code | Meaning |
 | --- | --- | --- |
