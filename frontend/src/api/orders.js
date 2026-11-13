@@ -1,6 +1,7 @@
 import { DELIVERY_FEE } from '../lib/constants.js'
 import { roundMoney } from '../lib/cartTotals.js'
-import { ApiError, delay, requireRole, requireUser } from './client.js'
+import { ApiError, delay, paginate, requireRole, requireUser } from './client.js'
+import { canTransition, ORDER_STATUSES } from './orderStatus.js'
 import { store } from './store.js'
 
 const MIN_ADDRESS = 5
@@ -80,14 +81,72 @@ export async function placeOrder(request) {
   return structuredClone(order)
 }
 
-// A customer sees only their own orders; another customer's id looks like a missing one.
+// Each role sees its own slice; an order outside it looks like a missing one.
+function isVisibleTo(user, order) {
+  if (user.role === 'CUSTOMER') return order.customer_id === user.id
+  if (user.role === 'OWNER') return order.restaurant_id === user.restaurant_id
+  return order.delivery_partner_id === user.id
+}
+
+function parseDay(value, endOfDay) {
+  if (value === undefined || value === '') return null
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T${endOfDay ? '23:59:59.999' : '00:00:00'}`) : null
+  if (!day || Number.isNaN(day.getTime())) {
+    throw invalid('invalid_date_range', 'Dates need the form YYYY-MM-DD.')
+  }
+  return day.getTime()
+}
+
+function validateFilters({ status, date_from: dateFrom, date_to: dateTo }) {
+  if (status && !ORDER_STATUSES.includes(status)) {
+    throw invalid('invalid_status', 'That is not an order status we know.')
+  }
+  const from = parseDay(dateFrom, false)
+  const to = parseDay(dateTo, true)
+  if (from !== null && to !== null && from > to) {
+    throw invalid('invalid_date_range', 'The start date must not be after the end date.')
+  }
+  return { from, to }
+}
+
+// Newest first. `date_to` includes the whole day; days are read in the viewer's local time.
+export async function listOrders({ status, date_from, date_to, page = 1, page_size = 10 } = {}) {
+  await delay()
+  const user = requireUser()
+  const { from, to } = validateFilters({ status, date_from, date_to })
+  const matching = store.orders
+    .filter((order) => isVisibleTo(user, order))
+    .filter((order) => !status || order.status === status)
+    .filter((order) => from === null || Date.parse(order.created_at) >= from)
+    .filter((order) => to === null || Date.parse(order.created_at) <= to)
+    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id - a.id)
+  return structuredClone(paginate(matching, page, page_size))
+}
+
 export async function getOrder(id) {
+  await delay()
+  const user = requireUser()
+  const order = store.orders.find((candidate) => candidate.id === Number(id))
+  if (!order || !isVisibleTo(user, order)) {
+    throw new ApiError(404, 'not_found', 'We could not find that order.')
+  }
+  return structuredClone(order)
+}
+
+export async function cancelOrder(id) {
   await delay()
   const user = requireUser()
   requireRole(user, 'CUSTOMER')
   const order = store.orders.find((candidate) => candidate.id === Number(id))
-  if (!order || order.customer_id !== user.id) {
+  if (!order || !isVisibleTo(user, order)) {
     throw new ApiError(404, 'not_found', 'We could not find that order.')
   }
+  if (!canTransition(order.status, 'CANCELLED')) {
+    throw new ApiError(409, 'invalid_transition', 'This order is already in the kitchen, so it can no longer be cancelled.')
+  }
+  const now = new Date().toISOString()
+  order.status = 'CANCELLED'
+  order.status_history.push({ status: 'CANCELLED', changed_at: now })
+  order.updated_at = now
   return structuredClone(order)
 }
