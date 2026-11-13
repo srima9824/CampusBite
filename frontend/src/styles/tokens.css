@@ -1,0 +1,79 @@
+/* Visual identity lives only in this file (plus the font link in index.html). */
+:root {
+  --color-primary: #ea580c;
+  --color-on-primary: #000000;
+  --color-primary-hover: #f97316;
+  --color-primary-text: #c2410c;
+  --color-accent: #2563eb;
+  --color-on-accent: #ffffff;
+  --color-bg: #fff7ed;
+  --color-fg: #0f172a;
+  --color-surface: #ffffff;
+  --color-muted: #fdf4f0;
+  --color-muted-fg: #475569;
+  --color-border: #fceae1;
+  --color-border-strong: #64748b;
+  --color-ring: #ea580c;
+  --color-danger: #dc2626;
+  --color-on-danger: #ffffff;
+  --color-danger-bg: #fee2e2;
+  --color-danger-fg: #991b1b;
+  --color-danger-text: #b91c1c;
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-success-fg: #166534;
+  --color-warning: #d97706;
+  --color-warning-bg: #fef3c7;
+  --color-warning-fg: #92400e;
+  --color-info: #2563eb;
+  --color-info-bg: #dbeafe;
+  --color-info-fg: #1e40af;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 3rem;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 8%);
+  --shadow-md: 0 6px 16px rgb(15 23 42 / 10%);
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --tap-min: 2.75rem;
+  --container-max: 64rem;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}
