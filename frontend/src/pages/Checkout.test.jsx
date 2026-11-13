@@ -23,6 +23,7 @@ function seedCart(lines = [[1, 'Masala Dosa', 80, 2], [6, 'Filter Coffee', 40, 1
   )
 }
 
+const SEEDED_ORDERS = 15
 const storedLines = () => Object.keys(JSON.parse(localStorage.getItem(CART_KEY)).lines)
 
 function renderCheckout() {
@@ -136,7 +137,7 @@ describe('Checkout page', () => {
       expect(screen.getByText('No onions')).toBeInTheDocument()
       expect(screen.getByText('Rs. 220.00', { selector: 'dd' })).toBeInTheDocument()
       expect(storedLines()).toEqual([])
-      expect(store.orders).toHaveLength(1)
+      expect(store.orders).toHaveLength(SEEDED_ORDERS + 1)
     })
 
     it('sends the api only ids and quantities, not prices', async () => {
@@ -167,7 +168,7 @@ describe('Checkout page', () => {
 
       expect(payButton()).toBeDisabled()
       expect(await screen.findByRole('heading', { level: 1, name: /order placed/i })).toBeInTheDocument()
-      expect(store.orders).toHaveLength(1)
+      expect(store.orders).toHaveLength(SEEDED_ORDERS + 1)
     })
 
     it('shows the unavailable dish in an alert with a way back, and keeps the cart', async () => {
@@ -182,7 +183,7 @@ describe('Checkout page', () => {
       expect(within(alert).getByRole('link', { name: 'Back to your cart' })).toHaveAttribute('href', '/cart')
       expect(storedLines()).toEqual(['1', '6'])
       expect(payButton()).toBeEnabled()
-      expect(store.orders).toHaveLength(0)
+      expect(store.orders).toHaveLength(SEEDED_ORDERS)
     })
 
     it('shows the api message for other failures and keeps the cart', async () => {

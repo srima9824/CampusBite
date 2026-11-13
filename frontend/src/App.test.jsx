@@ -12,6 +12,36 @@ describe('App routing with auth', () => {
     expect(await screen.findByRole('heading', { level: 1, name: /welcome back/i })).toBeInTheDocument()
   })
 
+  it.each(['/orders', '/orders/1'])('sends a guest from %s to the login page', async (path) => {
+    renderWithAuth(<App />, { entries: [path] })
+
+    expect(await screen.findByRole('heading', { level: 1, name: /welcome back/i })).toBeInTheDocument()
+  })
+
+  it('shows a customer their order history at /orders', async () => {
+    signInAs(1)
+
+    renderWithAuth(<App />, { entries: ['/orders'] })
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Your orders' })).toBeInTheDocument()
+  })
+
+  it('shows a customer their own order at /orders/:orderId', async () => {
+    signInAs(1)
+
+    renderWithAuth(<App />, { entries: ['/orders/3'] })
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Order #3' })).toBeInTheDocument()
+  })
+
+  it('keeps an owner out of /orders', async () => {
+    signInAs(6)
+
+    renderWithAuth(<App />, { entries: ['/orders'] })
+
+    expect(await screen.findByRole('heading', { level: 1, name: /kitchen is being prepped/i })).toBeInTheDocument()
+  })
+
   it('shows the owner placeholder to an owner at /owner', async () => {
     signInAs(6)
 

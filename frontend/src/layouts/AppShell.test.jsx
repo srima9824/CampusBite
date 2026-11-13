@@ -19,7 +19,7 @@ describe('AppShell navigation', () => {
   })
 
   it.each([
-    [1, 'Maya Patel', ['Cart']],
+    [1, 'Maya Patel', ['My orders', 'Cart']],
     [6, 'Owner 1', ['Orders']],
     [3, 'Sam Okafor', ['Deliveries']],
   ])('shows the role links, name and Log out for user %i', async (id, name, roleLinks) => {
@@ -37,13 +37,14 @@ describe('AppShell navigation', () => {
   it.each([
     [6, 'Owner 1'],
     [3, 'Sam Okafor'],
-  ])('hides the Cart link from user %i (%s)', async (id, name) => {
+  ])('hides the Cart and My orders links from user %i (%s)', async (id, name) => {
     signInAs(id)
 
     renderWithAuth(<App />)
 
     await within(nav()).findByText(name)
     expect(linkNames()).not.toContain('Cart')
+    expect(linkNames()).not.toContain('My orders')
   })
 
   it('names the item count in the Cart link once something is in the cart', () => {
@@ -69,6 +70,7 @@ describe('AppShell navigation', () => {
     await within(nav()).findByText('Maya Patel')
     expect(linkNames()).not.toContain('Orders')
     expect(linkNames()).not.toContain('Deliveries')
+    expect(within(nav()).getByRole('link', { name: 'My orders' })).toHaveAttribute('href', '/orders')
   })
 
   it('logs out, clears the session and returns to guest links', async () => {

@@ -79,6 +79,15 @@ describe('OrderConfirmation page', () => {
     expect(await screen.findByRole('link', { name: 'Order more' })).toHaveAttribute('href', '/restaurants')
   })
 
+  it('links to this order\'s tracking page and to the order history', async () => {
+    const order = await placeMaya()
+
+    renderConfirmation(order.id)
+
+    expect(await screen.findByRole('link', { name: 'Track this order' })).toHaveAttribute('href', `/orders/${order.id}`)
+    expect(screen.getByRole('link', { name: 'View my orders' })).toHaveAttribute('href', '/orders')
+  })
+
   it('shows not-found for an order that does not exist', async () => {
     renderConfirmation(999)
 
