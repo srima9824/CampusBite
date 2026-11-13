@@ -205,9 +205,16 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
-# Claude Code project settings and skills
+# Local Claude and agent instructions, settings, and workflow data
 .claude/
 claude/
+.agents/
+agents/
+.codex/
+codex/
+AGENTS.md
+CLAUDE*.md
+CODEX*.md
 
 # Ruff stuff:
 .ruff_cache/
