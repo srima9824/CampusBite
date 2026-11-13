@@ -7,6 +7,7 @@ import OwnerHome from './pages/OwnerHome.jsx'
 import DeliveryHome from './pages/DeliveryHome.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import Cart from './pages/Cart.jsx'
+import OrderConfirmation from './pages/OrderConfirmation.jsx'
 import Register from './pages/Register.jsx'
 import RestaurantMenu from './pages/RestaurantMenu.jsx'
 import Restaurants from './pages/Restaurants.jsx'
@@ -23,6 +24,9 @@ export default function App() {
         <Route path="restaurants/:restaurantId" element={<RestaurantMenu />} />
         <Route path="cart" element={<Cart />} />
         <Route path="styleguide" element={<Styleguide />} />
+        <Route element={<ProtectedRoute roles={['CUSTOMER']} />}>
+          <Route path="order-confirmation/:orderId" element={<OrderConfirmation />} />
+        </Route>
         <Route element={<ProtectedRoute roles={['OWNER']} />}>
           <Route path="owner" element={<OwnerHome />} />
         </Route>
