@@ -8,7 +8,10 @@ const STYLEGUIDE_LINK = { to: '/styleguide', label: 'Styleguide' }
 
 // Only routes that exist are linked; later units add their links here.
 const ROLE_LINKS = {
-  guest: [{ to: '/login', label: 'Log in' }],
+  guest: [
+    { to: '/login', label: 'Log in' },
+    { to: '/register', label: 'Sign up' },
+  ],
   CUSTOMER: [],
   OWNER: [{ to: '/owner', label: 'Orders' }],
   DELIVERY_PARTNER: [{ to: '/delivery', label: 'Deliveries' }],

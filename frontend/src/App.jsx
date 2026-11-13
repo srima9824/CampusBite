@@ -6,6 +6,7 @@ import Login from './pages/Login.jsx'
 import OwnerHome from './pages/OwnerHome.jsx'
 import DeliveryHome from './pages/DeliveryHome.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
+import Register from './pages/Register.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
       <Route element={<AppShell />}>
         <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
         <Route path="styleguide" element={<Styleguide />} />
         <Route element={<ProtectedRoute roles={['OWNER']} />}>
           <Route path="owner" element={<OwnerHome />} />
