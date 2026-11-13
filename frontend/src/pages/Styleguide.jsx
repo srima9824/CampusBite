@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Button, EmptyState, Input, Pagination, Skeleton } from '../components/ui'
+import { Badge, Button, ConfirmDialog, EmptyState, Input, Pagination, Skeleton } from '../components/ui'
 import styles from './Styleguide.module.css'
 
 const COLOR_TOKENS = [
@@ -36,6 +36,26 @@ function Section({ title, children }) {
 function PaginationExample() {
   const [page, setPage] = useState(2)
   return <Pagination page={page} pageSize={6} total={20} onChange={setPage} />
+}
+
+function ConfirmExample() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button variant="secondary" onClick={() => setOpen(true)}>
+        Open a confirm dialog
+      </Button>
+      {open && (
+        <ConfirmDialog
+          title="Start a new cart?"
+          message="Your cart has items from Dosa Dash. Starting a new one clears them."
+          confirmLabel="Start new cart"
+          onConfirm={() => setOpen(false)}
+          onCancel={() => setOpen(false)}
+        />
+      )}
+    </>
+  )
 }
 
 export default function Styleguide() {
@@ -164,6 +184,10 @@ export default function Styleguide() {
 
       <Section title="Pagination">
         <PaginationExample />
+      </Section>
+
+      <Section title="Modal and confirm dialog">
+        <ConfirmExample />
       </Section>
 
       <Section title="Skeleton">
