@@ -21,3 +21,21 @@ export async function getCurrentUser() {
   await delay()
   return publicUser(requireUser())
 }
+
+// Role is never read from the payload: sign-up always creates a customer.
+export async function register({ name, email, password }) {
+  await delay()
+  const normalized = String(email).trim().toLowerCase()
+  if (store.users.some((candidate) => candidate.email.toLowerCase() === normalized)) {
+    throw new ApiError(409, 'email_taken', 'That email is already taken.')
+  }
+  const user = {
+    id: Math.max(...store.users.map((candidate) => candidate.id)) + 1,
+    name: String(name).trim(),
+    email: normalized,
+    role: 'CUSTOMER',
+    password,
+  }
+  store.users.push(user)
+  return publicUser(user)
+}

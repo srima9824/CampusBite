@@ -36,13 +36,22 @@ export function AuthProvider({ children }) {
     return signedIn
   }, [])
 
+  const register = useCallback(
+    async ({ name, email, password }) => {
+      await auth.register({ name, email, password })
+      return login({ email, password })
+    },
+    [login],
+  )
+
   const logout = useCallback(() => {
     clearSession()
     setUser(null)
     setStatus('anonymous')
   }, [])
 
-  const value = useMemo(() => ({ user, status, login, logout }), [user, status, login, logout])
+  const value = useMemo(() => ({ user, status, login, register, logout }),
+    [user, status, login, register, logout],)
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
