@@ -1,6 +1,5 @@
 const ROLE_HOMES = {
-  // Customers land on "/" until the restaurant list route exists.
-  CUSTOMER: '/',
+  CUSTOMER: '/restaurants',
   OWNER: '/owner',
   DELIVERY_PARTNER: '/delivery',
 }

@@ -7,6 +7,7 @@ import OwnerHome from './pages/OwnerHome.jsx'
 import DeliveryHome from './pages/DeliveryHome.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import Register from './pages/Register.jsx'
+import Restaurants from './pages/Restaurants.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="restaurants" element={<Restaurants />} />
         <Route path="styleguide" element={<Styleguide />} />
         <Route element={<ProtectedRoute roles={['OWNER']} />}>
           <Route path="owner" element={<OwnerHome />} />

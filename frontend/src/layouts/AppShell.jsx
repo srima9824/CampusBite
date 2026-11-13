@@ -5,15 +5,17 @@ import { useAuth } from '../context/AuthContext.jsx'
 import styles from './AppShell.module.css'
 
 const HOME_LINK = { to: '/', label: 'Home', end: true }
+const RESTAURANTS_LINK = { to: '/restaurants', label: 'Restaurants' }
 const STYLEGUIDE_LINK = { to: '/styleguide', label: 'Styleguide' }
 
 // Only routes that exist are linked; later units add their links here.
 const ROLE_LINKS = {
   guest: [
+    RESTAURANTS_LINK,
     { to: '/login', label: 'Log in' },
     { to: '/register', label: 'Sign up' },
   ],
-  CUSTOMER: [],
+  CUSTOMER: [RESTAURANTS_LINK],
   OWNER: [{ to: '/owner', label: 'Orders' }],
   DELIVERY_PARTNER: [{ to: '/delivery', label: 'Deliveries' }],
 }

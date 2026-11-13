@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Button, EmptyState, Input, Skeleton } from '../components/ui'
+import { Badge, Button, EmptyState, Input, Pagination, Skeleton } from '../components/ui'
 import styles from './Styleguide.module.css'
 
 const COLOR_TOKENS = [
@@ -31,6 +31,11 @@ function Section({ title, children }) {
       {children}
     </section>
   )
+}
+
+function PaginationExample() {
+  const [page, setPage] = useState(2)
+  return <Pagination page={page} pageSize={6} total={20} onChange={setPage} />
 }
 
 export default function Styleguide() {
@@ -155,6 +160,10 @@ export default function Styleguide() {
             </Badge>
           ))}
         </div>
+      </Section>
+
+      <Section title="Pagination">
+        <PaginationExample />
       </Section>
 
       <Section title="Skeleton">
