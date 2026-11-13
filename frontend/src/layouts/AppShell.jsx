@@ -1,3 +1,4 @@
+import { startTransition } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -28,8 +29,12 @@ export default function AppShell() {
   const notice = state?.notice
 
   function handleLogout() {
-    logout()
-    navigate('/')
+    // Router state updates run in a transition, so clear the session in the same one;
+    // otherwise ProtectedRoute sees anonymous first and redirects to /login.
+    startTransition(() => {
+      navigate('/')
+      logout()
+    })
   }
 
   return (
