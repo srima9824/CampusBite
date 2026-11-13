@@ -75,7 +75,7 @@ describe('Login page', () => {
 
   it.each([
     ['maya@campusbite.test', /pick your kitchen/i],
-    ['owner1@campusbite.test', /kitchen is being prepped/i],
+    ['owner1@campusbite.test', 'Dosa Dash orders'],
     ['sam@campusbite.test', /route/i],
   ])('lands %s on their role home after login', async (address, heading) => {
     renderLogin()
