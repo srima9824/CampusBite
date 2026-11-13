@@ -14,12 +14,12 @@ describe('AppShell navigation', () => {
   it('shows Home, Log in and Sign up to a guest', () => {
     renderWithAuth(<App />)
 
-    expect(linkNames()).toEqual(expect.arrayContaining(['Home', 'Log in', 'Sign up']))
+    expect(linkNames()).toEqual(expect.arrayContaining(['Home', 'Cart', 'Log in', 'Sign up']))
     expect(within(nav()).queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument()
   })
 
   it.each([
-    [1, 'Maya Patel', []],
+    [1, 'Maya Patel', ['Cart']],
     [6, 'Owner 1', ['Orders']],
     [3, 'Sam Okafor', ['Deliveries']],
   ])('shows the role links, name and Log out for user %i', async (id, name, roleLinks) => {
@@ -32,6 +32,33 @@ describe('AppShell navigation', () => {
     expect(linkNames()).not.toContain('Log in')
     expect(linkNames()).not.toContain('Sign up')
     expect(within(nav()).getByRole('button', { name: 'Log out' })).toBeInTheDocument()
+  })
+
+  it.each([
+    [6, 'Owner 1'],
+    [3, 'Sam Okafor'],
+  ])('hides the Cart link from user %i (%s)', async (id, name) => {
+    signInAs(id)
+
+    renderWithAuth(<App />)
+
+    await within(nav()).findByText(name)
+    expect(linkNames()).not.toContain('Cart')
+  })
+
+  it('names the item count in the Cart link once something is in the cart', () => {
+    localStorage.setItem(
+      'campusbite.cart',
+      JSON.stringify({
+        restaurantId: 1,
+        restaurantName: 'Dosa Dash',
+        lines: { 1: { menu_item_id: 1, name: 'Masala Dosa', unit_price: 80, quantity: 3 } },
+      }),
+    )
+
+    renderWithAuth(<App />)
+
+    expect(within(nav()).getByRole('link', { name: 'Cart, 3 items' })).toHaveAttribute('href', '/cart')
   })
 
   it('hides owner links from a customer', async () => {

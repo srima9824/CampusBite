@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 import * as restaurantsApi from '../api/restaurants.js'
 import { resetStore, setLatency } from '../api/testing.js'
+import { ToastProvider } from '../components/ui'
+import { CartProvider } from '../context/CartContext.jsx'
 import RestaurantMenu from './RestaurantMenu.jsx'
 
 function Url() {
@@ -15,9 +17,13 @@ function Url() {
 function renderPage(entry = '/restaurants/1') {
   return render(
     <MemoryRouter initialEntries={[entry]}>
-      <Routes>
-        <Route path="/restaurants/:restaurantId" element={<RestaurantMenu />} />
-      </Routes>
+      <ToastProvider>
+        <CartProvider>
+          <Routes>
+            <Route path="/restaurants/:restaurantId" element={<RestaurantMenu />} />
+          </Routes>
+        </CartProvider>
+      </ToastProvider>
       <Url />
     </MemoryRouter>,
   )

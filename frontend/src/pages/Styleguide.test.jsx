@@ -3,14 +3,20 @@ import { MemoryRouter } from 'react-router-dom'
 import { axe } from 'vitest-axe'
 import { describe, expect, it } from 'vitest'
 import App from '../App.jsx'
+import { ToastProvider } from '../components/ui'
 import { AuthProvider } from '../context/AuthContext.jsx'
+import { CartProvider } from '../context/CartContext.jsx'
 
 function renderAt(path) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </AuthProvider>
+      </ToastProvider>
     </MemoryRouter>,
   )
 }
