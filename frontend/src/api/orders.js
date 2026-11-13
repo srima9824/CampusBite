@@ -1,7 +1,7 @@
 import { DELIVERY_FEE } from '../lib/constants.js'
 import { roundMoney } from '../lib/cartTotals.js'
 import { ApiError, delay, paginate, requireRole, requireUser } from './client.js'
-import { canTransition, ORDER_STATUSES } from './orderStatus.js'
+import { ACTOR_TRANSITIONS, canTransition, ORDER_STATUSES } from './orderStatus.js'
 import { store } from './store.js'
 
 const MIN_ADDRESS = 5
@@ -148,5 +148,60 @@ export async function cancelOrder(id) {
   order.status = 'CANCELLED'
   order.status_history.push({ status: 'CANCELLED', changed_at: now })
   order.updated_at = now
+  return structuredClone(order)
+}
+
+function findOwnOrder(user, id) {
+  const order = store.orders.find((candidate) => candidate.id === Number(id))
+  if (!order || !isVisibleTo(user, order)) {
+    throw new ApiError(404, 'not_found', 'We could not find that order.')
+  }
+  return order
+}
+
+function isOwnerMove(from, to) {
+  return ACTOR_TRANSITIONS.owner.some(([start, end]) => start === from && end === to)
+}
+
+export async function updateOrderStatus(id, { status }) {
+  await delay()
+  const user = requireUser()
+  requireRole(user, 'OWNER')
+  const order = findOwnOrder(user, id)
+  if (!isOwnerMove(order.status, status)) {
+    throw new ApiError(409, 'invalid_transition', 'That order cannot move to that step right now. Reload to see where it stands.')
+  }
+  const now = new Date().toISOString()
+  order.status = status
+  order.status_history.push({ status, changed_at: now })
+  order.updated_at = now
+  return structuredClone(order)
+}
+
+// The pool is global: every owner can pick from every delivery partner.
+export async function listPartners() {
+  await delay()
+  requireRole(requireUser(), 'OWNER')
+  return store.users
+    .filter((candidate) => candidate.role === 'DELIVERY_PARTNER')
+    .map(({ id, name }) => ({ id, name }))
+}
+
+// Reassigning is allowed while the order is still READY.
+export async function assignPartner(id, { delivery_partner_id: partnerId }) {
+  await delay()
+  const user = requireUser()
+  requireRole(user, 'OWNER')
+  const order = findOwnOrder(user, id)
+  if (order.status !== 'READY') {
+    throw new ApiError(409, 'invalid_state', 'A rider can only be assigned while the order is ready.')
+  }
+  const partner = store.users.find(
+    (candidate) => candidate.id === Number(partnerId) && candidate.role === 'DELIVERY_PARTNER',
+  )
+  if (!partner) throw new ApiError(404, 'not_found', 'We could not find that rider.')
+  order.delivery_partner_id = partner.id
+  order.delivery_partner = { id: partner.id, name: partner.name }
+  order.updated_at = new Date().toISOString()
   return structuredClone(order)
 }
