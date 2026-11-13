@@ -9,7 +9,8 @@ CampusBite is a restaurant ordering and delivery platform. Spec: [docs/SPEC.md](
 - One iteration delivers one small, independently reviewable unit. Do not bundle multiple features or start the next unit in the same iteration.
 - Develop the frontend first, feature by feature. Keep frontend work independent of unfinished backend APIs; use simple local or mock data where needed.
 - After each iteration, leave the app viewable on localhost and report the command and route (or a sample localhost request for backend-only work). Explain what was built and why the main design decisions were made so the owner can review it before the next unit starts.
-- Complete the planned frontend units before starting backend implementation. Write automated tests in a dedicated phase after the frontend and backend implementation phases.
+- Complete the planned frontend units before starting backend implementation.
+- Each unit runs the 4-stage pipeline (`.claude/skills/pipeline`): planner, coder (production code), test coder (tests only), reviewer. The test coder writes tests for the unit just built, in the same iteration; tests are not deferred.
 - Keep the project structure, test setup, and pipeline small. Use the existing project commands and tools; add a tool or file only when the current unit needs it.
 - Do not create E2E tests, gitleaks configuration, `.gitkeep` placeholders, or PR templates. Do not recreate removed scaffolding.
 - At the end of every iteration, summarize the unit delivered, the reason for its design decisions, how to preview it locally, and any unresolved limitation.
