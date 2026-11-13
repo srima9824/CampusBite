@@ -7,6 +7,8 @@ function buildStore() {
     users: structuredClone(users),
     restaurants: structuredClone(restaurants),
     menuItems: structuredClone(menuItems),
+    orders: [],
+    nextOrderId: 1,
   }
 }
 
