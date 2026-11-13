@@ -11,6 +11,7 @@ function buildStore() {
     menuItems: structuredClone(menuItems),
     orders,
     nextOrderId: orders.length + 1,
+    nextMenuItemId: Math.max(...menuItems.map((item) => item.id)) + 1,
   }
 }
 
