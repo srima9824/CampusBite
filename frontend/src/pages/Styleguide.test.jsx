@@ -3,11 +3,14 @@ import { MemoryRouter } from 'react-router-dom'
 import { axe } from 'vitest-axe'
 import { describe, expect, it } from 'vitest'
 import App from '../App.jsx'
+import { AuthProvider } from '../context/AuthContext.jsx'
 
 function renderAt(path) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </MemoryRouter>,
   )
 }
