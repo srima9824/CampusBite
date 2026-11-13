@@ -24,7 +24,10 @@ const ROLE_LINKS = {
     { to: '/owner/stats', label: 'Stats' },
     { to: '/owner/menu', label: 'Menu' },
   ],
-  DELIVERY_PARTNER: [{ to: '/delivery', label: 'Deliveries' }],
+  DELIVERY_PARTNER: [
+    { to: '/delivery', label: 'Deliveries', end: true },
+    { to: '/delivery/history', label: 'History' },
+  ],
 }
 
 function linksFor(user) {

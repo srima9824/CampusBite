@@ -8,6 +8,7 @@ import OwnerMenu from './pages/OwnerMenu.jsx'
 import OwnerStats from './pages/OwnerStats.jsx'
 import OwnerOrders from './pages/OwnerOrders.jsx'
 import DeliveryAssignments from './pages/DeliveryAssignments.jsx'
+import DeliveryHistory from './pages/DeliveryHistory.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import OrderDetail from './pages/OrderDetail.jsx'
 import Orders from './pages/Orders.jsx'
@@ -45,6 +46,7 @@ export default function App() {
         </Route>
         <Route element={<ProtectedRoute roles={['DELIVERY_PARTNER']} />}>
           <Route path="delivery" element={<DeliveryAssignments />} />
+          <Route path="delivery/history" element={<DeliveryHistory />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
