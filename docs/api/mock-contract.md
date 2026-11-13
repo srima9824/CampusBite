@@ -89,11 +89,40 @@ Requires a `CUSTOMER`. `items` is `[{ menu_item_id, quantity }]`. The api snapsh
 | 409 | `item_unavailable` | A dish is sold out; the message names it |
 
 ### `orders.getOrder(id)`
-Requires a `CUSTOMER`, who sees only their own orders. Response: the order above.
+Any signed-in role may call it, but each sees only its own slice (see Visibility). Response: the order above.
 
 | Status | Code | When |
 | --- | --- | --- |
+| 401 | `unauthenticated` | Not signed in |
+| 404 | `not_found` | No such order, or it is outside the caller's slice |
+
+### Visibility
+| Role | Sees |
+| --- | --- |
+| `CUSTOMER` | Orders they placed |
+| `OWNER` | Orders of their own restaurant (`restaurant_id`) |
+| `DELIVERY_PARTNER` | Orders assigned to them (`delivery_partner_id`) |
+
+### `orders.listOrders({ status, date_from, date_to, page = 1, page_size = 10 })`
+Returns `{ items, total, page, page_size }` of the caller's visible orders, newest first. `status` is one of the seven statuses. `date_from` and `date_to` are `YYYY-MM-DD` days in the viewer's local time; `date_to` includes the whole day. Omitted filters match everything.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 401 | `unauthenticated` | Not signed in |
+| 422 | `invalid_status` | `status` is not one of the seven values |
+| 422 | `invalid_date_range` | A date is not `YYYY-MM-DD`, or `date_from` is after `date_to` |
+
+### `orders.cancelOrder(id)`
+Requires a `CUSTOMER` cancelling their own order. Only `PLACED` orders can be cancelled. Sets `CANCELLED`, appends `{ status: 'CANCELLED', changed_at }` to `status_history` and returns the order.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 403 | `forbidden` | Caller is not a customer |
 | 404 | `not_found` | No such order, or it belongs to another customer |
+| 409 | `invalid_transition` | The order is no longer `PLACED` |
+
+### Seeded orders
+The store starts with 15 orders built relative to the current time (customer 1 has one per status, customer 2 has eight and none cancelled, all in restaurants 1 to 3). Every `status_history` ends with the order's `status`. A page reload resets them.
 
 ### Status transitions
 One table lives in `src/api/orderStatus.js`. Later units use it to guard status changes; a move outside it throws `409 invalid_transition`.

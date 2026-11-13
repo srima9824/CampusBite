@@ -56,3 +56,15 @@ Used for success and error feedback after an action that has no inline result.
 - One button, "Pay now (dummy)", disabled with a spinner while the order is placed, so a double click places one order. The payment panel says plainly that no real money moves.
 - Api errors appear in a `role="alert"` box above the button. A sold-out dish names itself and links back to the cart, which stays intact. The cart is emptied only after the api accepts the order.
 - Amounts on the confirmation page are the ones the api returned.
+
+## Table
+`Table` takes `columns` (`key`, `header`, `render`), `rows`, `caption` and `getRowKey`. The caption names the region (`role="region"`, focusable so keyboard users can scroll it) and can be visually hidden when a page heading already says it.
+- From 768px it is a real table with column headers.
+- Below 768px each row becomes a stacked card: the header row is hidden and every cell shows its column header from `data-label`, so nothing scrolls sideways.
+- Status is always text (`OrderStatusBadge`), never colour alone.
+
+## Cancelling an order
+`CancelOrderDialog` is the confirm dialog for order cancellation, used from the history table and the detail page. It says what cannot be undone, offers "Keep order" as the safe choice, and on either outcome closes, shows a toast ("Order cancelled" or the api's message) and lets the page reload so the row shows the real status. Focus moves to the page heading afterwards because the Cancel button is gone.
+
+## Order timeline
+`OrderTimeline` is an ordered list of the six forward steps. Each step says "Done", "Now" or "Up next" in text and shows its time from `status_history`; exactly one step has `aria-current="step"`. A cancelled order keeps the steps it reached and ends on a "Cancelled" step. It is vertical below 1024px and horizontal from 1024px. Tracking is manual: the order page has a Refresh button that announces "Updated".
