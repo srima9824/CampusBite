@@ -121,6 +121,27 @@ Requires a `CUSTOMER` cancelling their own order. Only `PLACED` orders can be ca
 | 404 | `not_found` | No such order, or it belongs to another customer |
 | 409 | `invalid_transition` | The order is no longer `PLACED` |
 
+### `orders.updateOrderStatus(id, { status })`
+Requires an `OWNER` of the order's restaurant. Allowed moves: `PLACED` to `ACCEPTED`, `ACCEPTED` to `PREPARING`, `PREPARING` to `READY`. Appends `{ status, changed_at }` to `status_history`, sets `updated_at` and returns the order.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 403 | `forbidden` | Caller is not an owner |
+| 404 | `not_found` | No such order, or it belongs to another restaurant |
+| 409 | `invalid_transition` | Any other move (skipping a step, `OUT_FOR_DELIVERY`, `DELIVERED`, `CANCELLED`) |
+
+### `orders.listPartners()`
+Requires an `OWNER`. Returns `[{ id, name }]` of every delivery partner. The pool is global: all owners see the same list. Errors: `403 forbidden` for other roles.
+
+### `orders.assignPartner(id, { delivery_partner_id })`
+Requires an `OWNER` of the order's restaurant. Sets `delivery_partner_id` and `delivery_partner: { id, name }` and returns the order. Reassigning is allowed while the order is `READY`.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 403 | `forbidden` | Caller is not an owner |
+| 404 | `not_found` | No such order for this restaurant, or no such delivery partner |
+| 409 | `invalid_state` | The order is not `READY` |
+
 ### Seeded orders
 The store starts with 15 orders built relative to the current time (customer 1 has one per status, customer 2 has eight and none cancelled, all in restaurants 1 to 3). Every `status_history` ends with the order's `status`. A page reload resets them.
 
