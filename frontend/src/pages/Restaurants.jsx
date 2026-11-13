@@ -30,7 +30,12 @@ export default function Restaurants() {
   const [text, setText] = useState(q)
   const { data, status, error, reload } = useRestaurants({ q, page })
 
-  useEffect(() => setText(q), [q])
+  const [syncedQ, setSyncedQ] = useState(q)
+  // Back/forward changes the URL; mirror it into the box without an effect.
+  if (syncedQ !== q) {
+    setSyncedQ(q)
+    setText(q)
+  }
 
   useEffect(() => {
     const wanted = text.trim()
