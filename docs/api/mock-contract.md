@@ -172,6 +172,24 @@ Requires an `OWNER`; counts only their own restaurant, live from the store.
 
 Errors: `401 unauthenticated`, `403 forbidden` for non-owners.
 
+### Owner menu management
+All four calls require an `OWNER` and touch only their own restaurant's items (another restaurant's item gives `404 not_found`, wrong role `403 forbidden`, no session `401`). Items are public the moment they change: `restaurants.listMenu` reads the same store.
+
+`owner.createMenuItem({ name, description, category, price, is_available = true })` returns the new item (`id`, `restaurant_id`, ..., `created_at`).
+`owner.updateMenuItem(id, { name, description, category, price, is_available })` returns the item.
+`owner.setMenuItemAvailability(id, { is_available })` returns the item.
+`owner.deleteMenuItem(id)` returns nothing. Placed orders keep their own line snapshots and are untouched.
+
+Validation (shared with the form through `src/lib/menuItemForm.js`): name 2 to 80 characters, description at most 300, category required (at most 40), price above 0 and at most 10000 with at most two decimals. Text is trimmed.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 422 | `validation_error` | Any field is invalid; the error carries `fields`, a map of field name to message |
+| 409 | `duplicate_name` | Another item of the same restaurant has this name (case-insensitive); `fields.name` is set |
+| 404 | `not_found` | The item does not exist or belongs to another restaurant |
+
+A placed order for an item that was just made unavailable gives `409 item_unavailable` (see `orders.placeOrder`).
+
 ## Shared errors
 | Status | Code | Meaning |
 | --- | --- | --- |
