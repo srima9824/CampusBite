@@ -89,6 +89,32 @@ describe('OrderFilters', () => {
     expect(screen.getByLabelText('To')).not.toHaveAttribute('aria-invalid')
   })
 
+  it('drops the status select but keeps the date range when hideStatus is set', () => {
+    renderFilters({ hideStatus: true })
+
+    expect(screen.queryByLabelText('Status')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('From')).toBeInTheDocument()
+    expect(screen.getByLabelText('To')).toBeInTheDocument()
+  })
+
+  it('offers only the statusOptions it is given', async () => {
+    const statusOptions = [
+      { value: '', label: 'All active' },
+      { value: 'READY', label: 'Ready for pickup' },
+    ]
+    const { onChange } = renderFilters({ statusOptions })
+
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['All active', 'Ready for pickup'])
+    await userEvent.selectOptions(screen.getByLabelText('Status'), 'READY')
+    expect(onChange).toHaveBeenCalledWith({ ...empty, status: 'READY' })
+  })
+
+  it('has no accessibility violations without the status select', async () => {
+    const { container } = render(<OrderFilters hideStatus values={empty} onChange={() => {}} onClear={() => {}} />)
+
+    expect(await axe(container)).toHaveNoViolations()
+  })
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <OrderFilters values={empty} onChange={() => {}} onClear={() => {}} rangeError="Bad range" />,
