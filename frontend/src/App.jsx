@@ -6,6 +6,7 @@ import Login from './pages/Login.jsx'
 import OwnerHome from './pages/OwnerHome.jsx'
 import DeliveryHome from './pages/DeliveryHome.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
+import Orders from './pages/Orders.jsx'
 import Checkout from './pages/Checkout.jsx'
 import Cart from './pages/Cart.jsx'
 import OrderConfirmation from './pages/OrderConfirmation.jsx'
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="styleguide" element={<Styleguide />} />
         <Route element={<ProtectedRoute roles={['CUSTOMER']} />}>
           <Route path="checkout" element={<Checkout />} />
+          <Route path="orders" element={<Orders />} />
           <Route path="order-confirmation/:orderId" element={<OrderConfirmation />} />
         </Route>
         <Route element={<ProtectedRoute roles={['OWNER']} />}>

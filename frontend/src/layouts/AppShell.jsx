@@ -18,7 +18,7 @@ const ROLE_LINKS = {
     { to: '/login', label: 'Log in' },
     { to: '/register', label: 'Sign up' },
   ],
-  CUSTOMER: [RESTAURANTS_LINK, CART_LINK],
+  CUSTOMER: [RESTAURANTS_LINK, { to: '/orders', label: 'My orders' }, CART_LINK],
   OWNER: [{ to: '/owner', label: 'Orders' }],
   DELIVERY_PARTNER: [{ to: '/delivery', label: 'Deliveries' }],
 }

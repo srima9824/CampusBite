@@ -87,9 +87,14 @@ export default function OrderConfirmation() {
         </dl>
       </section>
 
-      <Link className={styles.link} to="/restaurants">
-        Order more
-      </Link>
+      <div className={styles.actions}>
+        <Link className={styles.link} to="/orders">
+          View my orders
+        </Link>
+        <Link className={styles.linkQuiet} to="/restaurants">
+          Order more
+        </Link>
+      </div>
     </div>
   )
 }
