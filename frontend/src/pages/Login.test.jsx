@@ -76,7 +76,7 @@ describe('Login page', () => {
   it.each([
     ['maya@campusbite.test', /pick your kitchen/i],
     ['owner1@campusbite.test', 'Dosa Dash orders'],
-    ['sam@campusbite.test', /route/i],
+    ['sam@campusbite.test', 'Your deliveries'],
   ])('lands %s on their role home after login', async (address, heading) => {
     renderLogin()
 
@@ -91,7 +91,7 @@ describe('Login page', () => {
 
     await logInWith('sam@campusbite.test', DEMO_PASSWORD)
 
-    expect(await screen.findByRole('heading', { level: 1, name: /route/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Your deliveries' })).toBeInTheDocument()
   })
 
   it.each([

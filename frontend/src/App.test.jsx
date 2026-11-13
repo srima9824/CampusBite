@@ -77,12 +77,12 @@ describe('App routing with auth', () => {
     expect(await screen.findByText(/reserved for someone else/i)).toBeInTheDocument()
   })
 
-  it('shows the delivery placeholder to a delivery partner at /delivery', async () => {
+  it('shows the deliveries page to a delivery partner at /delivery', async () => {
     signInAs(3)
 
     renderWithAuth(<App />, { entries: ['/delivery'] })
 
-    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/route/i)
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('Your deliveries')
   })
 
   it('sends a customer from /owner home with a visible notice', async () => {
@@ -99,7 +99,7 @@ describe('App routing with auth', () => {
 
     renderWithAuth(<App />, { entries: ['/owner'] })
 
-    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/route/i)
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('Your deliveries')
   })
 
   it('redirects a signed-in user away from login to their home', async () => {
