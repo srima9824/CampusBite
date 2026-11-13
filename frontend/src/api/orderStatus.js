@@ -43,3 +43,15 @@ export const ACTOR_TRANSITIONS = {
     ['OUT_FOR_DELIVERY', 'DELIVERED'],
   ],
 }
+
+const OWNER_ACTION_LABELS = {
+  ACCEPTED: 'Accept order',
+  PREPARING: 'Start preparing',
+  READY: 'Mark ready',
+}
+
+// The one move an owner can make from this status, or null when the owner is done with it.
+export function ownerNextAction(status) {
+  const move = ACTOR_TRANSITIONS.owner.find(([from]) => from === status)
+  return move ? { status: move[1], label: OWNER_ACTION_LABELS[move[1]] } : null
+}
