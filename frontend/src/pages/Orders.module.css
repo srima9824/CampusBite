@@ -53,3 +53,10 @@
 .link:hover {
   background: var(--color-primary-hover);
 }
+
+.orderLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  font-weight: var(--weight-semibold);
+}

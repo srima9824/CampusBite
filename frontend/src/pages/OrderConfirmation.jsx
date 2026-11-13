@@ -88,7 +88,10 @@ export default function OrderConfirmation() {
       </section>
 
       <div className={styles.actions}>
-        <Link className={styles.link} to="/orders">
+        <Link className={styles.link} to={`/orders/${order.id}`}>
+          Track this order
+        </Link>
+        <Link className={styles.linkQuiet} to="/orders">
           View my orders
         </Link>
         <Link className={styles.linkQuiet} to="/restaurants">

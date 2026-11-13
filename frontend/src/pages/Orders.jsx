@@ -65,7 +65,7 @@ export default function Orders() {
   }
 
   const columns = [
-    { key: 'id', header: 'Order', render: (order) => `#${order.id}` },
+    { key: 'id', header: 'Order', render: (order) => <Link className={styles.orderLink} to={`/orders/${order.id}`}>#{order.id}</Link> },
     { key: 'restaurant', header: 'Restaurant', render: (order) => order.restaurant_name },
     { key: 'date', header: 'Placed', render: (order) => formatDateTime(order.created_at) },
     { key: 'items', header: 'Items', render: countItems },
