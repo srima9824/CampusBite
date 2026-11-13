@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { ORDER_STATUSES } from '../api/orderStatus.js'
+import { Link } from 'react-router-dom'
 import CancelOrderDialog from '../components/CancelOrderDialog.jsx'
 import OrderFilters from '../components/OrderFilters.jsx'
 import OrderStatusBadge from '../components/OrderStatusBadge.jsx'
 import { Button, EmptyState, Pagination, Skeleton, Table } from '../components/ui'
+import useOrderFilters from '../hooks/useOrderFilters.js'
 import useOrders from '../hooks/useOrders.js'
 import { formatDateTime } from '../lib/formatDate.js'
 import { formatMoney } from '../lib/formatMoney.js'
@@ -12,15 +12,10 @@ import styles from './Orders.module.css'
 
 const PAGE_SIZE = 10
 const SKELETON_ROWS = 4
-const FILTER_FIELDS = ['status', 'date_from', 'date_to']
 
 function countItems(order) {
   const count = order.items.reduce((sum, line) => sum + line.quantity, 0)
   return count === 1 ? '1 item' : `${count} items`
-}
-
-function toParams(values) {
-  return Object.fromEntries(FILTER_FIELDS.filter((field) => values[field]).map((field) => [field, values[field]]))
 }
 
 function LoadingRows() {
@@ -34,28 +29,10 @@ function LoadingRows() {
 }
 
 export default function Orders() {
-  const [params, setParams] = useSearchParams()
-  const statusParam = params.get('status') ?? ''
-  const filters = {
-    status: ORDER_STATUSES.includes(statusParam) ? statusParam : '',
-    date_from: params.get('date_from') ?? '',
-    date_to: params.get('date_to') ?? '',
-  }
-  const page = Math.max(1, Number(params.get('page')) || 1)
-  const rangeInvalid = Boolean(filters.date_from && filters.date_to && filters.date_from > filters.date_to)
-  const isFiltered = FILTER_FIELDS.some((field) => filters[field])
-  const query = rangeInvalid ? { ...filters, date_from: '', date_to: '' } : filters
-  const { data, status, error, reload } = useOrders({ ...query, page })
+  const { filters, page, rangeInvalid, isFiltered, query, applyFilters, goToPage, clearFilters } = useOrderFilters()
+  const { data, status, error, reload } = useOrders(query)
   const [cancelling, setCancelling] = useState(null)
   const titleRef = useRef(null)
-
-  function applyFilters(next) {
-    setParams(toParams(next))
-  }
-
-  function goToPage(next) {
-    setParams({ ...toParams(filters), page: String(next) })
-  }
 
   // The Cancel button disappears with its row, so hand focus to the heading.
   function finishCancel() {
@@ -95,7 +72,7 @@ export default function Orders() {
       <OrderFilters
         values={filters}
         onChange={applyFilters}
-        onClear={() => setParams({})}
+        onClear={clearFilters}
         rangeError={rangeInvalid ? 'The start date must not be after the end date.' : undefined}
       />
 
@@ -118,7 +95,7 @@ export default function Orders() {
           }
           action={
             isFiltered ? (
-              <Button onClick={() => setParams({})}>Clear filters</Button>
+              <Button onClick={clearFilters}>Clear filters</Button>
             ) : (
               <Link className={styles.link} to="/restaurants">
                 Browse restaurants
