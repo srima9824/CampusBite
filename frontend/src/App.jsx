@@ -7,7 +7,7 @@ import OwnerMenuItemEdit from './pages/OwnerMenuItemEdit.jsx'
 import OwnerMenu from './pages/OwnerMenu.jsx'
 import OwnerStats from './pages/OwnerStats.jsx'
 import OwnerOrders from './pages/OwnerOrders.jsx'
-import DeliveryHome from './pages/DeliveryHome.jsx'
+import DeliveryAssignments from './pages/DeliveryAssignments.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import OrderDetail from './pages/OrderDetail.jsx'
 import Orders from './pages/Orders.jsx'
@@ -44,7 +44,7 @@ export default function App() {
           <Route path="owner/menu/:itemId/edit" element={<OwnerMenuItemEdit />} />
         </Route>
         <Route element={<ProtectedRoute roles={['DELIVERY_PARTNER']} />}>
-          <Route path="delivery" element={<DeliveryHome />} />
+          <Route path="delivery" element={<DeliveryAssignments />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
