@@ -29,7 +29,8 @@ function LoadingRows() {
 }
 
 export default function Orders() {
-  const { filters, page, rangeInvalid, isFiltered, query, applyFilters, goToPage, clearFilters } = useOrderFilters()
+  const { filters, page, rangeInvalid, isFiltered, query, applyFilters, goToPage, backToFirstPage, clearFilters } =
+    useOrderFilters()
   const { data, status, error, reload } = useOrders(query)
   const [cancelling, setCancelling] = useState(null)
   const titleRef = useRef(null)
@@ -85,7 +86,15 @@ export default function Orders() {
         </div>
       )}
 
-      {status === 'success' && data.items.length === 0 && (
+      {status === 'success' && data.items.length === 0 && page > 1 && (
+        <EmptyState
+          title="That page is empty"
+          description="Those orders are not here anymore. Head back to the start of the list."
+          action={<Button onClick={backToFirstPage}>Back to first page</Button>}
+        />
+      )}
+
+      {status === 'success' && data.items.length === 0 && page === 1 && (
         <EmptyState
           title={isFiltered ? 'No orders match those filters' : 'No orders yet, your stomach is waiting'}
           description={
