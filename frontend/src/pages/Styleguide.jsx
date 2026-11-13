@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Button, ConfirmDialog, EmptyState, Input, Pagination, Skeleton, useToast } from '../components/ui'
+import { Badge, Button, ConfirmDialog, EmptyState, Input, Pagination, Select, Skeleton, useToast } from '../components/ui'
 import styles from './Styleguide.module.css'
 
 const COLOR_TOKENS = [
@@ -183,6 +183,25 @@ export default function Styleguide() {
             error="That room is not on our map. Try something like B-204."
           />
           <Input label="Dish of the day" value="Sold out" disabled readOnly />
+        </div>
+      </Section>
+
+      <Section title="Select">
+        <div className={styles.stack}>
+          <Select
+            label="Order status"
+            hint="Pick one to narrow the list."
+            options={[
+              { value: '', label: 'All statuses' },
+              { value: 'PLACED', label: 'Placed' },
+              { value: 'DELIVERED', label: 'Delivered' },
+            ]}
+          />
+          <Select
+            label="Delivery slot"
+            error="That slot is full. Pick another one."
+            options={[{ value: '', label: 'Choose a slot' }]}
+          />
         </div>
       </Section>
 
