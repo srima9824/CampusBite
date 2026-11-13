@@ -89,7 +89,7 @@ Requires a `CUSTOMER`. `items` is `[{ menu_item_id, quantity }]`. The api snapsh
 | 409 | `item_unavailable` | A dish is sold out; the message names it |
 
 ### `orders.getOrder(id)`
-Any signed-in role may call it, but each sees only its own slice (see Visibility). Response: the order above.
+Any signed-in role may call it, but each sees only its own slice (see Visibility). Response: the order above. A partner gets the full order for assigned orders (restaurant, items, `delivery_address`, `note`, customer name); the order never carries an email or phone number.
 
 | Status | Code | When |
 | --- | --- | --- |
@@ -104,12 +104,12 @@ Any signed-in role may call it, but each sees only its own slice (see Visibility
 | `DELIVERY_PARTNER` | Orders assigned to them (`delivery_partner_id`) |
 
 ### `orders.listOrders({ status, date_from, date_to, page = 1, page_size = 10 })`
-Returns `{ items, total, page, page_size }` of the caller's visible orders, newest first. `status` is one of the seven statuses. `date_from` and `date_to` are `YYYY-MM-DD` days in the viewer's local time; `date_to` includes the whole day. Omitted filters match everything.
+Returns `{ items, total, page, page_size }` of the caller's visible orders, newest first. `status` is one status or a comma list of them, such as `READY,OUT_FOR_DELIVERY` (the real backend should mirror it). `date_from` and `date_to` are `YYYY-MM-DD` days in the viewer's local time; `date_to` includes the whole day. Omitted filters match everything.
 
 | Status | Code | When |
 | --- | --- | --- |
 | 401 | `unauthenticated` | Not signed in |
-| 422 | `invalid_status` | `status` is not one of the seven values |
+| 422 | `invalid_status` | `status`, or any entry of the comma list, is not one of the seven values |
 | 422 | `invalid_date_range` | A date is not `YYYY-MM-DD`, or `date_from` is after `date_to` |
 
 ### `orders.cancelOrder(id)`
@@ -122,13 +122,13 @@ Requires a `CUSTOMER` cancelling their own order. Only `PLACED` orders can be ca
 | 409 | `invalid_transition` | The order is no longer `PLACED` |
 
 ### `orders.updateOrderStatus(id, { status })`
-Requires an `OWNER` of the order's restaurant. Allowed moves: `PLACED` to `ACCEPTED`, `ACCEPTED` to `PREPARING`, `PREPARING` to `READY`. Appends `{ status, changed_at }` to `status_history`, sets `updated_at` and returns the order.
+Requires an `OWNER` of the order's restaurant, or the `DELIVERY_PARTNER` the order is assigned to. Owner moves: `PLACED` to `ACCEPTED`, `ACCEPTED` to `PREPARING`, `PREPARING` to `READY`. Partner moves: `READY` to `OUT_FOR_DELIVERY`, `OUT_FOR_DELIVERY` to `DELIVERED`. Each role can make only its own moves. Appends `{ status, changed_at }` to `status_history`, sets `updated_at` and returns the order.
 
 | Status | Code | When |
 | --- | --- | --- |
-| 403 | `forbidden` | Caller is not an owner |
-| 404 | `not_found` | No such order, or it belongs to another restaurant |
-| 409 | `invalid_transition` | Any other move (skipping a step, `OUT_FOR_DELIVERY`, `DELIVERED`, `CANCELLED`) |
+| 403 | `forbidden` | Caller is a customer |
+| 404 | `not_found` | No such order, or it is outside the caller's slice (another restaurant, or not assigned to this partner) |
+| 409 | `invalid_transition` | Any move the caller's role may not make (skipping a step, `CANCELLED`, a partner accepting, an owner delivering) |
 
 ### `orders.listPartners()`
 Requires an `OWNER`. Returns `[{ id, name }]` of every delivery partner. The pool is global: all owners see the same list. Errors: `403 forbidden` for other roles.
