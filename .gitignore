@@ -205,6 +205,17 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Local Claude and agent instructions, settings, and workflow data
+.claude/
+claude/
+.agents/
+agents/
+.codex/
+codex/
+AGENTS.md
+CLAUDE*.md
+CODEX*.md
+
 # Ruff stuff:
 .ruff_cache/
 
@@ -218,3 +229,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Pipeline run artifacts
+.pipeline/
