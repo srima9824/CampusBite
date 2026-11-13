@@ -21,7 +21,7 @@ describe('AppShell navigation', () => {
   it.each([
     [1, 'Maya Patel', ['My orders', 'Cart']],
     [6, 'Owner 1', ['Orders', 'Stats', 'Menu']],
-    [3, 'Sam Okafor', ['Deliveries']],
+    [3, 'Sam Okafor', ['Deliveries', 'History']],
   ])('shows the role links, name and Log out for user %i', async (id, name, roleLinks) => {
     signInAs(id)
 
@@ -126,5 +126,16 @@ describe('AppShell navigation', () => {
 
     await waitFor(() => expect(linkNames()).toContain('Log in'))
     expect(screen.getByRole('heading', { level: 1, name: /kitchen is still warming up/i })).toBeInTheDocument()
+  })
+
+  it('opens the delivery history from the History link and marks it current', async () => {
+    signInAs(3, 'DELIVERY_PARTNER')
+    renderWithAuth(<App />, { entries: ['/delivery'] })
+
+    await userEvent.click(await within(nav()).findByRole('link', { name: 'History' }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Delivery history' })).toBeInTheDocument()
+    expect(within(nav()).getByRole('link', { name: 'History' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav()).getByRole('link', { name: 'Deliveries' })).not.toHaveAttribute('aria-current')
   })
 })
