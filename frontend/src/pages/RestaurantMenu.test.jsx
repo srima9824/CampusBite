@@ -6,12 +6,16 @@ import { axe } from 'vitest-axe'
 import * as restaurantsApi from '../api/restaurants.js'
 import { resetStore, setLatency } from '../api/testing.js'
 import { ToastProvider } from '../components/ui'
-import { CartProvider } from '../context/CartContext.jsx'
+import { CartProvider, useCart } from '../context/CartContext.jsx'
 import RestaurantMenu from './RestaurantMenu.jsx'
 
 function Url() {
   const { pathname, search } = useLocation()
   return <p data-testid="url">{pathname + search}</p>
+}
+
+function CartCount() {
+  return <p data-testid="cart-count">{useCart().itemCount}</p>
 }
 
 function renderPage(entry = '/restaurants/1') {
@@ -22,6 +26,7 @@ function renderPage(entry = '/restaurants/1') {
           <Routes>
             <Route path="/restaurants/:restaurantId" element={<RestaurantMenu />} />
           </Routes>
+          <CartCount />
         </CartProvider>
       </ToastProvider>
       <Url />
@@ -141,5 +146,24 @@ describe('RestaurantMenu page', () => {
     await screen.findByRole('heading', { level: 1, name: 'Dosa Dash' })
 
     expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('adds a dish to the cart from its card and updates the cart count', async () => {
+    renderPage()
+    await screen.findByRole('heading', { level: 1, name: 'Dosa Dash' })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add Masala Dosa to cart' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Add one more Masala Dosa' }))
+
+    expect(screen.getByTestId('cart-count')).toHaveTextContent('2')
+  })
+
+  it('gives a sold-out dish no add button', async () => {
+    renderPage()
+    await screen.findByRole('heading', { level: 1, name: 'Dosa Dash' })
+
+    expect(screen.getByText('Sold out')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Cheese Dosa/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add Masala Dosa to cart' })).toBeInTheDocument()
   })
 })
