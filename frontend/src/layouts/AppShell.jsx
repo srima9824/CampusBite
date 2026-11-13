@@ -19,7 +19,11 @@ const ROLE_LINKS = {
     { to: '/register', label: 'Sign up' },
   ],
   CUSTOMER: [RESTAURANTS_LINK, { to: '/orders', label: 'My orders' }, CART_LINK],
-  OWNER: [{ to: '/owner', label: 'Orders' }],
+  OWNER: [
+    { to: '/owner', label: 'Orders', end: true },
+    { to: '/owner/stats', label: 'Stats' },
+    { to: '/owner/menu', label: 'Menu' },
+  ],
   DELIVERY_PARTNER: [{ to: '/delivery', label: 'Deliveries' }],
 }
 
