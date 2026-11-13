@@ -200,6 +200,26 @@ describe('Orders page', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('page=2')
   })
 
+  it('shows That page is empty past the last page and Back to first page recovers', async () => {
+    renderOrders('/orders?page=9')
+
+    expect(await screen.findByRole('heading', { name: 'That page is empty' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Back to first page' }))
+
+    expect(await screen.findByRole('table')).toBeInTheDocument()
+    expect(screen.getByTestId('where')).not.toHaveTextContent('page=')
+  })
+
+  it('keeps the status filter when going back from a page past the end', async () => {
+    renderOrders('/orders?status=DELIVERED&page=4')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Back to first page' }))
+
+    await screen.findByRole('table')
+    expect(screen.getByTestId('where')).toHaveTextContent('/orders?status=DELIVERED')
+    expect(rows()).toHaveLength(1)
+  })
+
   it('shows an error with Retry that recovers', async () => {
     vi.spyOn(ordersApi, 'listOrders').mockRejectedValueOnce(new Error('The pass is closed.'))
     renderOrders()

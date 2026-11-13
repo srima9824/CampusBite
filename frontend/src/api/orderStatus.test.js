@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ACTOR_TRANSITIONS, canTransition, ORDER_STATUSES, STATUS_LABELS } from './orderStatus.js'
+import { ACTOR_TRANSITIONS, canTransition, ORDER_STATUSES, ownerNextAction, STATUS_LABELS } from './orderStatus.js'
 
 const VALID = [
   ['PLACED', 'ACCEPTED'],
@@ -65,5 +65,25 @@ describe('ACTOR_TRANSITIONS', () => {
 describe('STATUS_LABELS', () => {
   it('has a label for every status', () => {
     expect(Object.keys(STATUS_LABELS).sort()).toEqual([...ORDER_STATUSES].sort())
+  })
+})
+
+describe('ownerNextAction', () => {
+  it.each([
+    ['PLACED', 'ACCEPTED', 'Accept order'],
+    ['ACCEPTED', 'PREPARING', 'Start preparing'],
+    ['PREPARING', 'READY', 'Mark ready'],
+  ])('offers the single next step from %s', (from, status, label) => {
+    expect(ownerNextAction(from)).toEqual({ status, label })
+  })
+
+  it.each(['READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'])('offers the owner nothing from %s', (from) => {
+    expect(ownerNextAction(from)).toBeNull()
+  })
+
+  it('only proposes moves the order lifecycle allows', () => {
+    const proposed = ORDER_STATUSES.map((from) => [from, ownerNextAction(from)]).filter(([, action]) => action)
+
+    expect(proposed.every(([from, action]) => canTransition(from, action.status))).toBe(true)
   })
 })
