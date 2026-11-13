@@ -3,7 +3,7 @@ import AppShell from './layouts/AppShell.jsx'
 import Home from './pages/Home.jsx'
 import Styleguide from './pages/Styleguide.jsx'
 import Login from './pages/Login.jsx'
-import OwnerHome from './pages/OwnerHome.jsx'
+import OwnerOrders from './pages/OwnerOrders.jsx'
 import DeliveryHome from './pages/DeliveryHome.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import OrderDetail from './pages/OrderDetail.jsx'
@@ -34,7 +34,7 @@ export default function App() {
           <Route path="order-confirmation/:orderId" element={<OrderConfirmation />} />
         </Route>
         <Route element={<ProtectedRoute roles={['OWNER']} />}>
-          <Route path="owner" element={<OwnerHome />} />
+          <Route path="owner" element={<OwnerOrders />} />
         </Route>
         <Route element={<ProtectedRoute roles={['DELIVERY_PARTNER']} />}>
           <Route path="delivery" element={<DeliveryHome />} />
