@@ -55,3 +55,14 @@ export function ownerNextAction(status) {
   const move = ACTOR_TRANSITIONS.owner.find(([from]) => from === status)
   return move ? { status: move[1], label: OWNER_ACTION_LABELS[move[1]] } : null
 }
+
+const DELIVERY_ACTION_LABELS = {
+  OUT_FOR_DELIVERY: 'Pick up order',
+  DELIVERED: 'Mark delivered',
+}
+
+// The one move a delivery partner can make from this status, or null when the order is done.
+export function deliveryNextAction(status) {
+  const move = ACTOR_TRANSITIONS.delivery.find(([from]) => from === status)
+  return move ? { status: move[1], label: DELIVERY_ACTION_LABELS[move[1]] } : null
+}

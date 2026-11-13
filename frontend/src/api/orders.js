@@ -97,26 +97,34 @@ function parseDay(value, endOfDay) {
   return day.getTime()
 }
 
-function validateFilters({ status, date_from: dateFrom, date_to: dateTo }) {
-  if (status && !ORDER_STATUSES.includes(status)) {
+// `status` is one status or a comma list such as READY,OUT_FOR_DELIVERY.
+function parseStatuses(status) {
+  if (!status) return []
+  const statuses = status.split(',')
+  if (statuses.some((entry) => !ORDER_STATUSES.includes(entry))) {
     throw invalid('invalid_status', 'That is not an order status we know.')
   }
+  return statuses
+}
+
+function validateFilters({ status, date_from: dateFrom, date_to: dateTo }) {
+  const statuses = parseStatuses(status)
   const from = parseDay(dateFrom, false)
   const to = parseDay(dateTo, true)
   if (from !== null && to !== null && from > to) {
     throw invalid('invalid_date_range', 'The start date must not be after the end date.')
   }
-  return { from, to }
+  return { statuses, from, to }
 }
 
 // Newest first. `date_to` includes the whole day; days are read in the viewer's local time.
 export async function listOrders({ status, date_from, date_to, page = 1, page_size = 10 } = {}) {
   await delay()
   const user = requireUser()
-  const { from, to } = validateFilters({ status, date_from, date_to })
+  const { statuses, from, to } = validateFilters({ status, date_from, date_to })
   const matching = store.orders
     .filter((order) => isVisibleTo(user, order))
-    .filter((order) => !status || order.status === status)
+    .filter((order) => statuses.length === 0 || statuses.includes(order.status))
     .filter((order) => from === null || Date.parse(order.created_at) >= from)
     .filter((order) => to === null || Date.parse(order.created_at) <= to)
     .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id - a.id)
@@ -159,16 +167,18 @@ function findOwnOrder(user, id) {
   return order
 }
 
-function isOwnerMove(from, to) {
-  return ACTOR_TRANSITIONS.owner.some(([start, end]) => start === from && end === to)
+function isActorMove(role, from, to) {
+  return ACTOR_TRANSITIONS[role].some(([start, end]) => start === from && end === to)
 }
 
+// Owners move their kitchen's orders; partners move only the orders assigned to them.
 export async function updateOrderStatus(id, { status }) {
   await delay()
   const user = requireUser()
-  requireRole(user, 'OWNER')
+  requireRole(user, 'OWNER', 'DELIVERY_PARTNER')
   const order = findOwnOrder(user, id)
-  if (!isOwnerMove(order.status, status)) {
+  const actor = user.role === 'OWNER' ? 'owner' : 'delivery'
+  if (!isActorMove(actor, order.status, status)) {
     throw new ApiError(409, 'invalid_transition', 'That order cannot move to that step right now. Reload to see where it stands.')
   }
   const now = new Date().toISOString()
