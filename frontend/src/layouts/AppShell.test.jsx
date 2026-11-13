@@ -20,7 +20,7 @@ describe('AppShell navigation', () => {
 
   it.each([
     [1, 'Maya Patel', ['My orders', 'Cart']],
-    [6, 'Owner 1', ['Orders']],
+    [6, 'Owner 1', ['Orders', 'Stats', 'Menu']],
     [3, 'Sam Okafor', ['Deliveries']],
   ])('shows the role links, name and Log out for user %i', async (id, name, roleLinks) => {
     signInAs(id)
@@ -60,6 +60,42 @@ describe('AppShell navigation', () => {
     renderWithAuth(<App />)
 
     expect(within(nav()).getByRole('link', { name: 'Cart, 3 items' })).toHaveAttribute('href', '/cart')
+  })
+
+  it('shows an owner exactly Orders, Stats and Menu with their routes', async () => {
+    signInAs(6)
+
+    renderWithAuth(<App />)
+
+    await within(nav()).findByText('Owner 1')
+    const role = ['Orders', 'Stats', 'Menu']
+    expect(linkNames().filter((label) => role.includes(label))).toEqual(role)
+    expect(within(nav()).getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/owner')
+    expect(within(nav()).getByRole('link', { name: 'Stats' })).toHaveAttribute('href', '/owner/stats')
+    expect(within(nav()).getByRole('link', { name: 'Menu' })).toHaveAttribute('href', '/owner/menu')
+  })
+
+  it.each([
+    ['/owner', 'Orders'],
+    ['/owner/stats', 'Stats'],
+    ['/owner/menu', 'Menu'],
+  ])('marks only the %s link as the current page', async (path, current) => {
+    signInAs(6)
+
+    renderWithAuth(<App />, { entries: [path] })
+
+    await within(nav()).findByText('Owner 1')
+    const marked = within(nav()).getAllByRole('link').filter((link) => link.getAttribute('aria-current') === 'page')
+    expect(marked.map((link) => link.textContent)).toEqual([current])
+  })
+
+  it('hides Stats and Menu from a customer', async () => {
+    signInAs(1)
+    renderWithAuth(<App />)
+    await within(nav()).findByText('Maya Patel')
+
+    expect(linkNames()).not.toContain('Stats')
+    expect(linkNames()).not.toContain('Menu')
   })
 
   it('hides owner links from a customer', async () => {

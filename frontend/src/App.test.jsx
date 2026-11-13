@@ -39,15 +39,42 @@ describe('App routing with auth', () => {
 
     renderWithAuth(<App />, { entries: ['/orders'] })
 
-    expect(await screen.findByRole('heading', { level: 1, name: /kitchen is being prepped/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Dosa Dash orders' })).toBeInTheDocument()
   })
 
-  it('shows the owner placeholder to an owner at /owner', async () => {
+  it('shows an owner their orders dashboard at /owner', async () => {
     signInAs(6)
 
     renderWithAuth(<App />, { entries: ['/owner'] })
 
-    expect(await screen.findByRole('heading', { level: 1, name: /kitchen is being prepped/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Dosa Dash orders' })).toBeInTheDocument()
+  })
+
+  it.each([
+    ['/owner/stats', 'Dosa Dash stats'],
+    ['/owner/menu', 'Dosa Dash menu'],
+    ['/owner/menu/new', 'Add a dish'],
+    ['/owner/menu/1/edit', 'Edit dish'],
+  ])('shows an owner the page at %s', async (path, name) => {
+    signInAs(6)
+
+    renderWithAuth(<App />, { entries: [path] })
+
+    expect(await screen.findByRole('heading', { level: 1, name })).toBeInTheDocument()
+  })
+
+  it.each(['/owner/stats', '/owner/menu', '/owner/menu/new'])('sends a guest from %s to the login page', async (path) => {
+    renderWithAuth(<App />, { entries: [path] })
+
+    expect(await screen.findByRole('heading', { level: 1, name: /welcome back/i })).toBeInTheDocument()
+  })
+
+  it.each(['/owner/stats', '/owner/menu'])('keeps a customer out of %s', async (path) => {
+    signInAs(1)
+
+    renderWithAuth(<App />, { entries: [path] })
+
+    expect(await screen.findByText(/reserved for someone else/i)).toBeInTheDocument()
   })
 
   it('shows the delivery placeholder to a delivery partner at /delivery', async () => {
@@ -80,7 +107,7 @@ describe('App routing with auth', () => {
 
     renderWithAuth(<App />, { entries: ['/login'] })
 
-    expect(await screen.findByRole('heading', { level: 1, name: /kitchen is being prepped/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Dosa Dash orders' })).toBeInTheDocument()
   })
 
   it('redirects a signed-in user away from register to their home', async () => {
