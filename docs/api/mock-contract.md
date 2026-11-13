@@ -24,6 +24,13 @@ Response:
 | --- | --- | --- |
 | 401 | `invalid_credentials` | Unknown email or wrong password |
 
+### `auth.register({ name, email, password })`
+Always creates a `CUSTOMER`; a `role` key in the payload is ignored. Email is trimmed, lowercased and compared case-insensitively. Response: the new user object without password. The auth context then logs in with the same credentials.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 409 | `email_taken` | An account with that email already exists |
+
 ### `auth.getCurrentUser()`
 Reads the saved token. Response: the user object above.
 
