@@ -2,20 +2,23 @@ import { startTransition } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useCart } from '../context/CartContext.jsx'
 import styles from './AppShell.module.css'
 
 const HOME_LINK = { to: '/', label: 'Home', end: true }
 const RESTAURANTS_LINK = { to: '/restaurants', label: 'Restaurants' }
+const CART_LINK = { to: '/cart', label: 'Cart' }
 const STYLEGUIDE_LINK = { to: '/styleguide', label: 'Styleguide' }
 
 // Only routes that exist are linked; later units add their links here.
 const ROLE_LINKS = {
   guest: [
     RESTAURANTS_LINK,
+    CART_LINK,
     { to: '/login', label: 'Log in' },
     { to: '/register', label: 'Sign up' },
   ],
-  CUSTOMER: [RESTAURANTS_LINK],
+  CUSTOMER: [RESTAURANTS_LINK, CART_LINK],
   OWNER: [{ to: '/owner', label: 'Orders' }],
   DELIVERY_PARTNER: [{ to: '/delivery', label: 'Deliveries' }],
 }
@@ -26,6 +29,7 @@ function linksFor(user) {
 
 export default function AppShell() {
   const { user, logout } = useAuth()
+  const { itemCount } = useCart()
   const { state } = useLocation()
   const navigate = useNavigate()
   const notice = state?.notice
@@ -49,13 +53,26 @@ export default function AppShell() {
           <span className={styles.wordmark}>CampusBite</span>
           <nav aria-label="Main">
             <ul className={styles.nav}>
-              {linksFor(user).map(({ to, label, end }) => (
-                <li key={to}>
-                  <NavLink to={to} end={end} className={styles.navLink}>
-                    {label}
-                  </NavLink>
-                </li>
-              ))}
+              {linksFor(user).map(({ to, label, end }) => {
+                const count = to === CART_LINK.to ? itemCount : 0
+                return (
+                  <li key={to}>
+                    <NavLink
+                      to={to}
+                      end={end}
+                      className={styles.navLink}
+                      aria-label={count ? `${label}, ${count} ${count === 1 ? 'item' : 'items'}` : undefined}
+                    >
+                      {label}
+                      {count > 0 && (
+                        <span className={styles.count} aria-hidden="true">
+                          {count}
+                        </span>
+                      )}
+                    </NavLink>
+                  </li>
+                )
+              })}
               {user && (
                 <li className={styles.account}>
                   <span className={styles.userName}>{user.name}</span>
