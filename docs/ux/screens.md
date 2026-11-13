@@ -12,6 +12,8 @@ Each route, who may open it, and the states it has. Each unit appends its routes
 | `/restaurants` | Everyone (customer home) | Loading (six skeleton cards), success (grid, 1 column at 375px, 2 at 768px, 3 at 1024px, pagination when more than 6), empty ("No kitchens match that" with Clear search), error (`role="alert"` with Retry). Search and page live in `?q=&page=` |
 | `/restaurants/:restaurantId` | Everyone | Loading (skeleton blocks), success (header, items grouped under one `h2` per category, unavailable items carry a "Sold out" text badge), empty ("Nothing on the menu matches" with Clear filters), error (`role="alert"` with Retry), inline `role="alert"` when min price is above max (the range is not sent), not found for an unknown id (link back to the list). Filters live in `?q=&min_price=&max_price=` |
 | `/cart` | Everyone (guests may fill it; checkout asks them to sign in) | Empty ("Your cart is on a diet" with Browse restaurants), success (lines with quantity stepper 1 to 20, line total, Remove, subtotal, Clear cart through a confirm dialog). No loading or error state: the cart lives in the browser |
+| `/checkout` | `CUSTOMER` (guests go to login and come back; other roles are sent home) | Empty cart redirects to `/cart`. Idle form, address error under the field, submitting (Pay button loading), api error (`role="alert"`, with a link to the cart when a dish sold out) |
+| `/order-confirmation/:orderId` | `CUSTOMER`, own orders only | Loading skeleton, success (order number, status badge, items and totals, address, "Paid (dummy)"), not found (also for another customer's order), error (`role="alert"` with Retry) |
 
 ## Access rules
 - Guests opening a protected route go to `/login` and return to the original path after signing in.

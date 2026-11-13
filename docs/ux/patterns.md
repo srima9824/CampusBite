@@ -37,3 +37,22 @@ Used for success and error feedback after an action that has no inline result.
 - `ToastProvider` renders one `aria-live="polite"` region; `useToast()` gives `toast.success(message)` and `toast.error(message)`. Errors carry `role="alert"`.
 - A toast never takes focus. It has a Dismiss button, disappears after 4 seconds and pauses while hovered or focused.
 - Success text is short and plain ("Added to your cart"). Errors say what happened and what to do next.
+
+## Order status badge
+`OrderStatusBadge` always prints the status as text, so colour is never the only signal.
+
+| Status | Label | Tone |
+| --- | --- | --- |
+| PLACED | Placed | info |
+| ACCEPTED | Accepted | info |
+| PREPARING | Preparing | warning |
+| READY | Ready | warning |
+| OUT_FOR_DELIVERY | Out for delivery | info |
+| DELIVERED | Delivered | success |
+| CANCELLED | Cancelled | danger |
+
+## Checkout and dummy payment
+- The address is required (5 to 200 characters) and checked before the api is called; the error sits under the field. The note is optional.
+- One button, "Pay now (dummy)", disabled with a spinner while the order is placed, so a double click places one order. The payment panel says plainly that no real money moves.
+- Api errors appear in a `role="alert"` box above the button. A sold-out dish names itself and links back to the cart, which stays intact. The cart is emptied only after the api accepts the order.
+- Amounts on the confirmation page are the ones the api returned.

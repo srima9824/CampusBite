@@ -58,6 +58,55 @@ Public. `q` matches item name or category, case-insensitive substring. `min_pric
 | 404 | `not_found` | No restaurant with that id |
 | 422 | `invalid_price_range` | `min_price` is greater than `max_price` |
 
+## Orders
+
+### `orders.placeOrder({ restaurant_id, items, delivery_address, note })`
+Requires a `CUSTOMER`. `items` is `[{ menu_item_id, quantity }]`. The api snapshots each item's name and price, so a later price change never alters a placed order, and it computes every amount itself; the client sends no prices. Address and note are trimmed. Response: the order.
+
+```
+{ id, customer_id, customer_name, restaurant_id, restaurant_name,
+  status: 'PLACED',
+  items: [{ menu_item_id, name, unit_price, quantity, line_total }],
+  subtotal, delivery_fee: 20, total,
+  payment: { method: 'mock', status: 'mock_paid' },
+  delivery_address, note,
+  delivery_partner_id: null, delivery_partner: null,
+  status_history: [{ status: 'PLACED', changed_at }],
+  created_at, updated_at }
+```
+
+`subtotal` is the sum of `line_total`, `total = subtotal + delivery_fee`, all rounded to two decimals.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 401 | `unauthenticated` | No valid token |
+| 403 | `forbidden` | The caller is not a customer |
+| 422 | `empty_cart` | `items` is missing or empty |
+| 422 | `invalid_address` | Address shorter than 5 or longer than 200 characters after trimming |
+| 422 | `invalid_quantity` | A quantity is not a whole number from 1 to 20 |
+| 404 | `not_found` | Unknown restaurant, or a dish that does not exist |
+| 422 | `mixed_restaurants` | A dish belongs to another restaurant than `restaurant_id` |
+| 409 | `item_unavailable` | A dish is sold out; the message names it |
+
+### `orders.getOrder(id)`
+Requires a `CUSTOMER`, who sees only their own orders. Response: the order above.
+
+| Status | Code | When |
+| --- | --- | --- |
+| 404 | `not_found` | No such order, or it belongs to another customer |
+
+### Status transitions
+One table lives in `src/api/orderStatus.js`. Later units use it to guard status changes; a move outside it throws `409 invalid_transition`.
+
+| From | To | Actor |
+| --- | --- | --- |
+| PLACED | ACCEPTED | Owner of the restaurant |
+| ACCEPTED | PREPARING | Owner of the restaurant |
+| PREPARING | READY | Owner of the restaurant |
+| READY | OUT_FOR_DELIVERY | Assigned delivery partner |
+| OUT_FOR_DELIVERY | DELIVERED | Assigned delivery partner |
+| PLACED | CANCELLED | Customer who owns the order |
+
 ## Shared errors
 | Status | Code | Meaning |
 | --- | --- | --- |
