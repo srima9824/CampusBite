@@ -63,6 +63,7 @@ Environment variables (see `.env.example`):
 | OPENAI_API_KEY, OPENAI_MODEL | OpenAI access and model name |
 | CORS_ORIGINS | Comma separated allowed browser origins |
 | REMINDER_STALE_MINUTES | Minutes before a pending order triggers a reminder |
+| APP_TIMEZONE | Time zone that decides what a calendar day means for date filters (default Asia/Kolkata) |
 
 ## Test accounts
 
