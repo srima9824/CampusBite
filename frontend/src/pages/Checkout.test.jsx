@@ -31,7 +31,7 @@ function renderCheckout() {
 }
 
 const address = () => screen.getByLabelText(/Delivery address/)
-const payButton = () => screen.getByRole('button', { name: /Pay now \(dummy\)/ })
+const payButton = () => screen.getByRole('button', { name: 'Pay now' })
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -100,6 +100,18 @@ describe('Checkout page', () => {
       renderCheckout()
 
       expect(await screen.findByText(/Dummy payment: no real money moves/)).toBeInTheDocument()
+    })
+
+    it('shows a sample address placeholder and no dummy wording on any button', async () => {
+      renderCheckout()
+
+      expect(await screen.findByLabelText(/Delivery address/)).toHaveAttribute(
+        'placeholder',
+        'Block B, Room 204, Hostel Road, near the main gate',
+      )
+      for (const button of screen.getAllByRole('button')) {
+        expect(button).not.toHaveTextContent(/dummy/i)
+      }
     })
 
     it('shows an inline error and places no order when the address is empty', async () => {

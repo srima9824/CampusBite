@@ -71,7 +71,7 @@ export default function Checkout() {
             onChange={(event) => setAddress(event.target.value)}
             error={addressError}
             autoComplete="street-address"
-            placeholder="Hostel block, room number, landmark"
+            placeholder="Block B, Room 204, Hostel Road, near the main gate"
             required
           />
           <div className={styles.field}>
@@ -119,7 +119,7 @@ export default function Checkout() {
         )}
 
         <Button type="submit" size="lg" loading={status === 'loading'}>
-          Pay now (dummy)
+          Pay now
         </Button>
       </form>
     </div>
