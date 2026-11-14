@@ -159,7 +159,7 @@ describe('Orders page', () => {
   })
 
   it('shows the first-order empty state with a way to browse for a new customer', async () => {
-    store.users.push({ id: 99, name: 'New Student', email: 'new@campusbite.test', role: 'CUSTOMER', password: 'x' })
+    store.users.push({ id: 99, name: 'New Student', email: 'new@masaischool.ac.in', role: 'CUSTOMER', password: 'x' })
     signInAs(99)
 
     renderOrders()

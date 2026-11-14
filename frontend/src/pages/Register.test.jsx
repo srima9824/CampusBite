@@ -4,13 +4,14 @@ import { axe } from 'vitest-axe'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App.jsx'
 import { getSession } from '../api/session.js'
+import { store } from '../api/store.js'
 import { renderWithAuth, resetAuthWorld } from '../test/helpers.jsx'
 
 const field = (name) => screen.getByLabelText(name)
 const submit = () => screen.getByRole('button', { name: 'Sign up' })
 const renderRegister = () => renderWithAuth(<App />, { entries: ['/register'] })
 
-async function fill({ name = 'Nia Ortiz', email = 'nia@campusbite.test', password = 'long-enough-1', confirm = password }) {
+async function fill({ name = 'Nia Ortiz', email = 'nia@masaischool.ac.in', password = 'long-enough-1', confirm = password }) {
   if (name) await userEvent.type(field('Name'), name)
   if (email) await userEvent.type(field('Email'), email)
   if (password) await userEvent.type(field('Password'), password)
@@ -48,14 +49,28 @@ describe('Register page', () => {
     expect(field('Name')).toHaveFocus()
   })
 
-  it('rejects a malformed email', async () => {
+  it.each(['not-an-email', 'nia@gmail.com', 'nia@evilmasaischool.ac.in', 'nia@mail.masaischool.ac.in', '@masaischool.ac.in'])(
+    'shows the domain message inline and creates no account for %s',
+    async (address) => {
+      renderRegister()
+      await fill({ email: address })
+
+      await userEvent.click(submit())
+
+      expect(field('Email')).toHaveAccessibleDescription('Use your @masaischool.ac.in email address.')
+      expect(field('Email')).toHaveFocus()
+      expect(store.users).toHaveLength(9)
+      expect(getSession()).toBeNull()
+    },
+  )
+
+  it('accepts a masaischool address in any letter case', async () => {
     renderRegister()
-    await fill({ email: 'not-an-email' })
+    await fill({ email: 'NIA@MasaiSchool.AC.IN' })
 
     await userEvent.click(submit())
 
-    expect(field('Email')).toHaveAccessibleDescription(/looks off/i)
-    expect(field('Email')).toHaveFocus()
+    expect(await screen.findByRole('heading', { level: 1, name: /pick your kitchen/i })).toBeInTheDocument()
   })
 
   it('rejects a password shorter than 8 characters', async () => {
@@ -80,7 +95,7 @@ describe('Register page', () => {
 
   it('shows the taken-email error on the email field and focuses it', async () => {
     renderRegister()
-    await fill({ email: 'maya@campusbite.test' })
+    await fill({ email: 'maya@masaischool.ac.in' })
 
     await userEvent.click(submit())
 
@@ -91,7 +106,7 @@ describe('Register page', () => {
 
   it('treats a differently cased existing email as taken', async () => {
     renderRegister()
-    await fill({ email: 'MAYA@Campusbite.test' })
+    await fill({ email: 'MAYA@Masaischool.ac.in' })
 
     await userEvent.click(submit())
 
@@ -118,7 +133,7 @@ describe('Register page', () => {
     await userEvent.click(await within(nav).findByRole('button', { name: 'Log out' }))
     await userEvent.click(within(nav).getByRole('link', { name: 'Log in' }))
 
-    await userEvent.type(field('Email'), 'nia@campusbite.test')
+    await userEvent.type(field('Email'), 'nia@masaischool.ac.in')
     await userEvent.type(field('Password'), 'long-enough-1')
     await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
 

@@ -44,7 +44,7 @@ describe('Checkout page', () => {
       seedCart()
       renderCheckout()
 
-      await userEvent.type(await screen.findByLabelText('Email'), 'maya@campusbite.test')
+      await userEvent.type(await screen.findByLabelText('Email'), 'maya@masaischool.ac.in')
       await userEvent.type(screen.getByLabelText('Password'), TEST_PASSWORD)
       await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
 

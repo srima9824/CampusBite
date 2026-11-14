@@ -11,13 +11,13 @@ function Probe() {
     <div>
       <p data-testid="status">{status}</p>
       <p data-testid="user">{user ? JSON.stringify(user) : 'none'}</p>
-      <button onClick={() => login({ email: 'maya@campusbite.test', password: TEST_PASSWORD }).catch(() => {})}>
+      <button onClick={() => login({ email: 'maya@masaischool.ac.in', password: TEST_PASSWORD }).catch(() => {})}>
         sign in
       </button>
-      <button onClick={() => login({ email: 'maya@campusbite.test', password: 'wrong' }).catch(() => {})}>
+      <button onClick={() => login({ email: 'maya@masaischool.ac.in', password: 'wrong' }).catch(() => {})}>
         sign in badly
       </button>
-      <button onClick={() => register({ name: 'Nia Ortiz', email: 'nia@campusbite.test', password: 'long-enough-1' })}>
+      <button onClick={() => register({ name: 'Nia Ortiz', email: 'nia@masaischool.ac.in', password: 'long-enough-1' })}>
         sign up
       </button>
       <button onClick={logout}>sign out</button>

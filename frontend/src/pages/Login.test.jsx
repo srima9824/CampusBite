@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { axe } from 'vitest-axe'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App.jsx'
+import { getSession } from '../api/session.js'
 import { setLatency } from '../api/testing.js'
 import { TEST_PASSWORD, renderWithAuth, resetAuthWorld } from '../test/helpers.jsx'
 
@@ -43,7 +44,7 @@ describe('Login page', () => {
 
   it('focuses the password when only it is missing', async () => {
     renderLogin()
-    await userEvent.type(email(), 'maya@campusbite.test')
+    await userEvent.type(email(), 'maya@masaischool.ac.in')
 
     await userEvent.click(submit())
 
@@ -54,17 +55,32 @@ describe('Login page', () => {
   it('shows an alert and keeps the email when the password is wrong', async () => {
     renderLogin()
 
-    await logInWith('maya@campusbite.test', 'wrong-password')
+    await logInWith('maya@masaischool.ac.in', 'wrong-password')
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/do not match/i)
-    expect(email()).toHaveValue('maya@campusbite.test')
+    expect(email()).toHaveValue('maya@masaischool.ac.in')
     expect(submit()).toBeEnabled()
   })
+
+  it.each(['maya@gmail.com', 'maya@evilmasaischool.ac.in', 'maya@mail.masaischool.ac.in', 'maya@masaischool.ac.in.evil.com'])(
+    'shows the domain message inline and does not call the api for %s',
+    async (address) => {
+      renderLogin()
+
+      await logInWith(address, TEST_PASSWORD)
+
+      expect(email()).toHaveAccessibleDescription('Use your @masaischool.ac.in email address.')
+      expect(email()).toHaveFocus()
+      expect(submit()).toBeEnabled()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(getSession()).toBeNull()
+    },
+  )
 
   it('disables the button while signing in', async () => {
     setLatency(50)
     renderLogin()
-    await userEvent.type(email(), 'maya@campusbite.test')
+    await userEvent.type(email(), 'maya@masaischool.ac.in')
     await userEvent.type(password(), TEST_PASSWORD)
 
     await userEvent.click(submit())
@@ -74,9 +90,9 @@ describe('Login page', () => {
   })
 
   it.each([
-    ['maya@campusbite.test', /pick your kitchen/i],
-    ['owner1@campusbite.test', 'Dosa Dash orders'],
-    ['sam@campusbite.test', 'Your deliveries'],
+    ['maya@masaischool.ac.in', /pick your kitchen/i],
+    ['owner1@masaischool.ac.in', 'Dosa Dash orders'],
+    ['sam@masaischool.ac.in', 'Your deliveries'],
   ])('lands %s on their role home after login', async (address, heading) => {
     renderLogin()
 
@@ -89,7 +105,7 @@ describe('Login page', () => {
     renderLogin(['/delivery'])
     await screen.findByRole('heading', { level: 1, name: /welcome back/i })
 
-    await logInWith('sam@campusbite.test', TEST_PASSWORD)
+    await logInWith('sam@masaischool.ac.in', TEST_PASSWORD)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Your deliveries' })).toBeInTheDocument()
   })
