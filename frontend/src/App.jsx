@@ -1,7 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import AppShell from './layouts/AppShell.jsx'
 import Home from './pages/Home.jsx'
-import Styleguide from './pages/Styleguide.jsx'
 import Login from './pages/Login.jsx'
 import OwnerMenuItemEdit from './pages/OwnerMenuItemEdit.jsx'
 import OwnerMenu from './pages/OwnerMenu.jsx'
@@ -30,7 +29,6 @@ export default function App() {
         <Route path="restaurants" element={<Restaurants />} />
         <Route path="restaurants/:restaurantId" element={<RestaurantMenu />} />
         <Route path="cart" element={<Cart />} />
-        <Route path="styleguide" element={<Styleguide />} />
         <Route element={<ProtectedRoute roles={['CUSTOMER']} />}>
           <Route path="checkout" element={<Checkout />} />
           <Route path="orders" element={<Orders />} />
