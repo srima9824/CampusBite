@@ -49,7 +49,7 @@ describe('Register page', () => {
     expect(field('Name')).toHaveFocus()
   })
 
-  it.each(['not-an-email', 'nia@gmail.com', 'nia@evilmasaischool.ac.in', 'nia@mail.masaischool.ac.in', '@masaischool.ac.in'])(
+  it.each(['not-an-email', 'nia@gmail.com', 'nia@evilmasaischool.ac.in', 'nia@mail.masaischool.ac.in', '@masaischool.ac.in', 'nia@@masaischool.ac.in', 'ni a@masaischool.ac.in'])(
     'shows the domain message inline and creates no account for %s',
     async (address) => {
       renderRegister()

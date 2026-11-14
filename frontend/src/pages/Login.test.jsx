@@ -1,8 +1,9 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'vitest-axe'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App.jsx'
+import { auth } from '../api/index.js'
 import { getSession } from '../api/session.js'
 import { setLatency } from '../api/testing.js'
 import { TEST_PASSWORD, renderWithAuth, resetAuthWorld } from '../test/helpers.jsx'
@@ -62,7 +63,7 @@ describe('Login page', () => {
     expect(submit()).toBeEnabled()
   })
 
-  it.each(['maya@gmail.com', 'maya@evilmasaischool.ac.in', 'maya@mail.masaischool.ac.in', 'maya@masaischool.ac.in.evil.com'])(
+  it.each(['maya@gmail.com', 'maya@evilmasaischool.ac.in', 'maya@mail.masaischool.ac.in', 'maya@masaischool.ac.in.evil.com', 'maya@@masaischool.ac.in', 'ma ya@masaischool.ac.in'])(
     'shows the domain message inline and does not call the api for %s',
     async (address) => {
       renderLogin()
@@ -76,6 +77,20 @@ describe('Login page', () => {
       expect(getSession()).toBeNull()
     },
   )
+
+  it('shows the domain message inline and focuses the email when the api rejects the domain', async () => {
+    const { ApiError } = await import('../api/client.js')
+    const spy = vi.spyOn(auth, 'login').mockRejectedValue(new ApiError(422, 'email_domain_not_allowed', 'x'))
+    renderLogin()
+
+    await logInWith('maya@masaischool.ac.in', TEST_PASSWORD)
+
+    await waitFor(() => expect(email()).toHaveAccessibleDescription('Use your @masaischool.ac.in email address.'))
+    expect(email()).toHaveFocus()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(submit()).toBeEnabled()
+    spy.mockRestore()
+  })
 
   it('disables the button while signing in', async () => {
     setLatency(50)

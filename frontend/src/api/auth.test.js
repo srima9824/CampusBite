@@ -99,7 +99,7 @@ describe('register', () => {
 })
 
 describe('email domain restriction', () => {
-  const blocked = ['maya@gmail.com', 'maya@evilmasaischool.ac.in', 'maya@mail.masaischool.ac.in', 'maya@masaischool.ac.in.evil.com', 'maya']
+  const blocked = ['maya@gmail.com', 'maya@evilmasaischool.ac.in', 'maya@mail.masaischool.ac.in', 'maya@masaischool.ac.in.evil.com', 'maya', 'maya@@masaischool.ac.in', 'ma ya@masaischool.ac.in']
 
   it.each(blocked)('login rejects %s with 422 email_domain_not_allowed', async (email) => {
     await expect(auth.login({ email, password: PASSWORD })).rejects.toMatchObject({

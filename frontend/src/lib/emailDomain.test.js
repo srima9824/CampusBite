@@ -12,6 +12,8 @@ describe('isAllowedEmail', () => {
     ['maya@mail.masaischool.ac.in', false],
     ['maya.masaischool.ac.in', false],
     ['@masaischool.ac.in', false],
+    ['a@@masaischool.ac.in', false],
+    ['a b@masaischool.ac.in', false],
     ['', false],
     [undefined, false],
     [null, false],
