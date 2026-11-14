@@ -22,7 +22,7 @@ describe('useMenu', () => {
     const { result } = renderHook(() => useMenu('1', { q: 'dosa', max_price: '100' }))
 
     await waitFor(() => expect(result.current.status).toBe('success'))
-    expect(result.current.data.items.map((item) => item.name)).toEqual(['Masala Dosa'])
+    expect(result.current.data.items.map((item) => item.name)).toEqual(['Masala Dosa', 'Egg Dosa'])
   })
 
   it('filters by diet', async () => {

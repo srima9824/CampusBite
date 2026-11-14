@@ -87,7 +87,7 @@ describe('RestaurantMenu page', () => {
   it('narrows the menu by price range from the sliders', async () => {
     renderPage()
     await screen.findByRole('heading', { level: 1, name: 'Dosa Dash' })
-    await slidersReady(120)
+    await slidersReady(150)
 
     fireEvent.change(minSlider(), { target: { value: '60' } })
     fireEvent.change(maxSlider(), { target: { value: '80' } })
@@ -102,7 +102,7 @@ describe('RestaurantMenu page', () => {
 
     await screen.findByRole('heading', { level: 1, name: 'Dosa Dash' })
 
-    expect(itemHeadings()).toEqual(['Masala Dosa'])
+    expect(itemHeadings()).toEqual(['Masala Dosa', 'Egg Dosa'])
     expect(screen.getByLabelText('Search the menu')).toHaveValue('dosa')
     expect(screen.getByText('Max price ₹100')).toBeInTheDocument()
     expect(maxSlider()).toHaveValue('100')
@@ -193,18 +193,18 @@ describe('RestaurantMenu filter form', () => {
   it('offers two sliders from 0 to the highest dish price, with live labels', async () => {
     renderPage()
     await ready()
-    await slidersReady(120)
+    await slidersReady(150)
 
     expect(minSlider()).toHaveAttribute('min', '0')
     expect(screen.getByText('Min price ₹0')).toBeInTheDocument()
-    expect(screen.getByText('Max price ₹120')).toBeInTheDocument()
-    expect(maxSlider()).toHaveValue('120')
+    expect(screen.getByText('Max price ₹150')).toBeInTheDocument()
+    expect(maxSlider()).toHaveValue('150')
   })
 
   it('updates the label as a handle moves', async () => {
     renderPage()
     await ready()
-    await slidersReady(120)
+    await slidersReady(150)
 
     fireEvent.change(minSlider(), { target: { value: '40' } })
 
@@ -214,7 +214,7 @@ describe('RestaurantMenu filter form', () => {
   it('pushes the other handle so the minimum never passes the maximum', async () => {
     renderPage()
     await ready()
-    await slidersReady(120)
+    await slidersReady(150)
     fireEvent.change(maxSlider(), { target: { value: '70' } })
 
     fireEvent.change(minSlider(), { target: { value: '100' } })
@@ -228,11 +228,11 @@ describe('RestaurantMenu filter form', () => {
     const spy = vi.spyOn(restaurantsApi, 'listMenu')
     renderPage()
     await ready()
-    await slidersReady(120)
+    await slidersReady(150)
 
     fireEvent.change(minSlider(), { target: { value: '50' } })
     fireEvent.change(minSlider(), { target: { value: '0' } })
-    fireEvent.change(maxSlider(), { target: { value: '120' } })
+    fireEvent.change(maxSlider(), { target: { value: '150' } })
 
     expect(url()).toBe('/restaurants/1')
     expect(spy.mock.calls.every(([, filters]) => !filters?.min_price && !filters?.max_price)).toBe(true)
@@ -241,7 +241,7 @@ describe('RestaurantMenu filter form', () => {
   it('filters instantly after the debounce, with no button press', async () => {
     renderPage()
     await ready()
-    await slidersReady(120)
+    await slidersReady(150)
 
     fireEvent.change(maxSlider(), { target: { value: '50' } })
 
@@ -317,7 +317,7 @@ describe('RestaurantMenu filter form', () => {
   it('has no accessibility violations in the filter area', async () => {
     renderPage()
     await ready()
-    await slidersReady(120)
+    await slidersReady(150)
 
     expect(await axe(form())).toHaveNoViolations()
   })

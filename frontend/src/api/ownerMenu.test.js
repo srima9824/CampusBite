@@ -34,7 +34,7 @@ describe('createMenuItem', () => {
 
   it('defaults new dishes to vegetarian and stores is_veg false when given', async () => {
     expect((await createMenuItem(valid)).is_veg).toBe(true)
-    expect((await createMenuItem({ ...valid, name: 'Egg Dosa', is_veg: false })).is_veg).toBe(false)
+    expect((await createMenuItem({ ...valid, name: 'Test Egg Dosa', is_veg: false })).is_veg).toBe(false)
   })
 
   it('shows the new dish on the public menu at once', async () => {

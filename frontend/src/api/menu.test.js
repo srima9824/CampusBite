@@ -47,7 +47,7 @@ describe('listMenu', () => {
   it('combines search with a price limit', async () => {
     const result = await restaurants.listMenu(1, { q: 'dosa', max_price: 100 })
 
-    expect(names(result)).toEqual(['Masala Dosa'])
+    expect(names(result)).toEqual(['Masala Dosa', 'Egg Dosa'])
   })
 
   it('gives every item a boolean is_veg flag', async () => {
@@ -70,6 +70,15 @@ describe('listMenu', () => {
     expect(names(result)).toEqual(['Classic Cheeseburger', 'Double Stack', 'Spicy Chicken Burger'])
   })
 
+  it('offers at least one non-vegetarian dish in every restaurant', async () => {
+    for (const id of [1, 3, 5, 7]) {
+      const result = await restaurants.listMenu(id, { veg: 'non_veg' })
+
+      expect(result.items.length).toBeGreaterThan(0)
+      expect(result.items.every((item) => !item.is_veg)).toBe(true)
+    }
+  })
+
   it('returns both kinds for an empty veg value and combines with a price limit', async () => {
     const all = await restaurants.listMenu(3, { veg: '' })
     const cheap = await restaurants.listMenu(3, { veg: 'veg', max_price: 100 })
@@ -82,7 +91,7 @@ describe('listMenu', () => {
     const result = await restaurants.listMenu(1, { page: 2, page_size: 3 })
 
     expect(result.items).toHaveLength(3)
-    expect(result).toMatchObject({ page: 2, page_size: 3, total: 7 })
+    expect(result).toMatchObject({ page: 2, page_size: 3, total: 9 })
   })
 
   it('rejects a minimum above the maximum with 422 invalid_price_range', async () => {
