@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { Button, Input } from '../components/ui'
 import { useAuth } from '../context/AuthContext.jsx'
 import { roleHome } from '../routes/roleHome.js'
+import { ALLOWED_EMAIL_DOMAIN, EMAIL_DOMAIN_MESSAGE, isAllowedEmail } from '../lib/emailDomain.js'
 import styles from './Register.module.css'
 
 const MIN_PASSWORD_LENGTH = 8
@@ -11,9 +12,7 @@ function validate({ name, email, password, confirm }) {
   const errors = {}
   if (!name.trim()) errors.name = 'Tell us your name so the kitchen can shout it out.'
   if (!email.trim()) errors.email = 'Enter your email address.'
-  else if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
-    errors.email = 'That email looks off. Try something like you@campus.edu.'
-  }
+  else if (!isAllowedEmail(email)) errors.email = EMAIL_DOMAIN_MESSAGE
   if (password.length < MIN_PASSWORD_LENGTH) {
     errors.password = `Pick a password with at least ${MIN_PASSWORD_LENGTH} characters.`
   }
@@ -80,6 +79,7 @@ export default function Register() {
           label="Email"
           name="email"
           type="email"
+          placeholder={`you@${ALLOWED_EMAIL_DOMAIN}`}
           autoComplete="email"
           value={values.email}
           onChange={update('email')}
