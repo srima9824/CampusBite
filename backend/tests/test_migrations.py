@@ -128,3 +128,119 @@ def migrated_engine(tmp_path):
 def test_migrated_schema_enforces_constraints(migrated_engine, violation):
     with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
         violation(conn)
+
+
+ORDER_TABLES = {"orders", "order_items", "payment_ledger"}
+
+
+def test_orders_migration_creates_and_drops_tables(tmp_path):
+    url = f"sqlite:///{tmp_path / 'orders.db'}"
+
+    upgrade = run_alembic(url, "upgrade", "head")
+    engine = create_engine(url)
+    inspector = inspect(engine)
+    after_upgrade = set(inspector.get_table_names())
+    foreign_keys = {
+        table: {
+            (fk["constrained_columns"][0], fk["referred_table"])
+            for fk in inspector.get_foreign_keys(table)
+        }
+        for table in ORDER_TABLES & after_upgrade
+    }
+    engine.dispose()
+    downgrade = run_alembic(url, "downgrade", "base")
+    engine = create_engine(url)
+    after_downgrade = set(inspect(engine).get_table_names())
+    engine.dispose()
+
+    assert upgrade.returncode == 0, upgrade.stderr
+    assert ORDER_TABLES <= after_upgrade
+    assert foreign_keys["orders"] == {("customer_id", "users"), ("restaurant_id", "restaurants")}
+    assert foreign_keys["order_items"] == {("order_id", "orders"), ("menu_item_id", "menu_items")}
+    assert foreign_keys["payment_ledger"] == {("order_id", "orders")}
+    assert downgrade.returncode == 0, downgrade.stderr
+    assert not ORDER_TABLES & after_downgrade
+
+
+def test_downgrade_one_step_from_head_keeps_menu_tables(tmp_path):
+    url = f"sqlite:///{tmp_path / 'step.db'}"
+    assert run_alembic(url, "upgrade", "head").returncode == 0
+
+    downgrade = run_alembic(url, "downgrade", "-1")
+    engine = create_engine(url)
+    remaining = set(inspect(engine).get_table_names())
+    engine.dispose()
+
+    assert downgrade.returncode == 0, downgrade.stderr
+    assert not ORDER_TABLES & remaining
+    assert {"users", "restaurants", "menu_items"} <= remaining
+
+
+ORDER_INSERT = (
+    "INSERT INTO orders (id, customer_id, restaurant_id, status, total, delivery_address, "
+    "payment_status, created_at, updated_at) "
+    "VALUES (:id, 1, 1, 'PLACED', :total, 'Hostel 4', 'mock_paid', "
+    "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+)
+
+
+def insert_order(conn, order_id: int = 1, total: int = 10) -> None:
+    conn.execute(text(ORDER_INSERT), {"id": order_id, "total": total})
+
+
+def insert_order_item(conn, quantity: int = 1, unit_price: int = 10, line_total: int = 10) -> None:
+    conn.execute(
+        text(
+            "INSERT INTO order_items (order_id, menu_item_id, name, unit_price, quantity, "
+            "line_total) VALUES (1, 1, 'Dish', :u, :q, :l)"
+        ),
+        {"u": unit_price, "q": quantity, "l": line_total},
+    )
+
+
+def insert_ledger(conn, amount: int = 10) -> None:
+    conn.execute(
+        text(
+            "INSERT INTO payment_ledger (order_id, amount, method, status, created_at) "
+            "VALUES (1, :a, 'mock', 'mock_paid', CURRENT_TIMESTAMP)"
+        ),
+        {"a": amount},
+    )
+
+
+@pytest.mark.parametrize(
+    "violation",
+    [
+        lambda c: insert_order(c, 2, 0),
+        lambda c: insert_order(c, 2, -1),
+        lambda c: insert_order_item(c, quantity=0),
+        lambda c: insert_order_item(c, quantity=21),
+        lambda c: insert_order_item(c, unit_price=-1),
+        lambda c: insert_order_item(c, line_total=-1),
+        lambda c: insert_ledger(c, 0),
+        lambda c: insert_ledger(c, -5),
+    ],
+    ids=[
+        "order_total_zero",
+        "order_total_negative",
+        "quantity_zero",
+        "quantity_21",
+        "unit_price_negative",
+        "line_total_negative",
+        "amount_zero",
+        "amount_negative",
+    ],
+)
+def test_migrated_order_tables_enforce_checks(migrated_engine, violation):
+    with migrated_engine.begin() as conn:
+        insert_order(conn)
+
+    with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
+        violation(conn)
+
+
+def test_migrated_order_tables_accept_valid_rows(migrated_engine):
+    with migrated_engine.begin() as conn:
+        insert_order(conn)
+        insert_order_item(conn, quantity=20, unit_price=10, line_total=200)
+        insert_ledger(conn)
