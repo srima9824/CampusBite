@@ -109,19 +109,19 @@ describe('RestaurantCarousel structure', () => {
   })
 
   it('renders nothing when there are no restaurants', async () => {
-    vi.spyOn(restaurantsApi, 'listRestaurants').mockResolvedValue({ items: [], total: 0, page: 1, page_size: 8 })
+    vi.spyOn(restaurantsApi, 'listRestaurants').mockResolvedValue({ items: [], total: 0, page: 1, page_size: 4 })
     const { container } = renderCarousel()
 
     await vi.waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('asks the api for eight restaurants', async () => {
+  it('asks the api for four restaurants', async () => {
     const spy = vi.spyOn(restaurantsApi, 'listRestaurants')
 
     await loaded()
 
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ page_size: 8 }))
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ page_size: 4 }))
   })
 
   it('has no accessibility violations once loaded', async () => {

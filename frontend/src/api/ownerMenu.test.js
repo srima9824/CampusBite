@@ -63,7 +63,7 @@ describe('createMenuItem', () => {
   })
 
   it('allows a name that another restaurant uses', async () => {
-    const item = await createMenuItem({ ...valid, name: 'Veg Hakka Noodles' })
+    const item = await createMenuItem({ ...valid, name: 'Classic Cheeseburger' })
 
     expect(item.restaurant_id).toBe(1)
   })
@@ -106,7 +106,7 @@ describe('updateMenuItem', () => {
   })
 
   it('answers 404 for another restaurant\'s item and leaves it untouched', async () => {
-    await expect(updateMenuItem(15, { name: 'Hijack', category: 'Noodles', price: 1 })).rejects.toMatchObject({
+    await expect(updateMenuItem(15, { name: 'Hijack', category: 'Burgers', price: 1 })).rejects.toMatchObject({
       status: 404,
       code: 'not_found',
     })

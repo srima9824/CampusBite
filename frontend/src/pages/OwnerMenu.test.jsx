@@ -54,7 +54,7 @@ describe('OwnerMenu page', () => {
     expect(rows()).toHaveLength(7)
     expect(within(rowFor('Masala Dosa')).getByText('Dosas')).toBeInTheDocument()
     expect(within(rowFor('Masala Dosa')).getByText('Rs. 80.00')).toBeInTheDocument()
-    expect(screen.queryByText('Veg Hakka Noodles')).not.toBeInTheDocument()
+    expect(screen.queryByText('Classic Cheeseburger')).not.toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Add item' })[0]).toHaveAttribute('href', '/owner/menu/new')
   })
 

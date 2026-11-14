@@ -6,9 +6,9 @@ import { renderWithAuth } from '../test/helpers.jsx'
 import AddToCartButton from './AddToCartButton.jsx'
 
 const dosaDash = { id: 1, name: 'Dosa Dash' }
-const wokWorld = { id: 2, name: 'Wok World' }
+const burgerBarn = { id: 3, name: 'Burger Barn' }
 const masala = { id: 1, name: 'Masala Dosa', price: 80 }
-const noodles = { id: 8, name: 'Veg Hakka Noodles', price: 140 }
+const burger = { id: 15, name: 'Classic Cheeseburger', price: 180 }
 
 function CartSummary() {
   const { lines, restaurantName } = useCart()
@@ -23,7 +23,7 @@ function renderButtons() {
   return renderWithAuth(
     <>
       <AddToCartButton item={masala} restaurant={dosaDash} />
-      <AddToCartButton item={noodles} restaurant={wokWorld} />
+      <AddToCartButton item={burger} restaurant={burgerBarn} />
       <CartSummary />
     </>,
   )
@@ -63,7 +63,7 @@ describe('AddToCartButton', () => {
     async function startWithDosaInCart() {
       renderButtons()
       await userEvent.click(screen.getByRole('button', { name: 'Add Masala Dosa to cart' }))
-      await userEvent.click(screen.getByRole('button', { name: 'Add Veg Hakka Noodles to cart' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Add Classic Cheeseburger to cart' }))
     }
 
     it('asks before starting a new cart and names the current restaurant', async () => {
@@ -88,7 +88,7 @@ describe('AddToCartButton', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'Start new cart' }))
 
-      expect(cartText()).toBe('Wok World: 1xVeg Hakka Noodles')
+      expect(cartText()).toBe('Burger Barn: 1xClassic Cheeseburger')
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
   })
