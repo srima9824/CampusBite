@@ -28,6 +28,7 @@ def get_current_user(
         raise not_authenticated()
     return user
 
+
 def require_roles(*roles: Role) -> Callable[[User], User]:
     def check_role(user: Annotated[User, Depends(get_current_user)]) -> User:
         if user.role not in roles:

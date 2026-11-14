@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -17,11 +17,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 DUMMY_HASH = hash_password("not-a-real-password")
 
 
-def email_taken() -> Exception:
+def email_taken() -> HTTPException:
     return api_error(status.HTTP_409_CONFLICT, "email_taken", "This email is already registered.")
 
 
-def invalid_credentials() -> Exception:
+def invalid_credentials() -> HTTPException:
     return api_error(
         status.HTTP_401_UNAUTHORIZED, "invalid_credentials", "Wrong email or password."
     )

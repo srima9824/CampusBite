@@ -11,7 +11,7 @@ EMAIL_MESSAGE = "Use your @masaischool.ac.in email address."
 
 def normalize_email(value: str) -> str:
     email = value.strip().lower()
-    if not EMAIL_PATTERN.fullmatch(email):
+    if len(email) > 254 or not EMAIL_PATTERN.fullmatch(email):
         raise ValueError(EMAIL_MESSAGE)
     return email
 
