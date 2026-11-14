@@ -1,0 +1,123 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0 0 var(--space-4) var(--space-6);
+}
+
+.step::before {
+  content: '';
+  position: absolute;
+  top: var(--space-4);
+  bottom: 0;
+  left: calc(var(--space-2) - 1px);
+  width: 2px;
+  background: var(--color-border-strong);
+}
+
+.step:last-child {
+  padding-bottom: 0;
+}
+
+.step:last-child::before {
+  display: none;
+}
+
+.marker {
+  position: absolute;
+  top: var(--space-1);
+  left: 0;
+  width: var(--space-4);
+  height: var(--space-4);
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+}
+
+.done .marker {
+  border-color: var(--color-success);
+  background: var(--color-success);
+}
+
+.current .marker {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  box-shadow: 0 0 0 var(--space-1) var(--color-primary-text);
+}
+
+.cancelled.current .marker {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  box-shadow: 0 0 0 var(--space-1) var(--color-danger-text);
+}
+
+.label {
+  font-weight: var(--weight-semibold);
+}
+
+.state {
+  width: fit-content;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-muted);
+  color: var(--color-muted-fg);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.current .state {
+  background: var(--color-info-bg);
+  color: var(--color-info-fg);
+}
+
+.cancelled.current .state {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-fg);
+}
+
+.done .state {
+  background: var(--color-success-bg);
+  color: var(--color-success-fg);
+}
+
+.upcoming .label {
+  color: var(--color-muted-fg);
+}
+
+.time {
+  color: var(--color-muted-fg);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 64rem) {
+  .timeline {
+    flex-direction: row;
+  }
+
+  .step {
+    flex: 1;
+    padding: var(--space-6) var(--space-3) 0 0;
+  }
+
+  .step::before {
+    top: var(--space-2);
+    bottom: auto;
+    left: var(--space-4);
+    right: 0;
+    width: auto;
+    height: 2px;
+  }
+
+  .marker {
+    top: 0;
+  }
+}

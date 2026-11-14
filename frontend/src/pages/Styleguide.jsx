@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Button, EmptyState, Input, Skeleton } from '../components/ui'
+import { Badge, Button, ConfirmDialog, EmptyState, Input, Pagination, Select, Skeleton, Table, useToast } from '../components/ui'
 import styles from './Styleguide.module.css'
 
 const COLOR_TOKENS = [
@@ -30,6 +30,45 @@ function Section({ title, children }) {
       <h2 className={styles.sectionTitle}>{title}</h2>
       {children}
     </section>
+  )
+}
+
+function PaginationExample() {
+  const [page, setPage] = useState(2)
+  return <Pagination page={page} pageSize={6} total={20} onChange={setPage} />
+}
+
+function ConfirmExample() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button variant="secondary" onClick={() => setOpen(true)}>
+        Open a confirm dialog
+      </Button>
+      {open && (
+        <ConfirmDialog
+          title="Start a new cart?"
+          message="Your cart has items from Dosa Dash. Starting a new one clears them."
+          confirmLabel="Start new cart"
+          onConfirm={() => setOpen(false)}
+          onCancel={() => setOpen(false)}
+        />
+      )}
+    </>
+  )
+}
+
+function ToastExample() {
+  const toast = useToast()
+  return (
+    <div className={styles.row}>
+      <Button variant="secondary" onClick={() => toast.success('Added to your cart')}>
+        Show success toast
+      </Button>
+      <Button variant="secondary" onClick={() => toast.error('The kitchen did not answer. Try again.')}>
+        Show error toast
+      </Button>
+    </div>
   )
 }
 
@@ -147,6 +186,41 @@ export default function Styleguide() {
         </div>
       </Section>
 
+      <Section title="Select">
+        <div className={styles.stack}>
+          <Select
+            label="Order status"
+            hint="Pick one to narrow the list."
+            options={[
+              { value: '', label: 'All statuses' },
+              { value: 'PLACED', label: 'Placed' },
+              { value: 'DELIVERED', label: 'Delivered' },
+            ]}
+          />
+          <Select
+            label="Delivery slot"
+            error="That slot is full. Pick another one."
+            options={[{ value: '', label: 'Choose a slot' }]}
+          />
+        </div>
+      </Section>
+
+      <Section title="Table">
+        <Table
+          caption="Sample orders"
+          getRowKey={(row) => row.id}
+          columns={[
+            { key: 'id', header: 'Order', render: (row) => `#${row.id}` },
+            { key: 'dish', header: 'Dish', render: (row) => row.dish },
+            { key: 'status', header: 'Status', render: (row) => row.status },
+          ]}
+          rows={[
+            { id: 12, dish: 'Masala Dosa', status: 'Preparing' },
+            { id: 11, dish: 'Veg Hakka Noodles', status: 'Delivered' },
+          ]}
+        />
+      </Section>
+
       <Section title="Badge">
         <div className={styles.row}>
           {BADGE_TONES.map((tone) => (
@@ -155,6 +229,18 @@ export default function Styleguide() {
             </Badge>
           ))}
         </div>
+      </Section>
+
+      <Section title="Pagination">
+        <PaginationExample />
+      </Section>
+
+      <Section title="Modal and confirm dialog">
+        <ConfirmExample />
+      </Section>
+
+      <Section title="Toast">
+        <ToastExample />
       </Section>
 
       <Section title="Skeleton">

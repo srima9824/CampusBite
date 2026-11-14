@@ -3,11 +3,20 @@ import { MemoryRouter } from 'react-router-dom'
 import { axe } from 'vitest-axe'
 import { describe, expect, it } from 'vitest'
 import App from '../App.jsx'
+import { ToastProvider } from '../components/ui'
+import { AuthProvider } from '../context/AuthContext.jsx'
+import { CartProvider } from '../context/CartContext.jsx'
 
 function renderAt(path) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <App />
+      <ToastProvider>
+        <AuthProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </AuthProvider>
+      </ToastProvider>
     </MemoryRouter>,
   )
 }
@@ -15,7 +24,7 @@ function renderAt(path) {
 describe('routes', () => {
   it('shows the home heading at /', () => {
     renderAt('/')
-    expect(screen.getByRole('heading', { level: 1, name: /kitchen is still warming up/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Hungry? Pick a kitchen.' })).toBeInTheDocument()
   })
 
   it('shows the not-found state for an unknown path', () => {
