@@ -65,7 +65,7 @@ export default function Restaurants() {
     <div className={styles.page}>
       <header className={styles.intro}>
         <h1 className={styles.title}>Pick your kitchen</h1>
-        <p className={styles.lead}>Four campus favourites, all one tap from your table.</p>
+        <p className={styles.lead}>Pick a kitchen and have your food at your table in minutes.</p>
       </header>
 
       <form
