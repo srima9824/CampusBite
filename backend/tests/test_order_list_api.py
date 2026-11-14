@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
-from zoneinfo import ZoneInfoNotFoundError
 
 import pytest
+from pydantic import ValidationError
 from sqlalchemy import event, select
 
 from app import seed
@@ -194,7 +194,7 @@ def test_app_timezone_setting_moves_the_boundary(seeded, db_session, dated, monk
 def test_invalid_app_timezone_fails_settings_validation(monkeypatch):
     monkeypatch.setenv("APP_TIMEZONE", "Mars/Olympus")
 
-    with pytest.raises(ZoneInfoNotFoundError):
+    with pytest.raises(ValidationError, match="valid time zone"):
         Settings(_env_file=None)
 
 
