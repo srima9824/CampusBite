@@ -29,4 +29,8 @@ export const menuItems = [
   { id: 45, restaurant_id: 7, name: "Veg Sandwich", description: "Grilled with chutney.", category: "Snacks", price: 100, is_veg: true, is_available: true, created_at: CREATED_AT },
   { id: 46, restaurant_id: 7, name: "Samosa Pair", description: "Two crisp samosas.", category: "Snacks", price: 50, is_veg: true, is_available: true, created_at: CREATED_AT },
   { id: 47, restaurant_id: 7, name: "Brownie", description: "Fudgy and rich.", category: "Desserts", price: 120, is_veg: true, is_available: true, created_at: CREATED_AT },
+  { id: 48, restaurant_id: 1, name: "Egg Dosa", description: "Crisp dosa with a fried egg spread on top.", category: "Dosas", price: 100, is_veg: false, is_available: true, created_at: CREATED_AT },
+  { id: 49, restaurant_id: 1, name: "Chicken Chettinad Dosa", description: "Spicy chicken filling in a crisp crepe.", category: "Dosas", price: 150, is_veg: false, is_available: true, created_at: CREATED_AT },
+  { id: 50, restaurant_id: 7, name: "Chicken Sandwich", description: "Grilled with mint mayo.", category: "Snacks", price: 130, is_veg: false, is_available: true, created_at: CREATED_AT },
+  { id: 51, restaurant_id: 7, name: "Egg Puff", description: "Flaky pastry with a spiced egg.", category: "Snacks", price: 60, is_veg: false, is_available: true, created_at: CREATED_AT },
 ]
