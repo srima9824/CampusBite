@@ -64,9 +64,15 @@ Environment variables (see `.env.example`):
 | CORS_ORIGINS | Comma separated allowed browser origins |
 | REMINDER_STALE_MINUTES | Minutes before a pending order triggers a reminder |
 
-## Test accounts (local mock data)
+## Test accounts
 
-All accounts use the password `bite-fixture-1`.
+Create them in the backend database (local use only). Set `SEED_PASSWORD` in `.env` (at least 8 characters), start the stack, then run:
+
+```
+docker compose run --rm backend python -m app.seed
+```
+
+It is safe to run again: existing accounts are skipped. All accounts use the password you set. The frontend still uses its own mock data, where the password is `bite-fixture-1`.
 
 | Email | Role |
 |---|---|
