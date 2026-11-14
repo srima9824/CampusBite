@@ -24,3 +24,10 @@ def place_order(data: OrderCreate, customer: Customer, db: DbSession) -> OrderOu
         raise api_error(rejection.status_code, rejection.code, rejection.message) from None
     return OrderOut.model_validate(order)
 
+
+@router.get("/{order_id}")
+def get_order(order_id: int, customer: Customer, db: DbSession) -> OrderOut:
+    order = service.get_order_for_customer(db, customer, order_id)
+    if order is None:
+        raise api_error(status.HTTP_404_NOT_FOUND, "order_not_found", "Order not found.")
+    return OrderOut.model_validate(order)
