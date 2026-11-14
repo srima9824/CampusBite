@@ -46,12 +46,12 @@ describe('OwnerMenu page', () => {
     expect(await screen.findByRole('table')).toBeInTheDocument()
   })
 
-  it('lists the seven dishes of this restaurant only, with category, price and an Add item link', async () => {
+  it('lists the nine dishes of this restaurant only, with category, price and an Add item link', async () => {
     renderMenu()
 
     await heading()
     await screen.findByRole('table')
-    expect(rows()).toHaveLength(7)
+    expect(rows()).toHaveLength(9)
     expect(within(rowFor('Masala Dosa')).getByText('Dosas')).toBeInTheDocument()
     expect(within(rowFor('Masala Dosa')).getByText('Rs. 80.00')).toBeInTheDocument()
     expect(screen.queryByText('Classic Cheeseburger')).not.toBeInTheDocument()
@@ -133,7 +133,7 @@ describe('OwnerMenu page', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Remove dish' }))
 
       expect(await screen.findByText('Masala Dosa removed from the menu')).toBeInTheDocument()
-      await waitFor(() => expect(rows()).toHaveLength(6))
+      await waitFor(() => expect(rows()).toHaveLength(8))
       expect(rowFor('Masala Dosa')).toBeUndefined()
       expect(store.menuItems.some((item) => item.id === 1)).toBe(false)
       expect(await heading()).toHaveFocus()

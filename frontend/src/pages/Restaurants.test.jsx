@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 import { resetStore, setLatency } from '../api/testing.js'
 import * as restaurantsApi from '../api/restaurants.js'
-import { FILTER_HINT } from '../components/FilterActions.jsx'
 import Restaurants from './Restaurants.jsx'
 
 function Url() {
@@ -132,31 +131,24 @@ describe('Restaurants page', () => {
 describe('Restaurants search form', () => {
   const form = () => screen.getByRole('search', { name: 'Search kitchens' })
 
-  it('shows the hint above the box and links it to the form', async () => {
+  it('shows no hint and no Apply button, only Clear filters', async () => {
     renderPage()
     await cards()
 
-    expect(screen.getByText(FILTER_HINT)).toBeInTheDocument()
-    expect(form()).toHaveAccessibleDescription(FILTER_HINT)
-  })
-
-  it('offers Apply before Clear filters in the form', async () => {
-    renderPage()
-    await cards()
-
+    expect(screen.queryByText(/press Apply/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Apply' })).not.toBeInTheDocument()
     const buttons = within(form()).getAllByRole('button').map((button) => button.textContent)
-    expect(buttons).toEqual(['Apply', 'Clear filters'])
+    expect(buttons).toEqual(['Clear filters'])
   })
 
-  it('applies the typed text at once when Apply is clicked, without waiting for the debounce', async () => {
+  it('uses a generic lead line without any numbers', async () => {
     renderPage()
     await cards()
-    fireEvent.change(searchBox(), { target: { value: ' dosa ' } })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
-
-    expect(url()).toBe('/restaurants?q=dosa')
-    expect(await screen.findByRole('link', { name: 'Dosa Dash' })).toBeInTheDocument()
+    const lead = screen.getByText('Pick a kitchen and have your food at your table in minutes.')
+    expect(lead.textContent).not.toMatch(/\d/)
+    expect(lead.textContent).not.toMatch(/\b(one|two|three|four|five)\b/i)
+    expect(screen.queryByText(/Four campus favourites/)).not.toBeInTheDocument()
   })
 
   it('applies at once when Enter is pressed in the box', async () => {
@@ -169,24 +161,23 @@ describe('Restaurants search form', () => {
     expect(url()).toBe('/restaurants?q=burger')
   })
 
-  it('drops the page parameter when Apply runs a new search', async () => {
+  it('drops the page parameter when a new search is typed', async () => {
     renderPage('/restaurants?q=a&page=2')
     await screen.findByRole('heading', { name: 'No kitchens match that' })
-    fireEvent.change(searchBox(), { target: { value: 'taco' } })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    await userEvent.clear(searchBox())
+    await userEvent.type(searchBox(), 'taco')
 
-    expect(url()).toBe('/restaurants?q=taco')
+    await waitFor(() => expect(url()).toBe('/restaurants?q=taco'))
   })
 
-  it('leaves the URL without q when Apply runs on an empty box', async () => {
+  it('leaves the URL without q when the box is emptied', async () => {
     renderPage('/restaurants?q=burger')
     await cards()
-    fireEvent.change(searchBox(), { target: { value: '   ' } })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    await userEvent.clear(searchBox())
 
-    expect(url()).toBe('/restaurants')
+    await waitFor(() => expect(url()).toBe('/restaurants'))
   })
 
   it('clears the box and the URL with Clear filters', async () => {
@@ -200,7 +191,7 @@ describe('Restaurants search form', () => {
     expect(await cards()).toHaveLength(4)
   })
 
-  it('still auto-applies the text after the debounce without pressing Apply', async () => {
+  it('still auto-applies the text as you type, after the debounce', async () => {
     renderPage()
     await cards()
 

@@ -32,6 +32,11 @@ describe('createMenuItem', () => {
     expect(store.menuItems).toHaveLength(before + 1)
   })
 
+  it('defaults new dishes to vegetarian and stores is_veg false when given', async () => {
+    expect((await createMenuItem(valid)).is_veg).toBe(true)
+    expect((await createMenuItem({ ...valid, name: 'Test Egg Dosa', is_veg: false })).is_veg).toBe(false)
+  })
+
   it('shows the new dish on the public menu at once', async () => {
     await createMenuItem(valid)
 
@@ -82,6 +87,11 @@ describe('updateMenuItem', () => {
     const item = await updateMenuItem(3, { name: 'Cheese Dosa', description: '', category: 'Dosas', price: '130' })
 
     expect(item).toMatchObject({ id: 3, price: 130, is_available: false })
+  })
+
+  it('changes is_veg and keeps it when none is given', async () => {
+    expect((await updateMenuItem(1, { name: 'Masala Dosa', category: 'Dosas', price: 80, is_veg: false })).is_veg).toBe(false)
+    expect((await updateMenuItem(1, { name: 'Masala Dosa', category: 'Dosas', price: 80 })).is_veg).toBe(false)
   })
 
   it('allows saving an item under its own name', async () => {

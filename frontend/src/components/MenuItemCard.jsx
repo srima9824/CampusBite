@@ -7,7 +7,14 @@ export default function MenuItemCard({ item, action }) {
   return (
     <article className={`${styles.card} ${soldOut ? styles.soldOut : ''}`}>
       <div className={styles.top}>
-        <h3 className={styles.name}>{item.name}</h3>
+        <h3 className={styles.name}>
+          <span
+            className={`${styles.diet} ${item.is_veg ? styles.veg : styles.nonVeg}`}
+            role="img"
+            aria-label={item.is_veg ? 'Vegetarian' : 'Non-vegetarian'}
+          />
+          {item.name}
+        </h3>
         <span className={styles.price}>{formatMoney(item.price)}</span>
       </div>
       <p className={styles.description}>{item.description}</p>
