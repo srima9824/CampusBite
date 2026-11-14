@@ -88,26 +88,10 @@ export default function AppShell() {
       </main>
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
-          <div className={styles.footerBrand}>
-            <span className={styles.wordmark}>CampusBite</span>
-            <p className={styles.tagline}>Order between lectures, eat before the bell.</p>
-            <p>
-              CampusBite brings your campus kitchens to one tap. Browse menus, order in a minute
-              and track your food from the pan to your door.
-            </p>
-          </div>
-          <nav aria-label="Footer">
-            <p className={styles.footerHeading}>Quick links</p>
-            <ul className={styles.footerLinks}>
-              {roleLinksFor(user).map(({ to, label, end }) => (
-                <li key={to}>
-                  <NavLink to={to} end={end} className={styles.footerLink}>
-                    {label}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <p>
+            CampusBite brings your campus kitchens to one tap. Browse menus, order in a minute
+            and track your food from the pan to your door.
+          </p>
           <p className={styles.copyright}>
             &copy; {new Date().getFullYear()} CampusBite. Made by students, for students.
           </p>
