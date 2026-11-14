@@ -175,11 +175,11 @@ describe('AppShell profile chip', () => {
 })
 
 describe('AppShell footer', () => {
-  it('shows the description and copyright without a Quick links nav', () => {
+  it('shows only the copyright, with no description or Quick links nav', () => {
     renderWithAuth(<App />)
 
     const contentinfo = screen.getByRole('contentinfo')
-    expect(within(contentinfo).getByText(/brings your campus kitchens to one tap/i)).toBeInTheDocument()
+    expect(within(contentinfo).queryByText(/brings your campus kitchens/i)).not.toBeInTheDocument()
     expect(within(contentinfo).getByText(/\u00a9 \d{4} CampusBite/)).toBeInTheDocument()
     expect(within(contentinfo).queryByText('Quick links')).not.toBeInTheDocument()
     expect(within(contentinfo).queryByRole('navigation')).not.toBeInTheDocument()

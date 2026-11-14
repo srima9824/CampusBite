@@ -19,11 +19,25 @@ beforeEach(() => {
 })
 
 describe('Home page', () => {
-  it('shows the hero heading and lead', () => {
+  it('shows the hero heading and intro', () => {
     renderHome()
 
     expect(screen.getByRole('heading', { level: 1, name: 'Hungry? Pick a kitchen.' })).toBeInTheDocument()
-    expect(screen.getByText('Four campus favourites, one tap away.')).toBeInTheDocument()
+    expect(screen.getByText(/CampusBite brings your campus kitchens to/)).toBeInTheDocument()
+  })
+
+  it('highlights "one tap" in the intro, above the slider', () => {
+    renderHome()
+
+    const intro = screen.getByText(/CampusBite brings your campus kitchens to/)
+    expect(intro).toHaveTextContent(
+      'CampusBite brings your campus kitchens to one tap. Browse menus, order in a minute and track your food from the pan to your door.',
+    )
+    expect(screen.getByText('one tap')).toHaveClass(/highlight/)
+    expect(screen.getByText('one tap').parentElement).toBe(intro)
+    expect(screen.getByRole('heading', { level: 1 }).compareDocumentPosition(intro)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
   })
 
   it('links to all kitchens', () => {
