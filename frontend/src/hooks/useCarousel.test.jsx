@@ -17,7 +17,7 @@ describe('useCarousel', () => {
   it('starts on the first slide, running, with the live region off', () => {
     const { result } = renderHook(() => useCarousel(3, 1000))
 
-    expect(result.current).toMatchObject({ index: 0, paused: false, live: 'off' })
+    expect(result.current).toMatchObject({ index: 0, live: 'off' })
   })
 
   it('wraps next and prev around both ends', () => {
@@ -68,24 +68,43 @@ describe('useCarousel', () => {
     expect(result.current.index).toBe(0)
   })
 
-  it('goes polite after a manual change and returns to off when toggled', () => {
+  it('goes polite after a manual change and stays polite as it keeps cycling', () => {
     const { result } = renderHook(() => useCarousel(3, 1000))
 
     act(() => result.current.goTo(2))
     expect(result.current.live).toBe('polite')
 
-    act(() => result.current.togglePause())
-    act(() => result.current.togglePause())
-    expect(result.current.live).toBe('off')
+    act(() => vi.advanceTimersByTime(1000))
+    expect(result.current.live).toBe('polite')
   })
 
-  it('starts paused when matchMedia reports reduced motion', () => {
+  it('exposes no pause controls', () => {
+    const { result } = renderHook(() => useCarousel(3, 1000))
+
+    expect(result.current).not.toHaveProperty('paused')
+    expect(result.current).not.toHaveProperty('togglePause')
+  })
+
+  it('resumes advancing once hover and focus both end', () => {
+    const { result } = renderHook(() => useCarousel(3, 2000))
+    act(() => result.current.setHovered(true))
+    act(() => result.current.setFocused(true))
+    act(() => result.current.setHovered(false))
+    act(() => vi.advanceTimersByTime(6000))
+    expect(result.current.index).toBe(0)
+
+    act(() => result.current.setFocused(false))
+    act(() => vi.advanceTimersByTime(2000))
+    expect(result.current.index).toBe(1)
+  })
+
+  it('never advances when matchMedia reports reduced motion', () => {
     vi.stubGlobal('matchMedia', () => ({ matches: true }))
 
     const { result } = renderHook(() => useCarousel(3, 1000))
     act(() => vi.advanceTimersByTime(5000))
 
-    expect(result.current).toMatchObject({ index: 0, paused: true })
+    expect(result.current).toMatchObject({ index: 0, live: 'polite' })
   })
 
   it('changes slide on a swipe of at least 50px and ignores a short drag', () => {

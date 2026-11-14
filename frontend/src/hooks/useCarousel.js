@@ -9,11 +9,10 @@ function prefersReducedMotion() {
   )
 }
 
-// Auto-advance runs only while nothing asks it to stop: the Pause toggle, hover, focus inside,
-// or reduced motion. `live` tells screen readers to hear slide changes only when a person drove them.
+// Auto-advance runs only while nothing asks it to stop: hover, focus inside, or reduced motion. `live` tells screen readers to hear slide changes only when a person drove them.
 export default function useCarousel(count, intervalMs) {
   const [index, setIndex] = useState(0)
-  const [paused, setPaused] = useState(prefersReducedMotion)
+  const [reducedMotion] = useState(prefersReducedMotion)
   const [hovered, setHovered] = useState(false)
   const [focused, setFocused] = useState(false)
   const [manual, setManual] = useState(false)
@@ -21,7 +20,7 @@ export default function useCarousel(count, intervalMs) {
   const swiped = useRef(false)
 
   const current = count > 0 ? index % count : 0
-  const running = !paused && !hovered && !focused && count > 1
+  const running = !reducedMotion && !hovered && !focused && count > 1
 
   useEffect(() => {
     if (!running) return undefined
@@ -33,11 +32,6 @@ export default function useCarousel(count, intervalMs) {
   function goTo(next) {
     setManual(true)
     setIndex(((next % count) + count) % count)
-  }
-
-  function togglePause() {
-    setManual(false)
-    setPaused((value) => !value)
   }
 
   const swipe = {
@@ -63,12 +57,10 @@ export default function useCarousel(count, intervalMs) {
 
   return {
     index: current,
-    paused,
     live: running && !manual ? 'off' : 'polite',
     next: () => goTo(current + 1),
     prev: () => goTo(current - 1),
     goTo,
-    togglePause,
     setHovered,
     setFocused,
     swipe,

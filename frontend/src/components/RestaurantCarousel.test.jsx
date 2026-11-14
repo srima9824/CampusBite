@@ -168,55 +168,56 @@ describe('RestaurantCarousel controls', () => {
 })
 
 describe('RestaurantCarousel auto-advance', () => {
-  it('advances to the next kitchen every five seconds', async () => {
+  it('advances to the next kitchen every two seconds and loops back to the first', async () => {
     await loaded()
 
-    tick(4999)
+    tick(1999)
     expect(currentName()).toBe('Dosa Dash')
 
     tick(1)
     expect(currentName()).toBe('Burger Barn')
 
-    tick(5000)
+    tick(2000)
     expect(currentName()).toBe('Taco Tuesday')
+
+    tick(2000)
+    expect(currentName()).toBe('Chai & Chill')
+
+    tick(2000)
+    expect(currentName()).toBe('Dosa Dash')
   })
 
-  it('restarts the five second countdown after a manual change', async () => {
+  it('restarts the two second countdown after a manual change', async () => {
     const region = await loaded()
-    tick(3000)
+    tick(1500)
 
     await userEvent.click(screen.getByRole('button', { name: 'Next kitchen' }))
     await leave(region)
-    tick(3000)
+    tick(1999)
     expect(currentName()).toBe('Burger Barn')
 
-    tick(2000)
+    tick(1)
     expect(currentName()).toBe('Taco Tuesday')
   })
 
-  it('stops with Pause slideshow and resumes with Play slideshow', async () => {
+  it('has no Pause or Play slideshow button, only Previous, Next and the dots', async () => {
     const region = await loaded()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Pause slideshow' }))
-    await leave(region)
-    tick(20000)
-    expect(currentName()).toBe('Dosa Dash')
-
-    await userEvent.click(screen.getByRole('button', { name: 'Play slideshow' }))
-    await leave(region)
-    tick(5000)
-    expect(currentName()).toBe('Burger Barn')
+    expect(screen.queryByRole('button', { name: /pause|play/i })).not.toBeInTheDocument()
+    expect(within(region).getByRole('button', { name: 'Previous kitchen' })).toBeInTheDocument()
+    expect(within(region).getByRole('button', { name: 'Next kitchen' })).toBeInTheDocument()
+    expect(within(region).getAllByRole('button', { name: /^Show kitchen/ })).toHaveLength(4)
   })
 
   it('pauses while the pointer hovers and resumes when it leaves', async () => {
     const region = await loaded()
 
     await userEvent.hover(region)
-    tick(15000)
+    tick(10000)
     expect(currentName()).toBe('Dosa Dash')
 
     await userEvent.unhover(region)
-    tick(5000)
+    tick(2000)
     expect(currentName()).toBe('Burger Barn')
   })
 
@@ -224,29 +225,28 @@ describe('RestaurantCarousel auto-advance', () => {
     await loaded()
 
     await userEvent.tab()
-    tick(15000)
+    tick(10000)
     expect(currentName()).toBe('Dosa Dash')
 
     await userEvent.click(document.body)
-    tick(5000)
+    tick(2000)
     expect(currentName()).toBe('Burger Barn')
   })
 
-  it('starts paused and never advances when the user prefers reduced motion', async () => {
+  it('never advances when the user prefers reduced motion', async () => {
     stubReducedMotion(true)
     await loaded()
 
     tick(30000)
 
     expect(currentName()).toBe('Dosa Dash')
-    expect(screen.getByRole('button', { name: 'Play slideshow' })).toBeInTheDocument()
   })
 
   it('auto-advances when reduced motion is not requested', async () => {
     stubReducedMotion(false)
     await loaded()
 
-    tick(5000)
+    tick(2000)
 
     expect(currentName()).toBe('Burger Barn')
   })
@@ -257,14 +257,6 @@ describe('RestaurantCarousel live region', () => {
     const region = await loaded()
 
     expect(liveValue(region)).toBe('off')
-  })
-
-  it('is polite when paused with the toggle', async () => {
-    const region = await loaded()
-
-    await userEvent.click(screen.getByRole('button', { name: 'Pause slideshow' }))
-
-    expect(liveValue(region)).toBe('polite')
   })
 
   it('is polite while hovered', async () => {
@@ -280,7 +272,7 @@ describe('RestaurantCarousel live region', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Next kitchen' }))
     await leave(region)
-    tick(5000)
+    tick(2000)
 
     expect(liveValue(region)).toBe('polite')
   })

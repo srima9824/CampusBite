@@ -52,6 +52,15 @@ describe('Home page', () => {
     expect(await screen.findByRole('region', { name: 'Featured kitchens' })).toBeInTheDocument()
   })
 
+  it('offers Previous and Next on the slider but no Pause or Play button', async () => {
+    renderHome()
+    await screen.findByRole('region', { name: 'Featured kitchens' })
+
+    expect(screen.getByRole('button', { name: 'Previous kitchen' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next kitchen' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /pause|play/i })).not.toBeInTheDocument()
+  })
+
   it('has no accessibility violations once loaded', async () => {
     const { container } = renderHome()
     await screen.findByRole('region', { name: 'Featured kitchens' })
