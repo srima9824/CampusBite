@@ -39,9 +39,9 @@ All accounts use the password `bite-fixture-1`.
 
 | Email | Role |
 |---|---|
-| maya@campusbite.test, leo@campusbite.test | Customer |
-| owner1@campusbite.test, owner3@campusbite.test, owner5@campusbite.test, owner7@campusbite.test | Owner (one restaurant each) |
-| sam@campusbite.test, priya@campusbite.test, jonah@campusbite.test | Delivery partner |
+| maya@masaischool.ac.in, leo@masaischool.ac.in | Customer |
+| owner1@masaischool.ac.in, owner3@masaischool.ac.in, owner5@masaischool.ac.in, owner7@masaischool.ac.in | Owner (one restaurant each) |
+| sam@masaischool.ac.in, priya@masaischool.ac.in, jonah@masaischool.ac.in | Delivery partner |
 
 ## Contributing
 

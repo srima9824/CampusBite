@@ -3,11 +3,13 @@ import { Link, Navigate, useLocation } from 'react-router-dom'
 import { Button, Input } from '../components/ui'
 import { useAuth } from '../context/AuthContext.jsx'
 import { roleHome } from '../routes/roleHome.js'
+import { ALLOWED_EMAIL_DOMAIN, EMAIL_DOMAIN_MESSAGE, isAllowedEmail } from '../lib/emailDomain.js'
 import styles from './Login.module.css'
 
 function validate({ email, password }) {
   const errors = {}
   if (!email.trim()) errors.email = 'Enter your email so we know who is hungry.'
+  else if (!isAllowedEmail(email)) errors.email = EMAIL_DOMAIN_MESSAGE
   if (!password) errors.password = 'Enter your password to unlock the kitchen.'
   return errors
 }
@@ -39,11 +41,16 @@ export default function Login() {
     try {
       await login({ email: values.email, password: values.password })
     } catch (error) {
-      setFormError(
-        error.code === 'invalid_credentials'
-          ? 'That email and password do not match. Check them and try again.'
-          : 'Something burned in the kitchen. Please try again in a moment.',
-      )
+      if (error.code === 'email_domain_not_allowed') {
+        setErrors({ email: EMAIL_DOMAIN_MESSAGE })
+        form.elements.email.focus()
+      } else {
+        setFormError(
+          error.code === 'invalid_credentials'
+            ? 'That email and password do not match. Check them and try again.'
+            : 'Something burned in the kitchen. Please try again in a moment.',
+        )
+      }
       setSubmitting(false)
     }
   }
@@ -63,6 +70,7 @@ export default function Login() {
           label="Email"
           name="email"
           type="email"
+          placeholder={`you@${ALLOWED_EMAIL_DOMAIN}`}
           autoComplete="email"
           value={values.email}
           onChange={update('email')}
