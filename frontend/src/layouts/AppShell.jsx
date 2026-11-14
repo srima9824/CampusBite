@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
-import { CART_LINK, HOME_LINK, roleLinksFor } from './navLinks.js'
+import { CART_LINK, HOME_LINK, ROLE_LABELS, roleLinksFor } from './navLinks.js'
 import styles from './AppShell.module.css'
 
 function linksFor(user) {
@@ -58,7 +58,17 @@ export default function AppShell() {
               })}
               {user && (
                 <li className={styles.account}>
-                  <span className={styles.userName}>{user.name}</span>
+                  <span className={styles.profile}>
+                    <span className={styles.avatar} aria-hidden="true">
+                      {user.name.charAt(0)}
+                    </span>
+                    <span className={styles.identity}>
+                      <span className="visually-hidden">Signed in as </span>
+                      <span className={styles.profileName}>{user.name}</span>
+                      <span className="visually-hidden">, </span>
+                      <span className={styles.profileRole}>{ROLE_LABELS[user.role]}</span>
+                    </span>
+                  </span>
                   <Button variant="secondary" onClick={handleLogout}>
                     Log out
                   </Button>

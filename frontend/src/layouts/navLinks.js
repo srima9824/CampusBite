@@ -25,3 +25,9 @@ export const ROLE_LINKS = {
 export function roleLinksFor(user) {
   return ROLE_LINKS[user?.role ?? 'guest']
 }
+
+export const ROLE_LABELS = {
+  CUSTOMER: 'Customer',
+  OWNER: 'Owner',
+  DELIVERY_PARTNER: 'Delivery partner',
+}
