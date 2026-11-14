@@ -6,7 +6,7 @@ import useRestaurants from '../hooks/useRestaurants.js'
 import styles from './RestaurantCarousel.module.css'
 
 const SLIDE_COUNT = 4
-const ADVANCE_MS = 5000
+const ADVANCE_MS = 2000
 
 function CarouselLoading() {
   return (
@@ -34,7 +34,7 @@ export default function RestaurantCarousel() {
 
   if (items.length === 0) return null
 
-  const { index, paused } = carousel
+  const { index } = carousel
 
   function handleKeyDown(event) {
     if (event.key === 'ArrowRight') carousel.next()
@@ -101,9 +101,6 @@ export default function RestaurantCarousel() {
       <div className={styles.controls}>
         <Button variant="secondary" onClick={carousel.prev} aria-label="Previous kitchen">
           Previous
-        </Button>
-        <Button variant="secondary" onClick={carousel.togglePause}>
-          {paused ? 'Play slideshow' : 'Pause slideshow'}
         </Button>
         <Button variant="secondary" onClick={carousel.next} aria-label="Next kitchen">
           Next
