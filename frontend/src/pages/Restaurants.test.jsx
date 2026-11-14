@@ -1,10 +1,11 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 import { resetStore, setLatency } from '../api/testing.js'
 import * as restaurantsApi from '../api/restaurants.js'
+import { FILTER_HINT } from '../components/FilterActions.jsx'
 import Restaurants from './Restaurants.jsx'
 
 function Url() {
@@ -25,6 +26,7 @@ function renderPage(entry = '/restaurants') {
 
 const cards = () => screen.findAllByRole('link')
 const url = () => screen.getByTestId('url').textContent
+const searchBox = () => screen.getByRole('searchbox', { name: 'Search kitchens' })
 
 beforeEach(() => {
   resetStore()
@@ -72,7 +74,7 @@ describe('Restaurants page', () => {
     renderPage()
     await cards()
 
-    await userEvent.type(screen.getByLabelText('Search kitchens'), 'dosa')
+    await userEvent.type(searchBox(), 'dosa')
 
     await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(1))
     expect(screen.getByRole('link', { name: 'Dosa Dash' })).toBeInTheDocument()
@@ -83,7 +85,7 @@ describe('Restaurants page', () => {
     renderPage('/restaurants?q=pizza')
 
     expect(await screen.findByRole('link', { name: 'Pizza Pronto' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Search kitchens')).toHaveValue('pizza')
+    expect(searchBox()).toHaveValue('pizza')
     expect(screen.getAllByRole('link')).toHaveLength(1)
   })
 
@@ -95,7 +97,7 @@ describe('Restaurants page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Clear search' }))
 
     expect(await cards()).toHaveLength(6)
-    expect(screen.getByLabelText('Search kitchens')).toHaveValue('')
+    expect(searchBox()).toHaveValue('')
     expect(url()).toBe('/restaurants')
   })
 
@@ -131,5 +133,102 @@ describe('Restaurants page', () => {
     await cards()
 
     expect(await axe(container)).toHaveNoViolations()
+  })
+})
+
+describe('Restaurants search form', () => {
+  const form = () => screen.getByRole('search', { name: 'Search kitchens' })
+
+  it('shows the hint above the box and links it to the form', async () => {
+    renderPage()
+    await cards()
+
+    expect(screen.getByText(FILTER_HINT)).toBeInTheDocument()
+    expect(form()).toHaveAccessibleDescription(FILTER_HINT)
+  })
+
+  it('offers Apply before Clear filters in the form', async () => {
+    renderPage()
+    await cards()
+
+    const buttons = within(form()).getAllByRole('button').map((button) => button.textContent)
+    expect(buttons).toEqual(['Apply', 'Clear filters'])
+  })
+
+  it('applies the typed text at once when Apply is clicked, without waiting for the debounce', async () => {
+    renderPage()
+    await cards()
+    fireEvent.change(searchBox(), { target: { value: ' dosa ' } })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(url()).toBe('/restaurants?q=dosa')
+    expect(await screen.findByRole('link', { name: 'Dosa Dash' })).toBeInTheDocument()
+  })
+
+  it('applies at once when Enter is pressed in the box', async () => {
+    renderPage()
+    await cards()
+    fireEvent.change(searchBox(), { target: { value: 'pizza' } })
+
+    await userEvent.type(searchBox(), '{Enter}')
+
+    expect(url()).toBe('/restaurants?q=pizza')
+  })
+
+  it('drops the page parameter when Apply runs a new search', async () => {
+    renderPage('/restaurants?q=a&page=2')
+    await cards()
+    fireEvent.change(searchBox(), { target: { value: 'taco' } })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(url()).toBe('/restaurants?q=taco')
+  })
+
+  it('leaves the URL without q when Apply runs on an empty box', async () => {
+    renderPage('/restaurants?q=pizza')
+    await cards()
+    fireEvent.change(searchBox(), { target: { value: '   ' } })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(url()).toBe('/restaurants')
+  })
+
+  it('clears the box and the URL with Clear filters', async () => {
+    renderPage('/restaurants?q=pizza&page=1')
+    await screen.findByRole('link', { name: 'Pizza Pronto' })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
+
+    expect(searchBox()).toHaveValue('')
+    expect(url()).toBe('/restaurants')
+    expect(await cards()).toHaveLength(6)
+  })
+
+  it('still auto-applies the text after the debounce without pressing Apply', async () => {
+    renderPage()
+    await cards()
+
+    await userEvent.type(searchBox(), 'wrap')
+
+    await waitFor(() => expect(url()).toBe('/restaurants?q=wrap'))
+  })
+
+  it('gives the paginator the class that pins it to the bottom of the page', async () => {
+    renderPage()
+    await cards()
+
+    expect(screen.getByRole('navigation', { name: 'Pagination' }).className).toMatch(/pagination/)
+  })
+
+  it('shows restaurant logos on the cards', async () => {
+    const { container } = renderPage()
+    await cards()
+
+    const logos = [...container.querySelectorAll('img')].map((img) => img.getAttribute('src'))
+    expect(logos).toHaveLength(6)
+    expect(logos.every(Boolean)).toBe(true)
   })
 })

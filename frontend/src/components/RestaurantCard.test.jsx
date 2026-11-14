@@ -38,4 +38,21 @@ describe('RestaurantCard', () => {
 
     expect(await axe(container)).toHaveNoViolations()
   })
+
+  it('shows the logo image when the restaurant has a logo_url', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <RestaurantCard restaurant={{ ...restaurant, logo_url: '/logos/pizza.svg' }} />
+      </MemoryRouter>,
+    )
+
+    expect(container.querySelector('img')).toHaveAttribute('src', '/logos/pizza.svg')
+  })
+
+  it('shows the initial tile when the restaurant has no logo_url', () => {
+    const { container } = renderCard()
+
+    expect(container.querySelector('img')).toBeNull()
+    expect(screen.getByText('P')).toBeInTheDocument()
+  })
 })

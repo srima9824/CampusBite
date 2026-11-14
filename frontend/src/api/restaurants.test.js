@@ -66,3 +66,40 @@ describe('getRestaurant', () => {
     })
   })
 })
+
+describe('restaurant images', () => {
+  it('gives every listed restaurant a logo_url and an image_url', async () => {
+    const all = [
+      ...(await restaurants.listRestaurants({ page: 1 })).items,
+      ...(await restaurants.listRestaurants({ page: 2 })).items,
+    ]
+
+    expect(all).toHaveLength(8)
+    for (const restaurant of all) {
+      expect(restaurant.logo_url, restaurant.name).toEqual(expect.any(String))
+      expect(restaurant.logo_url, restaurant.name).not.toBe('')
+      expect(restaurant.image_url, restaurant.name).toEqual(expect.any(String))
+      expect(restaurant.image_url, restaurant.name).not.toBe('')
+    }
+  })
+
+  it('uses a distinct logo and photo per restaurant', async () => {
+    const { items } = await restaurants.listRestaurants({ page_size: 8 })
+
+    expect(new Set(items.map((restaurant) => restaurant.logo_url)).size).toBe(8)
+    expect(new Set(items.map((restaurant) => restaurant.image_url)).size).toBe(8)
+  })
+
+  it('returns the same images from getRestaurant as from the list', async () => {
+    const listed = (await restaurants.listRestaurants()).items[0]
+    const fetched = await restaurants.getRestaurant(listed.id)
+
+    expect(fetched).toMatchObject({ logo_url: listed.logo_url, image_url: listed.image_url })
+  })
+
+  it('honours page_size so the carousel can ask for all eight at once', async () => {
+    const result = await restaurants.listRestaurants({ page_size: 8 })
+
+    expect(result.items).toHaveLength(8)
+  })
+})
