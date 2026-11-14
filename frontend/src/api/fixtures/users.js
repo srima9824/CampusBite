@@ -8,12 +8,12 @@ const people = [
   { id: 5, name: 'Jonah Reyes', email: 'jonah@campusbite.test', role: 'DELIVERY_PARTNER' },
 ]
 
-const owners = Array.from({ length: 8 }, (_, index) => ({
-  id: 6 + index,
-  name: `Owner ${index + 1}`,
-  email: `owner${index + 1}@campusbite.test`,
+const owners = [1, 3, 5, 7].map((restaurantId) => ({
+  id: restaurantId + 5,
+  name: `Owner ${restaurantId}`,
+  email: `owner${restaurantId}@campusbite.test`,
   role: 'OWNER',
-  restaurant_id: index + 1,
+  restaurant_id: restaurantId,
 }))
 
 export const users = [...people, ...owners].map((user) => ({ ...user, password: PASSWORD }))
