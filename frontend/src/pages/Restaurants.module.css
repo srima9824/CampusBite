@@ -22,9 +22,8 @@
   gap: var(--space-3);
 }
 
-.hint {
-  color: var(--color-muted-fg);
-  font-size: var(--text-sm);
+.filters > :last-child {
+  align-self: flex-start;
 }
 
 .grid {

@@ -1,6 +1,5 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import FilterActions, { FILTER_HINT } from '../components/FilterActions.jsx'
 import RestaurantCard from '../components/RestaurantCard.jsx'
 import { Button, EmptyState, Input, Pagination, Skeleton } from '../components/ui'
 import useRestaurants from '../hooks/useRestaurants.js'
@@ -29,7 +28,6 @@ export default function Restaurants() {
   const q = params.get('q') ?? ''
   const page = Math.max(1, Number(params.get('page')) || 1)
   const [text, setText] = useState(q)
-  const hintId = useId()
   const { data, status, error, reload } = useRestaurants({ q, page })
 
   const [syncedQ, setSyncedQ] = useState(q)
@@ -74,12 +72,8 @@ export default function Restaurants() {
         className={styles.filters}
         role="search"
         aria-label="Search kitchens"
-        aria-describedby={hintId}
         onSubmit={applySearch}
       >
-        <p id={hintId} className={styles.hint}>
-          {FILTER_HINT}
-        </p>
         <Input
           label="Search kitchens"
           type="search"
@@ -87,7 +81,9 @@ export default function Restaurants() {
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
-        <FilterActions onClear={clearSearch} />
+        <Button variant="secondary" onClick={clearSearch}>
+          Clear filters
+        </Button>
       </form>
 
       {status === 'loading' && <LoadingGrid />}
