@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -7,6 +7,7 @@ import * as restaurantsApi from '../api/restaurants.js'
 import { resetStore, setLatency } from '../api/testing.js'
 import { ToastProvider } from '../components/ui'
 import { CartProvider, useCart } from '../context/CartContext.jsx'
+import { FILTER_HINT } from '../components/FilterActions.jsx'
 import RestaurantMenu from './RestaurantMenu.jsx'
 
 function Url() {
@@ -165,5 +166,90 @@ describe('RestaurantMenu page', () => {
     expect(screen.getByText('Sold out')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Cheese Dosa/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add Masala Dosa to cart' })).toBeInTheDocument()
+  })
+})
+
+describe('RestaurantMenu filter form', () => {
+  const form = () => screen.getByRole('search', { name: 'Filter the menu' })
+  const ready = () => screen.findByRole('heading', { level: 1, name: 'Dosa Dash' })
+
+  it('shows the hint and links it to the form', async () => {
+    renderPage()
+    await ready()
+
+    expect(screen.getByText(FILTER_HINT)).toBeInTheDocument()
+    expect(form()).toHaveAccessibleDescription(FILTER_HINT)
+  })
+
+  it('offers Apply before Clear filters in the form', async () => {
+    renderPage()
+    await ready()
+
+    const buttons = within(form()).getAllByRole('button').map((button) => button.textContent)
+    expect(buttons).toEqual(['Apply', 'Clear filters'])
+  })
+
+  it('applies all three fields at once when Apply is clicked', async () => {
+    renderPage()
+    await ready()
+    fireEvent.change(screen.getByLabelText('Search the menu'), { target: { value: 'dosa' } })
+    fireEvent.change(screen.getByLabelText('Min price (Rs.)'), { target: { value: '50' } })
+    fireEvent.change(screen.getByLabelText('Max price (Rs.)'), { target: { value: '100' } })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(url()).toBe('/restaurants/1?q=dosa&min_price=50&max_price=100')
+    await waitFor(() => expect(itemHeadings()).toEqual(['Masala Dosa']))
+  })
+
+  it('applies at once when Enter is pressed in a field', async () => {
+    renderPage()
+    await ready()
+    fireEvent.change(screen.getByLabelText('Search the menu'), { target: { value: 'lassi' } })
+
+    await userEvent.type(screen.getByLabelText('Search the menu'), '{Enter}')
+
+    expect(url()).toBe('/restaurants/1?q=lassi')
+  })
+
+  it('still alerts on an inverted range after Apply and does not send it to the api', async () => {
+    const spy = vi.spyOn(restaurantsApi, 'listMenu')
+    renderPage()
+    await ready()
+    fireEvent.change(screen.getByLabelText('Min price (Rs.)'), { target: { value: '200' } })
+    fireEvent.change(screen.getByLabelText('Max price (Rs.)'), { target: { value: '50' } })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/minimum price is higher than the maximum/i)
+    expect(spy.mock.calls.some(([, filters]) => filters.min_price === '200' || filters.max_price === '50')).toBe(false)
+    expect(itemHeadings().length).toBeGreaterThan(0)
+  })
+
+  it('clears the fields and the URL with the form Clear filters button', async () => {
+    renderPage('/restaurants/1?q=lassi&min_price=10')
+    await ready()
+
+    await userEvent.click(within(form()).getByRole('button', { name: 'Clear filters' }))
+
+    expect(screen.getByLabelText('Search the menu')).toHaveValue('')
+    expect(screen.getByLabelText('Min price (Rs.)')).toHaveValue(null)
+    expect(url()).toBe('/restaurants/1')
+  })
+
+  it('still auto-applies the search after the debounce without pressing Apply', async () => {
+    renderPage()
+    await ready()
+
+    await userEvent.type(screen.getByLabelText('Search the menu'), 'idli')
+
+    await waitFor(() => expect(url()).toBe('/restaurants/1?q=idli'))
+  })
+
+  it('shows the restaurant logo in the header', async () => {
+    const { container } = renderPage()
+    await ready()
+
+    expect(container.querySelector('header img')).toHaveAttribute('src')
   })
 })
