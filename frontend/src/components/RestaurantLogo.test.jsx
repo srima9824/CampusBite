@@ -2,16 +2,16 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import RestaurantLogo from './RestaurantLogo.jsx'
 
-const restaurant = { id: 4, name: 'Pizza Pronto', logo_url: '/logos/pizza.svg' }
+const restaurant = { id: 3, name: 'Burger Barn', logo_url: '/logos/burger.svg' }
 const image = (container) => container.querySelector('img')
 
 describe('RestaurantLogo', () => {
   it('renders the logo image from logo_url as decorative', () => {
     const { container } = render(<RestaurantLogo restaurant={restaurant} />)
 
-    expect(image(container)).toHaveAttribute('src', '/logos/pizza.svg')
+    expect(image(container)).toHaveAttribute('src', '/logos/burger.svg')
     expect(image(container)).toHaveAttribute('alt', '')
-    expect(screen.queryByText('P')).not.toBeInTheDocument()
+    expect(screen.queryByText('B')).not.toBeInTheDocument()
   })
 
   it('falls back to the initial tile when the image fails to load', () => {
@@ -20,14 +20,14 @@ describe('RestaurantLogo', () => {
     fireEvent.error(image(container))
 
     expect(image(container)).toBeNull()
-    expect(screen.getByText('P')).toBeInTheDocument()
+    expect(screen.getByText('B')).toBeInTheDocument()
   })
 
   it('shows the initial tile straight away when logo_url is missing', () => {
-    const { container } = render(<RestaurantLogo restaurant={{ id: 9, name: 'Wrap Star' }} />)
+    const { container } = render(<RestaurantLogo restaurant={{ id: 5, name: 'Taco Tuesday' }} />)
 
     expect(image(container)).toBeNull()
-    expect(screen.getByText('W')).toBeInTheDocument()
+    expect(screen.getByText('T')).toBeInTheDocument()
   })
 
   it('hides the tile from assistive technology because the name sits beside it', () => {

@@ -64,12 +64,12 @@ describe('RestaurantCarousel structure', () => {
   it('labels each slide "N of M: name" and exposes only the first one', async () => {
     const region = await loaded()
 
-    expect(within(region).getByRole('group', { name: '1 of 8: Dosa Dash' })).toHaveAttribute(
+    expect(within(region).getByRole('group', { name: '1 of 4: Dosa Dash' })).toHaveAttribute(
       'aria-roledescription',
       'slide',
     )
     expect(within(region).getAllByRole('group')).toHaveLength(1)
-    expect(region.querySelectorAll('[aria-roledescription="slide"]')).toHaveLength(8)
+    expect(region.querySelectorAll('[aria-roledescription="slide"]')).toHaveLength(4)
   })
 
   it('makes every slide link to its restaurant menu', async () => {
@@ -77,7 +77,7 @@ describe('RestaurantCarousel structure', () => {
     const links = [...region.querySelectorAll('a')]
 
     expect(links.map((link) => link.getAttribute('href'))).toEqual(
-      Array.from({ length: 8 }, (_, index) => `/restaurants/${index + 1}`),
+      ['/restaurants/1', '/restaurants/3', '/restaurants/5', '/restaurants/7'],
     )
     expect(links[0]).toHaveAccessibleName('Dosa Dash, see the menu')
   })
@@ -86,7 +86,7 @@ describe('RestaurantCarousel structure', () => {
     const region = await loaded()
 
     const photos = region.querySelectorAll('img[alt=""]')
-    expect(photos.length).toBeGreaterThanOrEqual(8)
+    expect(photos.length).toBeGreaterThanOrEqual(4)
     expect(within(region).getByText('South Indian')).toBeInTheDocument()
   })
 
@@ -109,19 +109,19 @@ describe('RestaurantCarousel structure', () => {
   })
 
   it('renders nothing when there are no restaurants', async () => {
-    vi.spyOn(restaurantsApi, 'listRestaurants').mockResolvedValue({ items: [], total: 0, page: 1, page_size: 8 })
+    vi.spyOn(restaurantsApi, 'listRestaurants').mockResolvedValue({ items: [], total: 0, page: 1, page_size: 4 })
     const { container } = renderCarousel()
 
     await vi.waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('asks the api for eight restaurants', async () => {
+  it('asks the api for four restaurants', async () => {
     const spy = vi.spyOn(restaurantsApi, 'listRestaurants')
 
     await loaded()
 
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ page_size: 8 }))
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ page_size: 4 }))
   })
 
   it('has no accessibility violations once loaded', async () => {
@@ -136,22 +136,22 @@ describe('RestaurantCarousel controls', () => {
     await loaded()
 
     await userEvent.click(screen.getByRole('button', { name: 'Previous kitchen' }))
-    expect(currentName()).toBe('Wrap Star')
+    expect(currentName()).toBe('Chai & Chill')
 
     await userEvent.click(screen.getByRole('button', { name: 'Next kitchen' }))
     expect(currentName()).toBe('Dosa Dash')
 
     await userEvent.click(screen.getByRole('button', { name: 'Next kitchen' }))
-    expect(currentName()).toBe('Noodle Nook')
+    expect(currentName()).toBe('Burger Barn')
   })
 
   it('jumps to a kitchen from its dot and marks that dot current', async () => {
     await loaded()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Show kitchen 4: Pizza Pronto' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Show kitchen 4: Chai & Chill' }))
 
-    expect(currentName()).toBe('Pizza Pronto')
-    expect(screen.getByRole('button', { name: 'Show kitchen 4: Pizza Pronto' })).toHaveAttribute('aria-current', 'true')
+    expect(currentName()).toBe('Chai & Chill')
+    expect(screen.getByRole('button', { name: 'Show kitchen 4: Chai & Chill' })).toHaveAttribute('aria-current', 'true')
     expect(screen.getByRole('button', { name: 'Show kitchen 1: Dosa Dash' })).not.toHaveAttribute('aria-current')
   })
 
@@ -160,10 +160,10 @@ describe('RestaurantCarousel controls', () => {
     await userEvent.tab()
 
     await userEvent.keyboard('{ArrowRight}')
-    expect(currentName()).toBe('Noodle Nook')
+    expect(currentName()).toBe('Burger Barn')
 
     await userEvent.keyboard('{ArrowLeft}{ArrowLeft}')
-    expect(currentName()).toBe('Wrap Star')
+    expect(currentName()).toBe('Chai & Chill')
   })
 })
 
@@ -175,10 +175,10 @@ describe('RestaurantCarousel auto-advance', () => {
     expect(currentName()).toBe('Dosa Dash')
 
     tick(1)
-    expect(currentName()).toBe('Noodle Nook')
+    expect(currentName()).toBe('Burger Barn')
 
     tick(5000)
-    expect(currentName()).toBe('Burger Barn')
+    expect(currentName()).toBe('Taco Tuesday')
   })
 
   it('restarts the five second countdown after a manual change', async () => {
@@ -188,10 +188,10 @@ describe('RestaurantCarousel auto-advance', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next kitchen' }))
     await leave(region)
     tick(3000)
-    expect(currentName()).toBe('Noodle Nook')
+    expect(currentName()).toBe('Burger Barn')
 
     tick(2000)
-    expect(currentName()).toBe('Burger Barn')
+    expect(currentName()).toBe('Taco Tuesday')
   })
 
   it('stops with Pause slideshow and resumes with Play slideshow', async () => {
@@ -205,7 +205,7 @@ describe('RestaurantCarousel auto-advance', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Play slideshow' }))
     await leave(region)
     tick(5000)
-    expect(currentName()).toBe('Noodle Nook')
+    expect(currentName()).toBe('Burger Barn')
   })
 
   it('pauses while the pointer hovers and resumes when it leaves', async () => {
@@ -217,7 +217,7 @@ describe('RestaurantCarousel auto-advance', () => {
 
     await userEvent.unhover(region)
     tick(5000)
-    expect(currentName()).toBe('Noodle Nook')
+    expect(currentName()).toBe('Burger Barn')
   })
 
   it('pauses while focus is inside and resumes when focus leaves', async () => {
@@ -229,7 +229,7 @@ describe('RestaurantCarousel auto-advance', () => {
 
     await userEvent.click(document.body)
     tick(5000)
-    expect(currentName()).toBe('Noodle Nook')
+    expect(currentName()).toBe('Burger Barn')
   })
 
   it('starts paused and never advances when the user prefers reduced motion', async () => {
@@ -248,7 +248,7 @@ describe('RestaurantCarousel auto-advance', () => {
 
     tick(5000)
 
-    expect(currentName()).toBe('Noodle Nook')
+    expect(currentName()).toBe('Burger Barn')
   })
 })
 

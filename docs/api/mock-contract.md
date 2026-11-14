@@ -143,7 +143,7 @@ Requires an `OWNER` of the order's restaurant. Sets `delivery_partner_id` and `d
 | 409 | `invalid_state` | The order is not `READY` |
 
 ### Seeded orders
-The store starts with 15 orders built relative to the current time (customer 1 has one per status, customer 2 has eight and none cancelled, all in restaurants 1 to 3). Every `status_history` ends with the order's `status`. A page reload resets them.
+The store starts with 15 orders built relative to the current time (customer 1 has one per status, customer 2 has eight and none cancelled, spread over restaurants 1, 3, 5 and 7). Every `status_history` ends with the order's `status`. A page reload resets them.
 
 ### Status transitions
 One table lives in `src/api/orderStatus.js`. Later units use it to guard status changes; a move outside it throws `409 invalid_transition`.

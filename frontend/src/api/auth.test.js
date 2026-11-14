@@ -66,9 +66,9 @@ describe('register', () => {
   it('creates a customer with the next id and no password in the response', async () => {
     const created = await auth.register(newcomer)
 
-    expect(created).toMatchObject({ id: 14, name: 'Nia Ortiz', email: 'nia@campusbite.test', role: 'CUSTOMER' })
+    expect(created).toMatchObject({ id: 13, name: 'Nia Ortiz', email: 'nia@campusbite.test', role: 'CUSTOMER' })
     expect(created).not.toHaveProperty('password')
-    expect(store.users).toHaveLength(14)
+    expect(store.users).toHaveLength(10)
   })
 
   it('lets the new user log in', async () => {
@@ -93,7 +93,7 @@ describe('register', () => {
         status: 409,
         code: 'email_taken',
       })
-      expect(store.users).toHaveLength(13)
+      expect(store.users).toHaveLength(9)
     },
   )
 })

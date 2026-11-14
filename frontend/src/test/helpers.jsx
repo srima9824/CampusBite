@@ -6,7 +6,7 @@ import { ToastProvider } from '../components/ui'
 import { AuthProvider } from '../context/AuthContext.jsx'
 import { CartProvider } from '../context/CartContext.jsx'
 
-export const DEMO_PASSWORD = 'bite-fixture-1'
+export const TEST_PASSWORD = 'bite-fixture-1'
 
 export function resetAuthWorld() {
   resetStore()

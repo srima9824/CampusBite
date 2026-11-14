@@ -5,10 +5,10 @@ import { CartProvider, useCart } from './CartContext.jsx'
 
 const STORAGE_KEY = 'campusbite.cart'
 const dosaDash = { id: 1, name: 'Dosa Dash' }
-const wokWorld = { id: 2, name: 'Wok World' }
+const burgerBarn = { id: 3, name: 'Burger Barn' }
 const masala = { id: 1, name: 'Masala Dosa', price: 80 }
 const coffee = { id: 6, name: 'Filter Coffee', price: 40 }
-const noodles = { id: 8, name: 'Veg Hakka Noodles', price: 140 }
+const burger = { id: 15, name: 'Classic Cheeseburger', price: 180 }
 
 let cart
 function Probe() {
@@ -133,7 +133,7 @@ describe('CartProvider', () => {
     let result
 
     act(() => {
-      result = cart.addItem(noodles, wokWorld)
+      result = cart.addItem(burger, burgerBarn)
     })
 
     expect(result).toEqual({ conflict: true })
@@ -157,10 +157,10 @@ describe('CartProvider', () => {
     act(() => cart.addItem(masala, dosaDash))
     act(() => cart.addItem(coffee, dosaDash))
 
-    act(() => cart.replaceWith(noodles, wokWorld))
+    act(() => cart.replaceWith(burger, burgerBarn))
 
-    expect(cart.lines.map((line) => line.menu_item_id)).toEqual([8])
-    expect(cart.restaurantId).toBe(2)
+    expect(cart.lines.map((line) => line.menu_item_id)).toEqual([15])
+    expect(cart.restaurantId).toBe(3)
   })
 
   it('clears every line', () => {

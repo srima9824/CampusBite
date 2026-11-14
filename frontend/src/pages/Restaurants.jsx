@@ -67,7 +67,7 @@ export default function Restaurants() {
     <div className={styles.page}>
       <header className={styles.intro}>
         <h1 className={styles.title}>Pick your kitchen</h1>
-        <p className={styles.lead}>Eight campus favourites, all one tap from your table.</p>
+        <p className={styles.lead}>Four campus favourites, all one tap from your table.</p>
       </header>
 
       <form
@@ -83,7 +83,7 @@ export default function Restaurants() {
         <Input
           label="Search kitchens"
           type="search"
-          placeholder="Try dosa, pizza or Mexican"
+          placeholder="Try dosa, burger or Mexican"
           value={text}
           onChange={(event) => setText(event.target.value)}
         />

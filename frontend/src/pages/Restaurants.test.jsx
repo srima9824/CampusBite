@@ -35,39 +35,32 @@ beforeEach(() => {
 })
 
 describe('Restaurants page', () => {
-  it('shows skeletons while loading, then six restaurant cards', async () => {
+  it('shows skeletons while loading, then the four restaurant cards', async () => {
     renderPage()
 
     expect(screen.getByRole('status', { name: 'Loading kitchens' })).toBeInTheDocument()
-    expect(await cards()).toHaveLength(6)
+    expect(await cards()).toHaveLength(4)
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1, name: 'Pick your kitchen' })).toBeInTheDocument()
   })
 
-  it('shows the last two restaurants on page two taken from the URL', async () => {
+  it('lists exactly the four restaurants, in order, with no paginator', async () => {
+    renderPage()
+
+    const links = await cards()
+    expect(links.map((link) => link.textContent)).toEqual([
+      expect.stringContaining('Dosa Dash'),
+      expect.stringContaining('Burger Barn'),
+      expect.stringContaining('Taco Tuesday'),
+      expect.stringContaining('Chai & Chill'),
+    ])
+    expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
+  })
+
+  it('shows the empty state for page two because four restaurants fit on one page', async () => {
     renderPage('/restaurants?page=2')
 
-    expect(await cards()).toHaveLength(2)
-    expect(screen.getByText('Page 2 of 2')).toBeInTheDocument()
-  })
-
-  it('moves to the next page and puts it in the URL', async () => {
-    renderPage()
-    await cards()
-
-    await userEvent.click(screen.getByRole('button', { name: 'Next' }))
-
-    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(2))
-    expect(url()).toBe('/restaurants?page=2')
-  })
-
-  it('keeps the search text when paging', async () => {
-    renderPage('/restaurants?q=a')
-    await cards()
-
-    await userEvent.click(screen.getByRole('button', { name: 'Next' }))
-
-    expect(url()).toBe('/restaurants?q=a&page=2')
+    expect(await screen.findByRole('heading', { name: 'No kitchens match that' })).toBeInTheDocument()
   })
 
   it('filters by the search text and writes it to the URL', async () => {
@@ -82,10 +75,10 @@ describe('Restaurants page', () => {
   })
 
   it('reads the search from the URL into the box and the list', async () => {
-    renderPage('/restaurants?q=pizza')
+    renderPage('/restaurants?q=burger')
 
-    expect(await screen.findByRole('link', { name: 'Pizza Pronto' })).toBeInTheDocument()
-    expect(searchBox()).toHaveValue('pizza')
+    expect(await screen.findByRole('link', { name: 'Burger Barn' })).toBeInTheDocument()
+    expect(searchBox()).toHaveValue('burger')
     expect(screen.getAllByRole('link')).toHaveLength(1)
   })
 
@@ -96,7 +89,7 @@ describe('Restaurants page', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Clear search' }))
 
-    expect(await cards()).toHaveLength(6)
+    expect(await cards()).toHaveLength(4)
     expect(searchBox()).toHaveValue('')
     expect(url()).toBe('/restaurants')
   })
@@ -110,7 +103,7 @@ describe('Restaurants page', () => {
   it('treats a non-numeric page as page one', async () => {
     renderPage('/restaurants?page=abc')
 
-    expect(await cards()).toHaveLength(6)
+    expect(await cards()).toHaveLength(4)
   })
 
   it('shows the error with Retry and recovers on retry', async () => {
@@ -124,7 +117,7 @@ describe('Restaurants page', () => {
 
     await userEvent.click(within(alert).getByRole('button', { name: 'Retry' }))
 
-    expect(await cards()).toHaveLength(6)
+    expect(await cards()).toHaveLength(4)
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
@@ -169,16 +162,16 @@ describe('Restaurants search form', () => {
   it('applies at once when Enter is pressed in the box', async () => {
     renderPage()
     await cards()
-    fireEvent.change(searchBox(), { target: { value: 'pizza' } })
+    fireEvent.change(searchBox(), { target: { value: 'burger' } })
 
     await userEvent.type(searchBox(), '{Enter}')
 
-    expect(url()).toBe('/restaurants?q=pizza')
+    expect(url()).toBe('/restaurants?q=burger')
   })
 
   it('drops the page parameter when Apply runs a new search', async () => {
     renderPage('/restaurants?q=a&page=2')
-    await cards()
+    await screen.findByRole('heading', { name: 'No kitchens match that' })
     fireEvent.change(searchBox(), { target: { value: 'taco' } })
 
     await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
@@ -187,7 +180,7 @@ describe('Restaurants search form', () => {
   })
 
   it('leaves the URL without q when Apply runs on an empty box', async () => {
-    renderPage('/restaurants?q=pizza')
+    renderPage('/restaurants?q=burger')
     await cards()
     fireEvent.change(searchBox(), { target: { value: '   ' } })
 
@@ -197,30 +190,23 @@ describe('Restaurants search form', () => {
   })
 
   it('clears the box and the URL with Clear filters', async () => {
-    renderPage('/restaurants?q=pizza&page=1')
-    await screen.findByRole('link', { name: 'Pizza Pronto' })
+    renderPage('/restaurants?q=burger&page=1')
+    await screen.findByRole('link', { name: 'Burger Barn' })
 
     await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
 
     expect(searchBox()).toHaveValue('')
     expect(url()).toBe('/restaurants')
-    expect(await cards()).toHaveLength(6)
+    expect(await cards()).toHaveLength(4)
   })
 
   it('still auto-applies the text after the debounce without pressing Apply', async () => {
     renderPage()
     await cards()
 
-    await userEvent.type(searchBox(), 'wrap')
+    await userEvent.type(searchBox(), 'chai')
 
-    await waitFor(() => expect(url()).toBe('/restaurants?q=wrap'))
-  })
-
-  it('gives the paginator the class that pins it to the bottom of the page', async () => {
-    renderPage()
-    await cards()
-
-    expect(screen.getByRole('navigation', { name: 'Pagination' }).className).toMatch(/pagination/)
+    await waitFor(() => expect(url()).toBe('/restaurants?q=chai'))
   })
 
   it('shows restaurant logos on the cards', async () => {
@@ -228,7 +214,7 @@ describe('Restaurants search form', () => {
     await cards()
 
     const logos = [...container.querySelectorAll('img')].map((img) => img.getAttribute('src'))
-    expect(logos).toHaveLength(6)
+    expect(logos).toHaveLength(4)
     expect(logos.every(Boolean)).toBe(true)
   })
 })

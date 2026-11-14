@@ -7,7 +7,7 @@ export default function Home() {
     <div className={styles.home}>
       <section className={styles.hero}>
         <h1 className={styles.title}>Hungry? Pick a kitchen.</h1>
-        <p className={styles.lead}>Eight campus favourites, one tap away.</p>
+        <p className={styles.lead}>Four campus favourites, one tap away.</p>
         <Link className={styles.link} to="/restaurants">
           Browse all kitchens
         </Link>

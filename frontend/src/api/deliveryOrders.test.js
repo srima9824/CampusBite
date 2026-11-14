@@ -140,7 +140,7 @@ describe('getOrder as a delivery partner', () => {
   it('returns the drop-off details without the customer email', async () => {
     const order = await getOrder(8)
 
-    expect(order).toMatchObject({ restaurant_name: 'Noodle Nook', customer_name: 'Maya Patel' })
+    expect(order).toMatchObject({ restaurant_name: 'Chai & Chill', customer_name: 'Maya Patel' })
     expect(order.delivery_address).toBeTruthy()
     expect(order.items.length).toBeGreaterThan(0)
     expect(JSON.stringify(order)).not.toContain('@')

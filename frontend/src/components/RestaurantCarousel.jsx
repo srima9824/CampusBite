@@ -5,7 +5,7 @@ import useCarousel from '../hooks/useCarousel.js'
 import useRestaurants from '../hooks/useRestaurants.js'
 import styles from './RestaurantCarousel.module.css'
 
-const SLIDE_COUNT = 8
+const SLIDE_COUNT = 4
 const ADVANCE_MS = 5000
 
 function CarouselLoading() {

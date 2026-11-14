@@ -4,7 +4,7 @@ import { axe } from 'vitest-axe'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App.jsx'
 import { setLatency } from '../api/testing.js'
-import { DEMO_PASSWORD, renderWithAuth, resetAuthWorld } from '../test/helpers.jsx'
+import { TEST_PASSWORD, renderWithAuth, resetAuthWorld } from '../test/helpers.jsx'
 
 const email = () => screen.getByLabelText('Email')
 const password = () => screen.getByLabelText('Password')
@@ -65,7 +65,7 @@ describe('Login page', () => {
     setLatency(50)
     renderLogin()
     await userEvent.type(email(), 'maya@campusbite.test')
-    await userEvent.type(password(), DEMO_PASSWORD)
+    await userEvent.type(password(), TEST_PASSWORD)
 
     await userEvent.click(submit())
 
@@ -80,7 +80,7 @@ describe('Login page', () => {
   ])('lands %s on their role home after login', async (address, heading) => {
     renderLogin()
 
-    await logInWith(address, DEMO_PASSWORD)
+    await logInWith(address, TEST_PASSWORD)
 
     expect(await screen.findByRole('heading', { level: 1, name: heading })).toBeInTheDocument()
   })
@@ -89,7 +89,7 @@ describe('Login page', () => {
     renderLogin(['/delivery'])
     await screen.findByRole('heading', { level: 1, name: /welcome back/i })
 
-    await logInWith('sam@campusbite.test', DEMO_PASSWORD)
+    await logInWith('sam@campusbite.test', TEST_PASSWORD)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Your deliveries' })).toBeInTheDocument()
   })
@@ -99,7 +99,7 @@ describe('Login page', () => {
 
     expect(screen.queryByRole('button', { name: /^Fill /i })).not.toBeInTheDocument()
     expect(screen.queryByText(/demo/i)).not.toBeInTheDocument()
-    expect(document.body).not.toHaveTextContent(DEMO_PASSWORD)
+    expect(document.body).not.toHaveTextContent(TEST_PASSWORD)
   })
 
   it('has no accessibility violations', async () => {

@@ -23,7 +23,7 @@ describe('Home page', () => {
     renderHome()
 
     expect(screen.getByRole('heading', { level: 1, name: 'Hungry? Pick a kitchen.' })).toBeInTheDocument()
-    expect(screen.getByText('Eight campus favourites, one tap away.')).toBeInTheDocument()
+    expect(screen.getByText('Four campus favourites, one tap away.')).toBeInTheDocument()
   })
 
   it('links to all kitchens', () => {

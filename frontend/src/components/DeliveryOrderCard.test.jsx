@@ -25,7 +25,7 @@ describe('DeliveryOrderCard', () => {
     renderCard(orderById(8))
 
     expect(screen.getByRole('heading', { name: 'Order #8' })).toBeInTheDocument()
-    expect(screen.getByText('Noodle Nook')).toBeInTheDocument()
+    expect(screen.getByText('Chai & Chill')).toBeInTheDocument()
     expect(screen.getByText(store.orders.find((order) => order.id === 8).delivery_address)).toBeInTheDocument()
     expect(screen.getByText('Maya')).toBeInTheDocument()
     expect(screen.queryByText(/Patel/)).not.toBeInTheDocument()

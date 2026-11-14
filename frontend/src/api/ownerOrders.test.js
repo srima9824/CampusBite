@@ -3,9 +3,9 @@ import { assignPartner, getOrder, listPartners, updateOrderStatus } from './orde
 import { store } from './store.js'
 import { resetAuthWorld, signInAs } from '../test/helpers.jsx'
 
-// Seed: owner 1 (user 6) has #14 PLACED, #11 ACCEPTED, #7 READY, #3 DELIVERED; owner 2 (user 7) has #13 PLACED.
+// Seed: owner 1 (user 6) has #14 PLACED, #11 ACCEPTED, #7 READY, #3 DELIVERED; owner 3 (user 8) has #13 PLACED.
 const OWNER_1 = 6
-const OWNER_2 = 7
+const OWNER_2 = 8
 
 beforeEach(() => {
   resetAuthWorld()
