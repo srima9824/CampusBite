@@ -1,6 +1,7 @@
 import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite://")
+os.environ.setdefault("JWT_SECRET", "test-secret-test-secret-test-secret-0123")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -16,7 +17,7 @@ from app.main import app  # noqa: E402
 @pytest.fixture(autouse=True)
 def fresh_settings(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite://")
-    monkeypatch.setenv("JWT_SECRET", "test-secret")
+    monkeypatch.setenv("JWT_SECRET", "test-secret-test-secret-test-secret-0123")
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()

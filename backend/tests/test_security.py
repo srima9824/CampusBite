@@ -2,6 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
+from pydantic import ValidationError
 
 from app.config import get_settings
 from app.models import Role, User
@@ -78,9 +79,25 @@ def test_token_without_expiry_rejected():
         decode_access_token(encode({"sub": "7"}))
 
 
-def test_empty_secret_refuses_to_sign(monkeypatch):
-    monkeypatch.setenv("JWT_SECRET", "")
+@pytest.mark.parametrize("secret", ["", "change-me", "x" * 31])
+def test_short_or_empty_secret_is_refused_at_startup(monkeypatch, secret):
+    monkeypatch.setenv("JWT_SECRET", secret)
     get_settings.cache_clear()
 
-    with pytest.raises(RuntimeError):
-        create_access_token(make_user())
+    with pytest.raises(ValidationError):
+        get_settings()
+
+
+def test_secret_of_32_characters_is_accepted(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "x" * 32)
+    get_settings.cache_clear()
+
+    assert create_access_token(make_user())
+
+
+def test_only_hs256_is_allowed(monkeypatch):
+    monkeypatch.setenv("JWT_ALGORITHM", "none")
+    get_settings.cache_clear()
+
+    with pytest.raises(ValidationError):
+        get_settings()

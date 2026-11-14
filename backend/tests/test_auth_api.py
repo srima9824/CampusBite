@@ -71,6 +71,7 @@ def test_duplicate_email_conflicts(client, second_email):
 BAD_EMAILS = [
     "a@gmail.com",
     "a@evilmasaischool.ac.in",
+    "a" * 250 + "@masaischool.ac.in",
     "a@@masaischool.ac.in",
     "a@mail.masaischool.ac.in",
     "a@masaischool.ac.in.evil.com",
