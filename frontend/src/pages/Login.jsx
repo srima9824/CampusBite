@@ -5,13 +5,6 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { roleHome } from '../routes/roleHome.js'
 import styles from './Login.module.css'
 
-const DEMO_PASSWORD = 'bite-fixture-1'
-const DEMO_ACCOUNTS = [
-  { label: 'Maya, hungry customer', email: 'maya@campusbite.test' },
-  { label: 'Owner of Dosa Dash', email: 'owner1@campusbite.test' },
-  { label: 'Sam, delivery partner', email: 'sam@campusbite.test' },
-]
-
 function validate({ email, password }) {
   const errors = {}
   if (!email.trim()) errors.email = 'Enter your email so we know who is hungry.'
@@ -91,32 +84,6 @@ export default function Login() {
           New to CampusBite? <Link to="/register">Create an account</Link>
         </p>
       </form>
-
-      <aside className={styles.demo} aria-labelledby="demo-heading">
-        <h2 id="demo-heading" className={styles.demoTitle}>
-          Demo accounts
-        </h2>
-        <p className={styles.demoText}>
-          Just tasting? Fill the form with a sample account. Password for all of them:{' '}
-          <code>{DEMO_PASSWORD}</code>
-        </p>
-        <ul className={styles.demoList}>
-          {DEMO_ACCOUNTS.map(({ label, email }) => (
-            <li key={email}>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setValues({ email, password: DEMO_PASSWORD })
-                  setErrors({})
-                  setFormError('')
-                }}
-              >
-                Fill {label}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      </aside>
     </section>
   )
 }

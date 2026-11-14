@@ -44,32 +44,3 @@
   color: var(--color-primary-text);
   font-weight: var(--weight-semibold);
 }
-
-.demo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--color-muted);
-}
-
-.demoTitle {
-  font-size: var(--text-lg);
-  font-weight: var(--weight-bold);
-}
-
-.demoText {
-  color: var(--color-muted-fg);
-  font-size: var(--text-sm);
-}
-
-.demoList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
