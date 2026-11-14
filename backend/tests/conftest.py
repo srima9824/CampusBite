@@ -1,6 +1,7 @@
 import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite://")
+os.environ.setdefault("JWT_SECRET", "test-secret-test-secret-test-secret-0123")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -9,13 +10,14 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 from app.config import get_settings  # noqa: E402
-from app.database import get_db  # noqa: E402
+from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
 def fresh_settings(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite://")
+    monkeypatch.setenv("JWT_SECRET", "test-secret-test-secret-test-secret-0123")
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
@@ -28,8 +30,10 @@ def db_session():
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    with sessionmaker(bind=engine)() as session:
+    Base.metadata.create_all(engine)
+    with sessionmaker(bind=engine, expire_on_commit=False)() as session:
         yield session
+    engine.dispose()
 
 
 @pytest.fixture

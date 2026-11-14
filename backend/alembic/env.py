@@ -3,6 +3,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.config import get_settings
 from app.database import Base
+from app.models import User  # noqa: F401  (registers tables on Base.metadata)
 
 config = context.config
 config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))

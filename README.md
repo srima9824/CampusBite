@@ -28,7 +28,7 @@ docs/       Specification, ADRs, API docs, contributing guide
 Placeholders until the tooling and Docker slices land.
 
 ```
-cp .env.example .env
+cp .env.example .env   # then set JWT_SECRET (openssl rand -hex 32)
 make up      # start the stack with Docker Compose (coming soon)
 make test    # run the test suites (coming soon)
 ```
@@ -38,7 +38,7 @@ make test    # run the test suites (coming soon)
 Run the API and PostgreSQL with Docker Compose:
 
 ```
-cp .env.example .env
+cp .env.example .env   # then set JWT_SECRET (openssl rand -hex 32)
 docker compose up --build
 ```
 
@@ -59,7 +59,7 @@ Environment variables (see `.env.example`):
 |---|---|
 | POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB | Database container credentials; compose builds `DATABASE_URL` from them |
 | BACKEND_PORT | Host port for the API (default 8000) |
-| JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRE_MINUTES | Token signing settings |
+| JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRE_MINUTES | Token signing settings. JWT_SECRET must be at least 32 characters: generate one with `openssl rand -hex 32` |
 | OPENAI_API_KEY, OPENAI_MODEL | OpenAI access and model name |
 | CORS_ORIGINS | Comma separated allowed browser origins |
 | REMINDER_STALE_MINUTES | Minutes before a pending order triggers a reminder |

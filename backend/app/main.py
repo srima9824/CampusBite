@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.database import get_db
 from app.middleware import add_request_middleware
+from app.routers import auth
 
 
 def create_app() -> FastAPI:
@@ -23,6 +24,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
         expose_headers=["X-Process-Time"],
     )
+
+    app.include_router(auth.router)
 
     @app.get("/health")
     def health(db: Annotated[Session, Depends(get_db)]) -> dict[str, str]:
