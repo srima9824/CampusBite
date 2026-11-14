@@ -33,6 +33,16 @@ make up      # start the stack with Docker Compose (coming soon)
 make test    # run the test suites (coming soon)
 ```
 
+## Test accounts (local mock data)
+
+All accounts use the password `bite-fixture-1`.
+
+| Email | Role |
+|---|---|
+| maya@campusbite.test, leo@campusbite.test | Customer |
+| owner1@campusbite.test to owner8@campusbite.test | Owner (one restaurant each) |
+| sam@campusbite.test, priya@campusbite.test, jonah@campusbite.test | Delivery partner |
+
 ## Contributing
 
 Read [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for commit format, branch and pull request rules, and the code style charter.
