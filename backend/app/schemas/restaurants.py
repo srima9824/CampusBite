@@ -13,6 +13,19 @@ class RestaurantOut(BaseModel):
     is_open: bool
 
 
+class MenuItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    restaurant_id: int
+    name: str
+    description: str
+    category: str
+    price: int
+    is_veg: bool
+    is_available: bool
+
+
 class Page[T](BaseModel):
     items: list[T]
     total: int
