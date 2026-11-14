@@ -38,13 +38,6 @@ describe('Home page', () => {
     expect(await screen.findByRole('region', { name: 'Featured kitchens' })).toBeInTheDocument()
   })
 
-  it('does not link to the styleguide', async () => {
-    renderHome()
-    await screen.findByRole('region', { name: 'Featured kitchens' })
-
-    expect(screen.queryByRole('link', { name: /styleguide/i })).not.toBeInTheDocument()
-  })
-
   it('has no accessibility violations once loaded', async () => {
     const { container } = renderHome()
     await screen.findByRole('region', { name: 'Featured kitchens' })

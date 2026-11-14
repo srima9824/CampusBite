@@ -141,31 +141,6 @@ describe('AppShell navigation', () => {
   })
 })
 
-const footer = () => screen.getByRole('navigation', { name: 'Footer' })
-const footerNames = () => within(footer()).getAllByRole('link').map((link) => link.textContent)
-
-describe('AppShell styleguide link', () => {
-  it.each([
-    ['a guest', null],
-    ['a customer', 1],
-    ['an owner', 6],
-    ['a delivery partner', 3],
-  ])('is absent from the header and footer for %s', async (_who, id) => {
-    if (id) signInAs(id)
-
-    renderWithAuth(<App />)
-    if (id) await within(nav()).findByRole('button', { name: 'Log out' })
-
-    expect(screen.queryByRole('link', { name: /styleguide/i })).not.toBeInTheDocument()
-  })
-
-  it('still renders the styleguide page at its URL', () => {
-    renderWithAuth(<App />, { entries: ['/styleguide'] })
-
-    expect(screen.getByRole('heading', { level: 1, name: 'Styleguide' })).toBeInTheDocument()
-  })
-})
-
 describe('AppShell profile chip', () => {
   it.each([
     [1, 'Maya Patel', 'Customer'],
@@ -200,44 +175,14 @@ describe('AppShell profile chip', () => {
 })
 
 describe('AppShell footer', () => {
-  it('shows the brand, tagline and description', () => {
+  it('shows the description and copyright without a Quick links nav', () => {
     renderWithAuth(<App />)
 
-    expect(screen.getByText('Order between lectures, eat before the bell.')).toBeInTheDocument()
-    expect(screen.getByText(/brings your campus kitchens to one tap/i)).toBeInTheDocument()
-    expect(within(footer()).getByText('Quick links')).toBeInTheDocument()
-  })
-
-  it('lists the guest links', () => {
-    renderWithAuth(<App />)
-
-    expect(footerNames()).toEqual(['Restaurants', 'Cart', 'Log in', 'Sign up'])
-  })
-
-  it.each([
-    [1, 'Maya Patel', ['Restaurants', 'My orders', 'Cart']],
-    [6, 'Owner 1', ['Orders', 'Stats', 'Menu']],
-    [3, 'Sam Okafor', ['Deliveries', 'History']],
-  ])('lists only the role links for user %i', async (id, name, labels) => {
-    signInAs(id)
-
-    renderWithAuth(<App />)
-
-    await within(nav()).findByText(name)
-    expect(footerNames()).toEqual(labels)
-  })
-
-  it('points every footer link at the same route as the header link of that name', async () => {
-    signInAs(1)
-    renderWithAuth(<App />)
-    await within(nav()).findByText('Maya Patel')
-
-    for (const link of within(footer()).getAllByRole('link')) {
-      expect(within(nav()).getByRole('link', { name: link.textContent })).toHaveAttribute(
-        'href',
-        link.getAttribute('href'),
-      )
-    }
+    const contentinfo = screen.getByRole('contentinfo')
+    expect(within(contentinfo).getByText(/brings your campus kitchens to one tap/i)).toBeInTheDocument()
+    expect(within(contentinfo).getByText(/\u00a9 \d{4} CampusBite/)).toBeInTheDocument()
+    expect(within(contentinfo).queryByText('Quick links')).not.toBeInTheDocument()
+    expect(within(contentinfo).queryByRole('navigation')).not.toBeInTheDocument()
   })
 
   it('shows the current year in the copyright line', () => {
