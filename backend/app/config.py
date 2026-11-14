@@ -1,7 +1,7 @@
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     database_url: str
-    jwt_secret: str = ""
-    jwt_algorithm: str = "HS256"
+    jwt_secret: Annotated[str, Field(min_length=32)]
+    jwt_algorithm: Literal["HS256"] = "HS256"
     jwt_expire_minutes: int = 60
     openai_api_key: str = ""
     openai_model: str = ""
