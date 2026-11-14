@@ -33,6 +33,37 @@ make up      # start the stack with Docker Compose (coming soon)
 make test    # run the test suites (coming soon)
 ```
 
+## Backend
+
+Run the API and PostgreSQL with Docker Compose:
+
+```
+cp .env.example .env
+docker compose up --build
+```
+
+- Health check: http://localhost:8000/health returns `{"status":"ok","database":"up"}`.
+- API docs: http://localhost:8000/docs.
+- Migrations run automatically on start (`alembic upgrade head`).
+
+Run the backend tests and lint in Docker (tests use in-memory SQLite):
+
+```
+docker compose run --rm --no-deps -e DATABASE_URL=sqlite:///:memory: backend pytest
+docker compose run --rm --no-deps backend ruff check .
+```
+
+Environment variables (see `.env.example`):
+
+| Variable | Purpose |
+|---|---|
+| POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB | Database container credentials; compose builds `DATABASE_URL` from them |
+| BACKEND_PORT | Host port for the API (default 8000) |
+| JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRE_MINUTES | Token signing settings |
+| OPENAI_API_KEY, OPENAI_MODEL | OpenAI access and model name |
+| CORS_ORIGINS | Comma separated allowed browser origins |
+| REMINDER_STALE_MINUTES | Minutes before a pending order triggers a reminder |
+
 ## Test accounts (local mock data)
 
 All accounts use the password `bite-fixture-1`.
