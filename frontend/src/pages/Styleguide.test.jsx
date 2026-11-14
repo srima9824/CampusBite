@@ -24,7 +24,7 @@ function renderAt(path) {
 describe('routes', () => {
   it('shows the home heading at /', () => {
     renderAt('/')
-    expect(screen.getByRole('heading', { level: 1, name: /kitchen is still warming up/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Hungry? Pick a kitchen.' })).toBeInTheDocument()
   })
 
   it('shows the not-found state for an unknown path', () => {

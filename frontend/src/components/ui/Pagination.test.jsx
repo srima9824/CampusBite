@@ -58,4 +58,10 @@ describe('Pagination', () => {
 
     expect(await axe(container)).toHaveNoViolations()
   })
+
+  it('carries the class that pins it to the bottom of the content area', () => {
+    render(<Pagination page={1} pageSize={6} total={8} onChange={() => {}} />)
+
+    expect(screen.getByRole('navigation', { name: 'Pagination' }).className).toMatch(/pagination/)
+  })
 })
