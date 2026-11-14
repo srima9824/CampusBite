@@ -9,16 +9,19 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.database import get_db
+from app.middleware import add_request_middleware
 
 
 def create_app() -> FastAPI:
     logging.basicConfig(level=logging.INFO)
     app = FastAPI(title="CampusBite API")
+    add_request_middleware(app)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=get_settings().cors_origins,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["X-Process-Time"],
     )
 
     @app.get("/health")
