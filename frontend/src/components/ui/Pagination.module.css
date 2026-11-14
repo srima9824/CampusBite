@@ -1,4 +1,6 @@
 .pagination {
+  margin-top: auto;
+  padding-top: var(--space-5);
   display: flex;
   align-items: center;
   justify-content: center;
