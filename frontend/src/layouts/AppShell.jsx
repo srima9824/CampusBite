@@ -6,10 +6,8 @@ import { useCart } from '../context/CartContext.jsx'
 import { CART_LINK, HOME_LINK, roleLinksFor } from './navLinks.js'
 import styles from './AppShell.module.css'
 
-const STYLEGUIDE_LINK = { to: '/styleguide', label: 'Styleguide' }
-
 function linksFor(user) {
-  return [HOME_LINK, ...roleLinksFor(user), STYLEGUIDE_LINK]
+  return [HOME_LINK, ...roleLinksFor(user)]
 }
 
 export default function AppShell() {
