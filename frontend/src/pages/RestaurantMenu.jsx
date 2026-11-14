@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import AddToCartButton from '../components/AddToCartButton.jsx'
+import FilterActions, { FILTER_HINT } from '../components/FilterActions.jsx'
 import MenuItemCard from '../components/MenuItemCard.jsx'
 import RestaurantLogo from '../components/RestaurantLogo.jsx'
 import { Badge, Button, EmptyState, Input, Skeleton } from '../components/ui'
@@ -70,6 +71,7 @@ export default function RestaurantMenu() {
   const [params, setParams] = useSearchParams()
   const applied = readFilters(params)
   const [filters, setFilters] = useState(applied)
+  const hintId = useId()
   const rangeInvalid = hasInvalidRange(applied)
   // An inverted range is never sent to the api; the inline error explains it instead.
   const query = rangeInvalid ? { ...applied, min_price: '', max_price: '' } : applied
@@ -100,6 +102,11 @@ export default function RestaurantMenu() {
     return (event) => setFilters((previous) => ({ ...previous, [key]: event.target.value }))
   }
 
+  function applyFilters(event) {
+    event.preventDefault()
+    setParams(toParams(filters))
+  }
+
   function clearFilters() {
     setFilters(EMPTY_FILTERS)
     setParams({})
@@ -127,11 +134,20 @@ export default function RestaurantMenu() {
       {status === 'success' && <RestaurantHeader restaurant={data.restaurant} />}
       {status === 'loading' && <h1 className={styles.title}>Setting the table</h1>}
 
-      <form className={styles.filters} role="search" aria-label="Filter the menu" onSubmit={(e) => e.preventDefault()}>
+      <form
+        className={styles.filters}
+        role="search"
+        aria-label="Filter the menu"
+        aria-describedby={hintId}
+        onSubmit={applyFilters}
+      >
+        <p id={hintId} className={styles.hint}>
+          {FILTER_HINT}
+        </p>
         <Input label="Search the menu" type="search" value={filters.q} onChange={updateFilter('q')} placeholder="Try dosa or drinks" />
         <Input label="Min price (Rs.)" type="number" min="0" inputMode="decimal" value={filters.min_price} onChange={updateFilter('min_price')} />
         <Input label="Max price (Rs.)" type="number" min="0" inputMode="decimal" value={filters.max_price} onChange={updateFilter('max_price')} />
-        {clearButton}
+        <FilterActions onClear={clearFilters} />
       </form>
 
       {rangeInvalid && (

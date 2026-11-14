@@ -47,7 +47,14 @@
   background: var(--color-surface);
 }
 
-.filters > :first-child {
+.hint {
+  grid-column: 1 / -1;
+  color: var(--color-muted-fg);
+  font-size: var(--text-sm);
+}
+
+.filters > :nth-child(2),
+.filters > :last-child {
   grid-column: 1 / -1;
 }
 
@@ -90,10 +97,10 @@
 
 @media (min-width: 48rem) {
   .filters {
-    grid-template-columns: 2fr 1fr 1fr auto;
+    grid-template-columns: 2fr 1fr 1fr;
   }
 
-  .filters > :first-child {
+  .filters > :nth-child(2) {
     grid-column: auto;
   }
 
