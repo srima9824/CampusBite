@@ -1,21 +1,23 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import AddToCartButton from '../components/AddToCartButton.jsx'
-import FilterActions, { FILTER_HINT } from '../components/FilterActions.jsx'
+import DietChips from '../components/DietChips.jsx'
 import MenuItemCard from '../components/MenuItemCard.jsx'
+import PriceSlider from '../components/PriceSlider.jsx'
 import RestaurantLogo from '../components/RestaurantLogo.jsx'
 import { Badge, Button, EmptyState, Input, Skeleton } from '../components/ui'
 import useMenu from '../hooks/useMenu.js'
 import styles from './RestaurantMenu.module.css'
 
 const FILTER_DEBOUNCE_MS = 250
-const EMPTY_FILTERS = { q: '', min_price: '', max_price: '' }
+const EMPTY_FILTERS = { q: '', min_price: '', max_price: '', veg: '' }
 
 function readFilters(params) {
   return {
     q: params.get('q') ?? '',
     min_price: params.get('min_price') ?? '',
     max_price: params.get('max_price') ?? '',
+    veg: params.get('veg') ?? '',
   }
 }
 
@@ -71,18 +73,18 @@ export default function RestaurantMenu() {
   const [params, setParams] = useSearchParams()
   const applied = readFilters(params)
   const [filters, setFilters] = useState(applied)
-  const hintId = useId()
   const rangeInvalid = hasInvalidRange(applied)
   // An inverted range is never sent to the api; the inline error explains it instead.
-  const query = rangeInvalid ? { ...applied, min_price: '', max_price: '' } : applied
-  const { data, status, error, reload } = useMenu(restaurantId, {
+  const query = rangeInvalid ? { ...applied, min_price: '', max_price: '', veg: '' } : applied
+  const { data, status, error, reload, priceCeiling } = useMenu(restaurantId, {
     q: query.q,
     min_price: query.min_price,
     max_price: query.max_price,
+    veg: query.veg,
   })
 
-  const { q, min_price: minPrice, max_price: maxPrice } = applied
-  const urlKey = [q, minPrice, maxPrice].join('|')
+  const { q, min_price: minPrice, max_price: maxPrice, veg } = applied
+  const urlKey = [q, minPrice, maxPrice, veg].join('|')
   const [syncedKey, setSyncedKey] = useState(urlKey)
   // Back/forward changes the URL; mirror it into the inputs without an effect.
   if (syncedKey !== urlKey) {
@@ -94,17 +96,26 @@ export default function RestaurantMenu() {
     if (sameFilters(filters, applied)) return undefined
     const timer = setTimeout(() => setParams(toParams(filters)), FILTER_DEBOUNCE_MS)
     return () => clearTimeout(timer)
-    // `applied` is rebuilt every render; its three values are the real inputs.
+    // `applied` is rebuilt every render; its four values are the real inputs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, q, minPrice, maxPrice, setParams])
+  }, [filters, q, minPrice, maxPrice, veg, setParams])
 
   function updateFilter(key) {
     return (event) => setFilters((previous) => ({ ...previous, [key]: event.target.value }))
   }
 
-  function applyFilters(event) {
-    event.preventDefault()
-    setParams(toParams(filters))
+  const minValue = filters.min_price === '' ? 0 : Number(filters.min_price)
+  const maxValue = filters.max_price === '' ? priceCeiling : Math.min(Number(filters.max_price), priceCeiling)
+
+  // A handle at its end stops filtering, so the default range sends no price.
+  function moveMin(value) {
+    const next = Math.min(value, maxValue)
+    setFilters((previous) => ({ ...previous, min_price: next === 0 ? '' : String(next) }))
+  }
+
+  function moveMax(value) {
+    const next = Math.max(value, minValue)
+    setFilters((previous) => ({ ...previous, max_price: next >= priceCeiling ? '' : String(next) }))
   }
 
   function clearFilters() {
@@ -134,20 +145,14 @@ export default function RestaurantMenu() {
       {status === 'success' && <RestaurantHeader restaurant={data.restaurant} />}
       {status === 'loading' && <h1 className={styles.title}>Setting the table</h1>}
 
-      <form
-        className={styles.filters}
-        role="search"
-        aria-label="Filter the menu"
-        aria-describedby={hintId}
-        onSubmit={applyFilters}
-      >
-        <p id={hintId} className={styles.hint}>
-          {FILTER_HINT}
-        </p>
+      <form className={styles.filters} role="search" aria-label="Filter the menu" onSubmit={(event) => event.preventDefault()}>
         <Input label="Search the menu" type="search" value={filters.q} onChange={updateFilter('q')} placeholder="Try dosa or drinks" />
-        <Input label="Min price (Rs.)" type="number" min="0" inputMode="decimal" value={filters.min_price} onChange={updateFilter('min_price')} />
-        <Input label="Max price (Rs.)" type="number" min="0" inputMode="decimal" value={filters.max_price} onChange={updateFilter('max_price')} />
-        <FilterActions onClear={clearFilters} />
+        <PriceSlider label="Min price" value={minValue} max={priceCeiling} onChange={moveMin} />
+        <PriceSlider label="Max price" value={maxValue} max={priceCeiling} onChange={moveMax} />
+        <DietChips value={filters.veg} onChange={(value) => setFilters((previous) => ({ ...previous, veg: value }))} />
+        <Button variant="secondary" onClick={clearFilters}>
+          Clear filters
+        </Button>
       </form>
 
       {rangeInvalid && (
