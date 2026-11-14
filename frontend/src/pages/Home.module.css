@@ -17,9 +17,20 @@
   font-weight: var(--weight-bold);
 }
 
-.lead {
+.intro {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: 1.5;
   color: var(--color-muted-fg);
-  font-size: var(--text-lg);
+}
+
+.highlight {
+  color: var(--color-primary-text);
+  font-weight: var(--weight-bold);
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary);
+  text-decoration-thickness: 0.15em;
+  text-underline-offset: 0.2em;
 }
 
 .link {
