@@ -94,17 +94,12 @@ describe('Login page', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Your deliveries' })).toBeInTheDocument()
   })
 
-  it.each([
-    ['Fill Maya, hungry customer', 'maya@campusbite.test'],
-    ['Fill Owner of Dosa Dash', 'owner1@campusbite.test'],
-    ['Fill Sam, delivery partner', 'sam@campusbite.test'],
-  ])('fills the form from the "%s" demo button', async (label, address) => {
+  it('renders no demo accounts panel or fixture password', () => {
     renderLogin()
 
-    await userEvent.click(screen.getByRole('button', { name: label }))
-
-    expect(email()).toHaveValue(address)
-    expect(password()).toHaveValue(DEMO_PASSWORD)
+    expect(screen.queryByRole('button', { name: /^Fill /i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/demo/i)).not.toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent(DEMO_PASSWORD)
   })
 
   it('has no accessibility violations', async () => {

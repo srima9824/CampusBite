@@ -18,12 +18,6 @@ describe('navLinks', () => {
     expect(roleLinksFor({ role: 'OWNER' })).toBe(ROLE_LINKS.OWNER)
   })
 
-  it('never lists the styleguide', () => {
-    const all = Object.values(ROLE_LINKS).flat()
-
-    expect(all.some((link) => link.to === '/styleguide' || /styleguide/i.test(link.label))).toBe(false)
-  })
-
   it('labels every signed-in role', () => {
     expect(ROLE_LABELS).toEqual({
       CUSTOMER: 'Customer',

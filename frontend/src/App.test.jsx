@@ -124,3 +124,25 @@ describe('App routing with auth', () => {
     expect(screen.getByRole('heading', { level: 1, name: /left the table/i })).toBeInTheDocument()
   })
 })
+
+describe('App routes', () => {
+  it('shows the home heading at /', async () => {
+    renderWithAuth(<App />, { entries: ['/'] })
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hungry? Pick a kitchen.' })).toBeInTheDocument()
+  })
+
+  it('shows the not-found state for an unknown path', async () => {
+    renderWithAuth(<App />, { entries: ['/no-such-dish'] })
+
+    expect(await screen.findByRole('heading', { level: 1, name: /left the table/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /back to the kitchen/i })).toHaveAttribute('href', '/')
+  })
+
+  it('wraps pages in the shell with a skip link and navigation', () => {
+    renderWithAuth(<App />, { entries: ['/'] })
+
+    expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main')
+    expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument()
+  })
+})

@@ -25,7 +25,7 @@ Each route, who may open it, and the states it has. Each unit appends its routes
 ## Access rules
 - Guests opening a protected route go to `/login` and return to the original path after signing in.
 - A signed-in user opening a route of another role is sent to their home with a one-line notice. Homes: customer `/restaurants`, owner `/owner`, delivery partner `/delivery`.
-- Navigation shows only routes that exist: guests see Home, Restaurants, Cart, Log in, Sign up; customers see Home, Restaurants, My orders, Cart; owners see Home, Orders, Stats, Menu; delivery partners see Home, Deliveries, History. `/styleguide` still renders but is reachable only by typing the URL. Signed-in users also see a profile chip (initial, name, role label) and a Log out button after a divider.
-- The footer shows the brand, tagline, a short description, a "Quick links" nav with the role's own links (no Home, no Styleguide) and a copyright line with the current year.
+- Navigation shows only routes that exist: guests see Home, Restaurants, Cart, Log in, Sign up; customers see Home, Restaurants, My orders, Cart; owners see Home, Orders, Stats, Menu; delivery partners see Home, Deliveries, History. Signed-in users also see a profile chip (initial, name, role label) and a Log out button after a divider.
+- The footer shows a short description and a copyright line with the current year.
 - Layout is full height: the footer sits at the viewport bottom on tall screens, and pagination on list pages sits at the bottom of the content area.
 - The Cart link shows the number of items in the cart; its accessible name reads "Cart, 3 items".
