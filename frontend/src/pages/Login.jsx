@@ -41,11 +41,16 @@ export default function Login() {
     try {
       await login({ email: values.email, password: values.password })
     } catch (error) {
-      setFormError(
-        error.code === 'invalid_credentials'
-          ? 'That email and password do not match. Check them and try again.'
-          : 'Something burned in the kitchen. Please try again in a moment.',
-      )
+      if (error.code === 'email_domain_not_allowed') {
+        setErrors({ email: EMAIL_DOMAIN_MESSAGE })
+        form.elements.email.focus()
+      } else {
+        setFormError(
+          error.code === 'invalid_credentials'
+            ? 'That email and password do not match. Check them and try again.'
+            : 'Something burned in the kitchen. Please try again in a moment.',
+        )
+      }
       setSubmitting(false)
     }
   }
