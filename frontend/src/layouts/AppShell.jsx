@@ -89,10 +89,6 @@ export default function AppShell() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <p>
-            CampusBite brings your campus kitchens to one tap. Browse menus, order in a minute
-            and track your food from the pan to your door.
-          </p>
-          <p className={styles.copyright}>
             &copy; {new Date().getFullYear()} CampusBite. Made by students, for students.
           </p>
         </div>

@@ -101,16 +101,6 @@
   font-size: var(--text-sm);
 }
 
-.footerInner {
-  display: grid;
-  gap: var(--space-6);
-}
-
-.copyright {
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
-}
-
 .account {
   display: flex;
   flex-wrap: wrap;
