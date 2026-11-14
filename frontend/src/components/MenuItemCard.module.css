@@ -48,3 +48,19 @@
 .action {
   margin-inline-start: auto;
 }
+
+.diet {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-inline-end: var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+.veg {
+  background: var(--color-success);
+}
+
+.nonVeg {
+  background: var(--color-danger);
+}

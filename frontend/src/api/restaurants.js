@@ -24,6 +24,11 @@ function isWithinPrice(item, min, max) {
   return (min == null || item.price >= min) && (max == null || item.price <= max)
 }
 
+// `veg` is 'veg', 'non_veg' or empty for both.
+function matchesDiet(item, veg) {
+  return !veg || item.is_veg === (veg === 'veg')
+}
+
 function toBound(value) {
   return value == null || value === '' ? null : Number(value)
 }
@@ -31,7 +36,7 @@ function toBound(value) {
 // Unavailable items are returned too; the UI flags them instead of hiding them.
 export async function listMenu(
   restaurantId,
-  { q = '', min_price, max_price, page = 1, page_size = 50 } = {},
+  { q = '', min_price, max_price, veg = '', page = 1, page_size = 50 } = {},
 ) {
   await delay()
   const id = Number(restaurantId)
@@ -48,6 +53,7 @@ export async function listMenu(
     (item) =>
       item.restaurant_id === id &&
       isWithinPrice(item, min, max) &&
+      matchesDiet(item, veg) &&
       (!wanted ||
         item.name.toLowerCase().includes(wanted) ||
         item.category.toLowerCase().includes(wanted)),

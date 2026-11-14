@@ -94,6 +94,7 @@ export async function createMenuItem(values) {
     restaurant_id: user.restaurant_id,
     ...cleanFields(values),
     is_available: values.is_available ?? true,
+    is_veg: values.is_veg ?? true,
     created_at: new Date().toISOString(),
   }
   store.nextMenuItemId += 1
@@ -106,7 +107,10 @@ export async function updateMenuItem(id, values) {
   const user = requireOwner()
   const item = findOwnItem(user, id)
   checkItem(user, values, item.id)
-  Object.assign(item, cleanFields(values), { is_available: values.is_available ?? item.is_available })
+  Object.assign(item, cleanFields(values), {
+    is_available: values.is_available ?? item.is_available,
+    is_veg: values.is_veg ?? item.is_veg,
+  })
   return structuredClone(item)
 }
 
