@@ -35,7 +35,7 @@ describe('OrderDetail page', () => {
     renderDetail(8)
 
     expect(screen.getByRole('status', { name: 'Loading your order' })).toBeInTheDocument()
-    expect(await screen.findByText('From Noodle Nook')).toBeInTheDocument()
+    expect(await screen.findByText('From Chai & Chill')).toBeInTheDocument()
   })
 
   it('shows the heading, restaurant, status, items, totals, address and payment', async () => {
@@ -152,7 +152,7 @@ describe('OrderDetail page', () => {
     expect(alert).toHaveTextContent('The pass is closed.')
     await userEvent.click(within(alert).getByRole('button', { name: 'Retry' }))
 
-    expect(await screen.findByText('From Noodle Nook')).toBeInTheDocument()
+    expect(await screen.findByText('From Chai & Chill')).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 

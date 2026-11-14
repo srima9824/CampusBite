@@ -103,6 +103,7 @@ describe('getRestaurantStats', () => {
   })
 
   it('returns zeros and an empty top list for an owner with no orders', async () => {
+    store.orders = store.orders.filter((order) => order.restaurant_id !== 5)
     signInAs(10, 'OWNER')
 
     const stats = await getRestaurantStats()

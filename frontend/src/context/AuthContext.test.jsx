@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { getSession } from '../api/session.js'
-import { DEMO_PASSWORD, renderWithAuth, resetAuthWorld, signInAs } from '../test/helpers.jsx'
+import { TEST_PASSWORD, renderWithAuth, resetAuthWorld, signInAs } from '../test/helpers.jsx'
 import { useAuth } from './AuthContext.jsx'
 
 function Probe() {
@@ -11,7 +11,7 @@ function Probe() {
     <div>
       <p data-testid="status">{status}</p>
       <p data-testid="user">{user ? JSON.stringify(user) : 'none'}</p>
-      <button onClick={() => login({ email: 'maya@campusbite.test', password: DEMO_PASSWORD }).catch(() => {})}>
+      <button onClick={() => login({ email: 'maya@campusbite.test', password: TEST_PASSWORD }).catch(() => {})}>
         sign in
       </button>
       <button onClick={() => login({ email: 'maya@campusbite.test', password: 'wrong' }).catch(() => {})}>

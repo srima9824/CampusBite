@@ -5,10 +5,10 @@ import { axe } from 'vitest-axe'
 import RestaurantCard from './RestaurantCard.jsx'
 
 const restaurant = {
-  id: 4,
-  name: 'Pizza Pronto',
-  cuisine: 'Italian',
-  description: 'Wood-fired slices.',
+  id: 3,
+  name: 'Burger Barn',
+  cuisine: 'American',
+  description: 'Stacked burgers.',
 }
 
 function renderCard() {
@@ -23,14 +23,14 @@ describe('RestaurantCard', () => {
   it('is a single link to the restaurant menu named by the restaurant', () => {
     renderCard()
 
-    expect(screen.getByRole('link', { name: 'Pizza Pronto' })).toHaveAttribute('href', '/restaurants/4')
+    expect(screen.getByRole('link', { name: 'Burger Barn' })).toHaveAttribute('href', '/restaurants/3')
   })
 
   it('shows the cuisine and description', () => {
     renderCard()
 
-    expect(screen.getByText('Italian')).toBeInTheDocument()
-    expect(screen.getByText('Wood-fired slices.')).toBeInTheDocument()
+    expect(screen.getByText('American')).toBeInTheDocument()
+    expect(screen.getByText('Stacked burgers.')).toBeInTheDocument()
   })
 
   it('has no accessibility violations', async () => {
@@ -42,17 +42,17 @@ describe('RestaurantCard', () => {
   it('shows the logo image when the restaurant has a logo_url', () => {
     const { container } = render(
       <MemoryRouter>
-        <RestaurantCard restaurant={{ ...restaurant, logo_url: '/logos/pizza.svg' }} />
+        <RestaurantCard restaurant={{ ...restaurant, logo_url: '/logos/burger.svg' }} />
       </MemoryRouter>,
     )
 
-    expect(container.querySelector('img')).toHaveAttribute('src', '/logos/pizza.svg')
+    expect(container.querySelector('img')).toHaveAttribute('src', '/logos/burger.svg')
   })
 
   it('shows the initial tile when the restaurant has no logo_url', () => {
     const { container } = renderCard()
 
     expect(container.querySelector('img')).toBeNull()
-    expect(screen.getByText('P')).toBeInTheDocument()
+    expect(screen.getByText('B')).toBeInTheDocument()
   })
 })

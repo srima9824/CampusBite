@@ -14,8 +14,8 @@ describe('useRestaurants', () => {
 
     expect(result.current.status).toBe('loading')
     await waitFor(() => expect(result.current.status).toBe('success'))
-    expect(result.current.data.items).toHaveLength(6)
-    expect(result.current.data.total).toBe(8)
+    expect(result.current.data.items).toHaveLength(4)
+    expect(result.current.data.total).toBe(4)
   })
 
   it('refetches when the search text changes', async () => {
@@ -24,15 +24,16 @@ describe('useRestaurants', () => {
     })
     await waitFor(() => expect(result.current.status).toBe('success'))
 
-    rerender({ q: 'pizza', page: 1 })
+    rerender({ q: 'burger', page: 1 })
 
-    await waitFor(() => expect(result.current.data?.items.map((r) => r.name)).toEqual(['Pizza Pronto']))
+    await waitFor(() => expect(result.current.data?.items.map((r) => r.name)).toEqual(['Burger Barn']))
   })
 
   it('loads the requested page', async () => {
     const { result } = renderHook(() => useRestaurants({ q: '', page: 2 }))
 
     await waitFor(() => expect(result.current.status).toBe('success'))
-    expect(result.current.data.items).toHaveLength(2)
+    expect(result.current.data.items).toEqual([])
+    expect(result.current.data.total).toBe(4)
   })
 })

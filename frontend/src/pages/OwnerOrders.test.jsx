@@ -134,6 +134,7 @@ describe('OwnerOrders page', () => {
   })
 
   it('shows the first-order empty state to an owner with no orders (owner 5)', async () => {
+    store.orders = store.orders.filter((order) => order.restaurant_id !== 5)
     signInAs(10, 'OWNER')
 
     renderOwnerOrders()

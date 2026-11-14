@@ -4,6 +4,7 @@ import { Route, Routes } from 'react-router-dom'
 import { axe } from 'vitest-axe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as ownerApi from '../api/owner.js'
+import { store } from '../api/store.js'
 import { updateOrderStatus } from '../api/orders.js'
 import { setLatency } from '../api/testing.js'
 import ProtectedRoute from '../routes/ProtectedRoute.jsx'
@@ -74,6 +75,7 @@ describe('OwnerStats page', () => {
   })
 
   it('shows an empty state with a link to orders for an owner with no orders', async () => {
+    store.orders = store.orders.filter((order) => order.restaurant_id !== 5)
     signInAs(10, 'OWNER')
 
     renderStats()

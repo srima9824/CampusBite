@@ -106,11 +106,11 @@ describe('updateMenuItem', () => {
   })
 
   it('answers 404 for another restaurant\'s item and leaves it untouched', async () => {
-    await expect(updateMenuItem(8, { name: 'Hijack', category: 'Noodles', price: 1 })).rejects.toMatchObject({
+    await expect(updateMenuItem(15, { name: 'Hijack', category: 'Noodles', price: 1 })).rejects.toMatchObject({
       status: 404,
       code: 'not_found',
     })
-    expect(store.menuItems.find((item) => item.id === 8).name).toBe('Veg Hakka Noodles')
+    expect(store.menuItems.find((item) => item.id === 15).name).toBe('Classic Cheeseburger')
   })
 })
 
@@ -139,8 +139,8 @@ describe('setMenuItemAvailability', () => {
   })
 
   it('answers 404 for another restaurant\'s item', async () => {
-    await expect(setMenuItemAvailability(8, { is_available: false })).rejects.toMatchObject({ status: 404 })
-    expect(store.menuItems.find((item) => item.id === 8).is_available).toBe(true)
+    await expect(setMenuItemAvailability(15, { is_available: false })).rejects.toMatchObject({ status: 404 })
+    expect(store.menuItems.find((item) => item.id === 15).is_available).toBe(true)
   })
 })
 
@@ -155,10 +155,10 @@ describe('deleteMenuItem', () => {
   })
 
   it('answers 404 for another restaurant\'s item and for one already gone', async () => {
-    await expect(deleteMenuItem(8)).rejects.toMatchObject({ status: 404 })
+    await expect(deleteMenuItem(15)).rejects.toMatchObject({ status: 404 })
     await deleteMenuItem(1)
     await expect(deleteMenuItem(1)).rejects.toMatchObject({ status: 404 })
-    expect(store.menuItems.some((item) => item.id === 8)).toBe(true)
+    expect(store.menuItems.some((item) => item.id === 15)).toBe(true)
   })
 
   it('never reuses the id of a deleted item', async () => {

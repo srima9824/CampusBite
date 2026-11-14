@@ -6,7 +6,7 @@ import App from '../App.jsx'
 import * as ordersApi from '../api/orders.js'
 import { setLatency } from '../api/testing.js'
 import { store } from '../api/store.js'
-import { DEMO_PASSWORD, renderWithAuth, resetAuthWorld, signInAs } from '../test/helpers.jsx'
+import { TEST_PASSWORD, renderWithAuth, resetAuthWorld, signInAs } from '../test/helpers.jsx'
 
 const CART_KEY = 'campusbite.cart'
 
@@ -45,7 +45,7 @@ describe('Checkout page', () => {
       renderCheckout()
 
       await userEvent.type(await screen.findByLabelText('Email'), 'maya@campusbite.test')
-      await userEvent.type(screen.getByLabelText('Password'), DEMO_PASSWORD)
+      await userEvent.type(screen.getByLabelText('Password'), TEST_PASSWORD)
       await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
 
       expect(await screen.findByRole('heading', { level: 1, name: 'Almost there' })).toBeInTheDocument()

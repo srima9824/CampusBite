@@ -8,24 +8,30 @@ beforeEach(() => {
 })
 
 describe('listRestaurants', () => {
-  it('returns the first page of six with the total of eight', async () => {
+  it('lists exactly the four restaurants on one page', async () => {
     const result = await restaurants.listRestaurants()
 
-    expect(result.items).toHaveLength(6)
-    expect(result).toMatchObject({ total: 8, page: 1, page_size: 6 })
+    expect(result.items.map((restaurant) => restaurant.name)).toEqual([
+      'Dosa Dash',
+      'Burger Barn',
+      'Taco Tuesday',
+      'Chai & Chill',
+    ])
+    expect(result).toMatchObject({ total: 4, page: 1, page_size: 6 })
   })
 
-  it('returns the remaining two restaurants on page two', async () => {
+  it('returns no items on page two and keeps the total', async () => {
     const result = await restaurants.listRestaurants({ page: 2 })
 
-    expect(result.items.map((restaurant) => restaurant.name)).toEqual(['Chai & Chill', 'Wrap Star'])
+    expect(result.items).toEqual([])
+    expect(result.total).toBe(4)
   })
 
   it('returns no items for a page past the end but keeps the total', async () => {
     const result = await restaurants.listRestaurants({ page: 9 })
 
     expect(result.items).toEqual([])
-    expect(result.total).toBe(8)
+    expect(result.total).toBe(4)
   })
 
   it('finds a restaurant by name ignoring case', async () => {
@@ -41,7 +47,7 @@ describe('listRestaurants', () => {
   })
 
   it('ignores surrounding spaces in the search text', async () => {
-    const result = await restaurants.listRestaurants({ q: '  pizza  ' })
+    const result = await restaurants.listRestaurants({ q: '  burger  ' })
 
     expect(result.total).toBe(1)
   })
@@ -56,7 +62,7 @@ describe('listRestaurants', () => {
 describe('getRestaurant', () => {
   it('returns the restaurant for a known id, numeric or string', async () => {
     expect((await restaurants.getRestaurant(1)).name).toBe('Dosa Dash')
-    expect((await restaurants.getRestaurant('2')).name).toBe('Noodle Nook')
+    expect((await restaurants.getRestaurant('3')).name).toBe('Burger Barn')
   })
 
   it('rejects an unknown id with a 404 not_found error', async () => {
@@ -69,12 +75,9 @@ describe('getRestaurant', () => {
 
 describe('restaurant images', () => {
   it('gives every listed restaurant a logo_url and an image_url', async () => {
-    const all = [
-      ...(await restaurants.listRestaurants({ page: 1 })).items,
-      ...(await restaurants.listRestaurants({ page: 2 })).items,
-    ]
+    const all = (await restaurants.listRestaurants()).items
 
-    expect(all).toHaveLength(8)
+    expect(all).toHaveLength(4)
     for (const restaurant of all) {
       expect(restaurant.logo_url, restaurant.name).toEqual(expect.any(String))
       expect(restaurant.logo_url, restaurant.name).not.toBe('')
@@ -84,10 +87,10 @@ describe('restaurant images', () => {
   })
 
   it('uses a distinct logo and photo per restaurant', async () => {
-    const { items } = await restaurants.listRestaurants({ page_size: 8 })
+    const { items } = await restaurants.listRestaurants({ page_size: 6 })
 
-    expect(new Set(items.map((restaurant) => restaurant.logo_url)).size).toBe(8)
-    expect(new Set(items.map((restaurant) => restaurant.image_url)).size).toBe(8)
+    expect(new Set(items.map((restaurant) => restaurant.logo_url)).size).toBe(4)
+    expect(new Set(items.map((restaurant) => restaurant.image_url)).size).toBe(4)
   })
 
   it('returns the same images from getRestaurant as from the list', async () => {
@@ -97,9 +100,9 @@ describe('restaurant images', () => {
     expect(fetched).toMatchObject({ logo_url: listed.logo_url, image_url: listed.image_url })
   })
 
-  it('honours page_size so the carousel can ask for all eight at once', async () => {
-    const result = await restaurants.listRestaurants({ page_size: 8 })
+  it('honours page_size so the carousel can ask for every restaurant at once', async () => {
+    const result = await restaurants.listRestaurants({ page_size: 4 })
 
-    expect(result.items).toHaveLength(8)
+    expect(result.items).toHaveLength(4)
   })
 })

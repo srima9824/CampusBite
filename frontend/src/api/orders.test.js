@@ -132,7 +132,7 @@ describe('placeOrder', () => {
 
   it('rejects dishes from another restaurant with 422 mixed_restaurants', async () => {
     await expect(
-      placeOrder(request({ items: [{ menu_item_id: 1, quantity: 1 }, { menu_item_id: 8, quantity: 1 }] })),
+      placeOrder(request({ items: [{ menu_item_id: 1, quantity: 1 }, { menu_item_id: 15, quantity: 1 }] })),
     ).rejects.toMatchObject({ status: 422, code: 'mixed_restaurants' })
   })
 
@@ -178,7 +178,7 @@ describe('getOrder', () => {
 
   it.each([
     ['another customer', 2, 3],
-    ['the owner of another restaurant', 7, 3],
+    ['the owner of another restaurant', 8, 3],
     ['a delivery partner who is not assigned', 4, 3],
     ['a delivery partner on an order with no rider', 3, 7],
   ])('answers 404 for %s', async (_who, userId, orderId) => {
