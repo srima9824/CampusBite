@@ -40,7 +40,7 @@ All accounts use the password `bite-fixture-1`.
 | Email | Role |
 |---|---|
 | maya@campusbite.test, leo@campusbite.test | Customer |
-| owner1@campusbite.test to owner8@campusbite.test | Owner (one restaurant each) |
+| owner1@campusbite.test, owner3@campusbite.test, owner5@campusbite.test, owner7@campusbite.test | Owner (one restaurant each) |
 | sam@campusbite.test, priya@campusbite.test, jonah@campusbite.test | Delivery partner |
 
 ## Contributing
