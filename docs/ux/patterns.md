@@ -11,6 +11,7 @@ Every list or detail that loads data shows one of:
 
 ## Search and pagination
 Used on `/restaurants`.
+- A visible hint above the box reads "Filters apply as you type, or press Apply." and is linked to the `role="search"` form with `aria-describedby`. The box and an Apply (primary) and Clear filters (secondary) button sit in that form, so Enter or Apply applies at once and cancels the pending debounce.
 - The search input is debounced by 250 ms and writes `?q=` to the URL, so refresh and the browser Back button restore the search. Changing the search drops `page`.
 - The page number lives in `?page=` (1-based, missing means 1). Changing the page keeps `q`.
 - `Pagination` (`components/ui`) takes `page`, `pageSize`, `total` and `onChange`. It renders Previous and Next buttons with "Page X of Y" text, disables the buttons at the ends and renders nothing when there is only one page.
@@ -19,11 +20,26 @@ Used on `/restaurants`.
 
 ## Filter bar
 Used on `/restaurants/:restaurantId`.
-- Text and price inputs sit in one `role="search"` form with visible labels and a Clear filters button that resets every filter at once.
+- Text and price inputs sit in one `role="search"` form with visible labels. Above them is the hint "Filters apply as you type, or press Apply." (linked with `aria-describedby`). Below are Apply (primary, submit) and Clear filters (secondary, resets every filter at once) in one row that wraps on mobile. Enter in any field or Apply sets the URL params at once; the shared `FilterActions` component renders the buttons for both filter forms.
 - Values are debounced by 250 ms into URL params (`q`, `min_price`, `max_price`), so reload and Back keep the filters. Empty values are left out of the URL.
 - The price range is inclusive. If min is above max, the page shows an inline `role="alert"` message and does not call the api (which would answer `422 invalid_price_range`).
 - Results are grouped by category with an `h2` per group; the page title is the only `h1`.
 - A dish that cannot be ordered stays visible with a "Sold out" text badge and a muted card, so status never relies on colour alone.
+
+## Carousel
+Used on `/` (`RestaurantCarousel`, `useCarousel`).
+- One slide per restaurant (full-bleed cuisine photo, scrim, logo chip, name as `h2`, cuisine badge, "See the menu" label). The name is the only link and is stretched over the slide, so the whole slide opens `/restaurants/:id`. Slide boxes keep a fixed aspect ratio (4:3, then 2:1 from 768px), so nothing shifts while images load.
+- Advances every 5 seconds. Stops on hover, focus inside, the Pause slideshow button and `prefers-reduced-motion`. Previous, Next, dots, arrow keys and a 50px swipe move manually and wrap around.
+- States: loading skeleton of the same ratio (`role="status"`), error (`role="alert"` with Retry), empty (renders nothing). Accessibility rules are in `accessibility.md`.
+
+## Logo with initial fallback
+`RestaurantLogo` shows `logo_url` in a rounded tile at `sm` (56px, cards), `md` (72px, menu header) or `chip` (80px, carousel). The image is decorative (`alt=""`) because the name is always next to it. If `logo_url` is missing or fails to load, the tile shows the coloured initial of the name instead.
+
+## Full-height layout (pagination at the bottom)
+The shell is a flex column with `min-height: 100dvh` (after a `100vh` fallback); `main` grows, so the footer sits at the bottom of the viewport on tall screens. A list page root takes `flex: 1` and `Pagination` has `margin-top: auto` plus top padding, so it lands at the bottom of the content area instead of under the last card. On short screens the content is taller than the viewport and flows normally. This applies to Restaurants, Orders, Owner orders, Delivery assignments and Delivery history.
+
+## Profile chip
+Signed-in users see a chip in the header: round initial, name in the display face (`--font-display`, Fraunces 600) and a small role label. It is plain text with no hover or outline, separated from Log out by a vertical divider; below 768px the account group wraps onto its own row without the divider.
 
 ## Confirm dialog
 Used for destructive or surprising choices (start a new cart, empty the cart).
