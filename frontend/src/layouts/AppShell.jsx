@@ -3,35 +3,13 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
+import { CART_LINK, HOME_LINK, roleLinksFor } from './navLinks.js'
 import styles from './AppShell.module.css'
 
-const HOME_LINK = { to: '/', label: 'Home', end: true }
-const RESTAURANTS_LINK = { to: '/restaurants', label: 'Restaurants' }
-const CART_LINK = { to: '/cart', label: 'Cart' }
 const STYLEGUIDE_LINK = { to: '/styleguide', label: 'Styleguide' }
 
-// Only routes that exist are linked; later units add their links here.
-const ROLE_LINKS = {
-  guest: [
-    RESTAURANTS_LINK,
-    CART_LINK,
-    { to: '/login', label: 'Log in' },
-    { to: '/register', label: 'Sign up' },
-  ],
-  CUSTOMER: [RESTAURANTS_LINK, { to: '/orders', label: 'My orders' }, CART_LINK],
-  OWNER: [
-    { to: '/owner', label: 'Orders', end: true },
-    { to: '/owner/stats', label: 'Stats' },
-    { to: '/owner/menu', label: 'Menu' },
-  ],
-  DELIVERY_PARTNER: [
-    { to: '/delivery', label: 'Deliveries', end: true },
-    { to: '/delivery/history', label: 'History' },
-  ],
-}
-
 function linksFor(user) {
-  return [HOME_LINK, ...ROLE_LINKS[user?.role ?? 'guest'], STYLEGUIDE_LINK]
+  return [HOME_LINK, ...roleLinksFor(user), STYLEGUIDE_LINK]
 }
 
 export default function AppShell() {
@@ -101,7 +79,31 @@ export default function AppShell() {
         <Outlet />
       </main>
       <footer className={styles.footer}>
-        <p>Made by students, for students. Seconds not included.</p>
+        <div className={styles.footerInner}>
+          <div className={styles.footerBrand}>
+            <span className={styles.wordmark}>CampusBite</span>
+            <p className={styles.tagline}>Order between lectures, eat before the bell.</p>
+            <p>
+              CampusBite brings your campus kitchens to one tap. Browse menus, order in a minute
+              and track your food from the pan to your door.
+            </p>
+          </div>
+          <nav aria-label="Footer">
+            <p className={styles.footerHeading}>Quick links</p>
+            <ul className={styles.footerLinks}>
+              {roleLinksFor(user).map(({ to, label, end }) => (
+                <li key={to}>
+                  <NavLink to={to} end={end} className={styles.footerLink}>
+                    {label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <p className={styles.copyright}>
+            &copy; {new Date().getFullYear()} CampusBite. Made by students, for students.
+          </p>
+        </div>
       </footer>
     </div>
   )
