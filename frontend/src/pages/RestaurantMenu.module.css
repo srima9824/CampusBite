@@ -19,20 +19,6 @@
   gap: var(--space-4);
 }
 
-.tile {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 4rem;
-  height: 4rem;
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font-size: var(--text-3xl);
-  font-weight: var(--weight-bold);
-}
-
 .headerText {
   display: flex;
   flex-direction: column;

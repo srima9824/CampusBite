@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import AddToCartButton from '../components/AddToCartButton.jsx'
 import MenuItemCard from '../components/MenuItemCard.jsx'
+import RestaurantLogo from '../components/RestaurantLogo.jsx'
 import { Badge, Button, EmptyState, Input, Skeleton } from '../components/ui'
 import useMenu from '../hooks/useMenu.js'
 import styles from './RestaurantMenu.module.css'
@@ -54,9 +55,7 @@ function MenuLoading() {
 function RestaurantHeader({ restaurant }) {
   return (
     <header className={styles.header}>
-      <span className={styles.tile} aria-hidden="true">
-        {restaurant.name.charAt(0)}
-      </span>
+      <RestaurantLogo restaurant={restaurant} size="md" />
       <div className={styles.headerText}>
         <h1 className={styles.title}>{restaurant.name}</h1>
         <Badge tone="info">{restaurant.cuisine}</Badge>

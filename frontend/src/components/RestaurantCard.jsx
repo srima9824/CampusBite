@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { Link } from 'react-router-dom'
+import RestaurantLogo from './RestaurantLogo.jsx'
 import { Badge } from './ui'
 import styles from './RestaurantCard.module.css'
 
@@ -11,9 +12,7 @@ export default function RestaurantCard({ restaurant }) {
       to={`/restaurants/${restaurant.id}`}
       aria-labelledby={nameId}
     >
-      <span className={styles.tile} aria-hidden="true">
-        {restaurant.name.charAt(0)}
-      </span>
+      <RestaurantLogo restaurant={restaurant} />
       <span className={styles.body}>
         <span id={nameId} className={styles.name}>
           {restaurant.name}
