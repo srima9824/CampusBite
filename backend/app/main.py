@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.database import get_db
 from app.middleware import add_request_middleware
-from app.routers import auth
+from app.routers import auth, restaurants
 
 
 def create_app() -> FastAPI:
@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(auth.router)
+    app.include_router(restaurants.router)
 
     @app.get("/health")
     def health(db: Annotated[Session, Depends(get_db)]) -> dict[str, str]:
