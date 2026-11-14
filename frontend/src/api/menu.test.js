@@ -50,6 +50,34 @@ describe('listMenu', () => {
     expect(names(result)).toEqual(['Masala Dosa'])
   })
 
+  it('gives every item a boolean is_veg flag', async () => {
+    const result = await restaurants.listMenu(3)
+
+    expect(result.items.every((item) => typeof item.is_veg === 'boolean')).toBe(true)
+  })
+
+  it('keeps only vegetarian items for veg', async () => {
+    const result = await restaurants.listMenu(3, { veg: 'veg' })
+
+    expect(result.items.length).toBeGreaterThan(0)
+    expect(result.items.every((item) => item.is_veg)).toBe(true)
+    expect(names(result)).not.toContain('Classic Cheeseburger')
+  })
+
+  it('keeps only non-vegetarian items for non_veg', async () => {
+    const result = await restaurants.listMenu(3, { veg: 'non_veg' })
+
+    expect(names(result)).toEqual(['Classic Cheeseburger', 'Double Stack', 'Spicy Chicken Burger'])
+  })
+
+  it('returns both kinds for an empty veg value and combines with a price limit', async () => {
+    const all = await restaurants.listMenu(3, { veg: '' })
+    const cheap = await restaurants.listMenu(3, { veg: 'veg', max_price: 100 })
+
+    expect(all.items.length).toBe((await restaurants.listMenu(3)).items.length)
+    expect(names(cheap).sort()).toEqual(['Cola', 'Onion Rings', 'Peri Peri Fries'])
+  })
+
   it('pages the menu', async () => {
     const result = await restaurants.listMenu(1, { page: 2, page_size: 3 })
 

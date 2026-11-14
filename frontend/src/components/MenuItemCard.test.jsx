@@ -9,6 +9,7 @@ const item = {
   description: 'Crisp rice crepe.',
   category: 'Dosas',
   price: 80,
+  is_veg: true,
   is_available: true,
 }
 
@@ -16,10 +17,24 @@ describe('MenuItemCard', () => {
   it('shows name, description, category and formatted price', () => {
     render(<MenuItemCard item={item} />)
 
-    expect(screen.getByRole('heading', { level: 3, name: 'Masala Dosa' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: /Masala Dosa/ })).toBeInTheDocument()
     expect(screen.getByText('Crisp rice crepe.')).toBeInTheDocument()
     expect(screen.getByText('Dosas')).toBeInTheDocument()
     expect(screen.getByText('Rs. 80.00')).toBeInTheDocument()
+  })
+
+  it('marks a vegetarian dish with an accessible label', () => {
+    render(<MenuItemCard item={item} />)
+
+    expect(screen.getByRole('img', { name: 'Vegetarian' })).toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: 'Non-vegetarian' })).not.toBeInTheDocument()
+  })
+
+  it('marks a non-vegetarian dish with an accessible label', () => {
+    render(<MenuItemCard item={{ ...item, is_veg: false }} />)
+
+    expect(screen.getByRole('img', { name: 'Non-vegetarian' })).toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: 'Vegetarian' })).not.toBeInTheDocument()
   })
 
   it('does not show the sold out badge for an available item', () => {

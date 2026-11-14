@@ -34,6 +34,18 @@ describe('MenuItemForm', () => {
     expect(screen.getByRole('checkbox', { name: 'Available for ordering' })).toBeChecked()
   })
 
+  it('starts as vegetarian and submits is_veg false when unticked', async () => {
+    const { onSubmit } = renderForm()
+    const veg = screen.getByRole('checkbox', { name: 'Vegetarian' })
+    expect(veg).toBeChecked()
+    await fillValid()
+
+    await userEvent.click(veg)
+    await userEvent.click(submit())
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ is_veg: false }))
+  })
+
   it('prefills from initial values', () => {
     renderForm({
       initialValues: { name: 'Cheese Dosa', description: 'Melted', category: 'Dosas', price: 120, is_available: false },
@@ -64,6 +76,7 @@ describe('MenuItemForm', () => {
       category: 'Dosas',
       price: 99.5,
       is_available: true,
+      is_veg: true,
     })
   })
 

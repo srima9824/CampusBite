@@ -25,6 +25,20 @@ describe('useMenu', () => {
     expect(result.current.data.items.map((item) => item.name)).toEqual(['Masala Dosa'])
   })
 
+  it('filters by diet', async () => {
+    const { result } = renderHook(() => useMenu('3', { veg: 'non_veg' }))
+
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    expect(result.current.data.items.every((item) => !item.is_veg)).toBe(true)
+  })
+
+  it('reports the price ceiling of the whole menu, rounded up to 10, even when filtered', async () => {
+    const { result } = renderHook(() => useMenu('3', { max_price: '100' }))
+
+    await waitFor(() => expect(result.current.priceCeiling).toBe(260))
+    expect(result.current.data.items.every((item) => item.price <= 100)).toBe(true)
+  })
+
   it('reports a 404 error for an unknown restaurant', async () => {
     const { result } = renderHook(() => useMenu('999', {}))
 

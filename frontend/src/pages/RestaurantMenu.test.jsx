@@ -7,7 +7,6 @@ import * as restaurantsApi from '../api/restaurants.js'
 import { resetStore, setLatency } from '../api/testing.js'
 import { ToastProvider } from '../components/ui'
 import { CartProvider, useCart } from '../context/CartContext.jsx'
-import { FILTER_HINT } from '../components/FilterActions.jsx'
 import RestaurantMenu from './RestaurantMenu.jsx'
 
 function Url() {
@@ -36,7 +35,11 @@ function renderPage(entry = '/restaurants/1') {
 }
 
 const url = () => screen.getByTestId('url').textContent
-const itemHeadings = () => screen.queryAllByRole('heading', { level: 3 }).map((h) => h.textContent)
+const itemHeadings = () => screen.queryAllByRole('heading', { level: 3 }).map((h) => h.textContent.replace(/^(Non-vegetarian|Vegetarian)/, ''))
+const minSlider = () => screen.getByRole('slider', { name: /^Min price/ })
+const maxSlider = () => screen.getByRole('slider', { name: /^Max price/ })
+// The slider range is sized from the menu, so wait for it before moving a handle.
+const slidersReady = (ceiling) => waitFor(() => expect(maxSlider()).toHaveAttribute('max', String(ceiling)))
 
 beforeEach(() => {
   resetStore()
@@ -81,12 +84,13 @@ describe('RestaurantMenu page', () => {
     expect(url()).toBe('/restaurants/1?q=lassi')
   })
 
-  it('narrows the menu by price range from the inputs', async () => {
+  it('narrows the menu by price range from the sliders', async () => {
     renderPage()
     await screen.findByRole('heading', { level: 1, name: 'Dosa Dash' })
+    await slidersReady(120)
 
-    await userEvent.type(screen.getByLabelText('Min price (Rs.)'), '60')
-    await userEvent.type(screen.getByLabelText('Max price (Rs.)'), '80')
+    fireEvent.change(minSlider(), { target: { value: '60' } })
+    fireEvent.change(maxSlider(), { target: { value: '80' } })
 
     await waitFor(() => expect(itemHeadings()).toHaveLength(3))
     expect(itemHeadings()).toEqual(expect.arrayContaining(['Masala Dosa', 'Idli Sambar', 'Mango Lassi']))
@@ -100,7 +104,8 @@ describe('RestaurantMenu page', () => {
 
     expect(itemHeadings()).toEqual(['Masala Dosa'])
     expect(screen.getByLabelText('Search the menu')).toHaveValue('dosa')
-    expect(screen.getByLabelText('Max price (Rs.)')).toHaveValue(100)
+    expect(screen.getByText('Max price ₹100')).toBeInTheDocument()
+    expect(maxSlider()).toHaveValue('100')
   })
 
   it('shows an inline message for an inverted price range and keeps the list visible', async () => {
@@ -173,77 +178,148 @@ describe('RestaurantMenu filter form', () => {
   const form = () => screen.getByRole('search', { name: 'Filter the menu' })
   const ready = () => screen.findByRole('heading', { level: 1, name: 'Dosa Dash' })
 
-  it('shows the hint and links it to the form', async () => {
+  it('has no Apply button, no hint, and only Clear filters as a plain button', async () => {
     renderPage()
     await ready()
 
-    expect(screen.getByText(FILTER_HINT)).toBeInTheDocument()
-    expect(form()).toHaveAccessibleDescription(FILTER_HINT)
+    expect(screen.queryByRole('button', { name: 'Apply' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/press Apply/i)).not.toBeInTheDocument()
+    expect(within(form()).getAllByRole('button').map((button) => button.textContent)).toEqual(
+      expect.arrayContaining(['Clear filters']),
+    )
+    expect(within(form()).queryAllByRole('spinbutton')).toHaveLength(0)
   })
 
-  it('offers Apply before Clear filters in the form', async () => {
+  it('offers two sliders from 0 to the highest dish price, with live labels', async () => {
     renderPage()
     await ready()
+    await slidersReady(120)
 
-    const buttons = within(form()).getAllByRole('button').map((button) => button.textContent)
-    expect(buttons).toEqual(['Apply', 'Clear filters'])
+    expect(minSlider()).toHaveAttribute('min', '0')
+    expect(screen.getByText('Min price ₹0')).toBeInTheDocument()
+    expect(screen.getByText('Max price ₹120')).toBeInTheDocument()
+    expect(maxSlider()).toHaveValue('120')
   })
 
-  it('applies all three fields at once when Apply is clicked', async () => {
+  it('updates the label as a handle moves', async () => {
     renderPage()
     await ready()
-    fireEvent.change(screen.getByLabelText('Search the menu'), { target: { value: 'dosa' } })
-    fireEvent.change(screen.getByLabelText('Min price (Rs.)'), { target: { value: '50' } })
-    fireEvent.change(screen.getByLabelText('Max price (Rs.)'), { target: { value: '100' } })
+    await slidersReady(120)
 
-    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    fireEvent.change(minSlider(), { target: { value: '40' } })
 
-    expect(url()).toBe('/restaurants/1?q=dosa&min_price=50&max_price=100')
-    await waitFor(() => expect(itemHeadings()).toEqual(['Masala Dosa']))
+    expect(screen.getByText('Min price ₹40')).toBeInTheDocument()
   })
 
-  it('applies at once when Enter is pressed in a field', async () => {
+  it('pushes the other handle so the minimum never passes the maximum', async () => {
     renderPage()
     await ready()
-    fireEvent.change(screen.getByLabelText('Search the menu'), { target: { value: 'lassi' } })
+    await slidersReady(120)
+    fireEvent.change(maxSlider(), { target: { value: '70' } })
 
-    await userEvent.type(screen.getByLabelText('Search the menu'), '{Enter}')
+    fireEvent.change(minSlider(), { target: { value: '100' } })
 
-    expect(url()).toBe('/restaurants/1?q=lassi')
+    expect(screen.getByText('Min price ₹70')).toBeInTheDocument()
+    expect(screen.getByText('Max price ₹70')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('still alerts on an inverted range after Apply and does not send it to the api', async () => {
+  it('sends no price filter while both handles sit at the ends of the range', async () => {
     const spy = vi.spyOn(restaurantsApi, 'listMenu')
     renderPage()
     await ready()
-    fireEvent.change(screen.getByLabelText('Min price (Rs.)'), { target: { value: '200' } })
-    fireEvent.change(screen.getByLabelText('Max price (Rs.)'), { target: { value: '50' } })
+    await slidersReady(120)
 
-    await userEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    fireEvent.change(minSlider(), { target: { value: '50' } })
+    fireEvent.change(minSlider(), { target: { value: '0' } })
+    fireEvent.change(maxSlider(), { target: { value: '120' } })
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/minimum price is higher than the maximum/i)
-    expect(spy.mock.calls.some(([, filters]) => filters.min_price === '200' || filters.max_price === '50')).toBe(false)
-    expect(itemHeadings().length).toBeGreaterThan(0)
+    expect(url()).toBe('/restaurants/1')
+    expect(spy.mock.calls.every(([, filters]) => !filters?.min_price && !filters?.max_price)).toBe(true)
   })
 
-  it('clears the fields and the URL with the form Clear filters button', async () => {
-    renderPage('/restaurants/1?q=lassi&min_price=10')
+  it('filters instantly after the debounce, with no button press', async () => {
+    renderPage()
+    await ready()
+    await slidersReady(120)
+
+    fireEvent.change(maxSlider(), { target: { value: '50' } })
+
+    await waitFor(() => expect(url()).toBe('/restaurants/1?max_price=50'))
+    await waitFor(() => expect(itemHeadings()).toEqual(expect.arrayContaining(['Medu Vada', 'Filter Coffee'])))
+    expect(itemHeadings().every((name) => ['Medu Vada', 'Filter Coffee'].includes(name))).toBe(true)
+  })
+
+  it('offers All, Veg and Non-veg chips with All selected by default', async () => {
+    renderPage()
+    await ready()
+
+    expect(within(form()).getByRole('radiogroup', { name: 'Diet' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'All' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: 'Veg' })).not.toBeChecked()
+    expect(screen.getByRole('radio', { name: 'Non-veg' })).not.toBeChecked()
+  })
+
+  it('shows only non-vegetarian dishes for the Non-veg chip and writes it to the URL', async () => {
+    renderPage('/restaurants/3')
+    await screen.findByRole('heading', { level: 1, name: 'Burger Barn' })
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Non-veg' }))
+
+    await waitFor(() => expect(url()).toBe('/restaurants/3?veg=non_veg'))
+    await waitFor(() => expect(itemHeadings()).toEqual(['Classic Cheeseburger', 'Double Stack', 'Spicy Chicken Burger']))
+    expect(screen.getByRole('radio', { name: 'Non-veg' })).toBeChecked()
+  })
+
+  it('shows only vegetarian dishes for the Veg chip, and All brings everything back', async () => {
+    renderPage('/restaurants/3?veg=veg')
+    await screen.findByRole('heading', { level: 1, name: 'Burger Barn' })
+
+    expect(screen.getByRole('radio', { name: 'Veg' })).toBeChecked()
+    expect(itemHeadings()).not.toContain('Classic Cheeseburger')
+
+    await userEvent.click(screen.getByRole('radio', { name: 'All' }))
+
+    await waitFor(() => expect(itemHeadings()).toContain('Classic Cheeseburger'))
+    expect(url()).toBe('/restaurants/3')
+  })
+
+  it('still alerts on an inverted range typed into the URL and does not send it to the api', async () => {
+    const spy = vi.spyOn(restaurantsApi, 'listMenu')
+    renderPage('/restaurants/1?min_price=100&max_price=50')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/minimum price is higher than the maximum/i)
+    expect(spy.mock.calls.some(([, filters]) => filters?.min_price === '100' || filters?.max_price === '50')).toBe(false)
+    await waitFor(() => expect(itemHeadings().length).toBeGreaterThan(0))
+  })
+
+  it('clears the search, sliders, chips and URL with the form Clear filters button', async () => {
+    renderPage('/restaurants/1?q=lassi&min_price=10&veg=veg')
     await ready()
 
     await userEvent.click(within(form()).getByRole('button', { name: 'Clear filters' }))
 
     expect(screen.getByLabelText('Search the menu')).toHaveValue('')
-    expect(screen.getByLabelText('Min price (Rs.)')).toHaveValue(null)
+    expect(screen.getByText('Min price ₹0')).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'All' })).toBeChecked()
     expect(url()).toBe('/restaurants/1')
   })
 
-  it('still auto-applies the search after the debounce without pressing Apply', async () => {
+  it('auto-applies the search after the debounce', async () => {
     renderPage()
     await ready()
 
     await userEvent.type(screen.getByLabelText('Search the menu'), 'idli')
 
     await waitFor(() => expect(url()).toBe('/restaurants/1?q=idli'))
+  })
+
+  it('has no accessibility violations in the filter area', async () => {
+    renderPage()
+    await ready()
+    await slidersReady(120)
+
+    expect(await axe(form())).toHaveNoViolations()
   })
 
   it('shows the restaurant logo in the header', async () => {
