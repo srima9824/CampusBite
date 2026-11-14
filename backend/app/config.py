@@ -1,6 +1,6 @@
 from functools import lru_cache
 from typing import Annotated, Literal
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -22,7 +22,10 @@ class Settings(BaseSettings):
     @field_validator("app_timezone")
     @classmethod
     def check_timezone(cls, value: str) -> str:
-        ZoneInfo(value)
+        try:
+            ZoneInfo(value)
+        except (ZoneInfoNotFoundError, ValueError):
+            raise ValueError("APP_TIMEZONE must be a valid time zone name.") from None
         return value
 
     @field_validator("cors_origins", mode="before")
