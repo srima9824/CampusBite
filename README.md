@@ -60,7 +60,7 @@ You need Docker. From the repository root:
    ```
    Then edit `.env`:
    - Set `JWT_SECRET` to a long random value: `openssl rand -hex 32`. The app refuses to start with a short secret.
-   - Change `POSTGRES_PASSWORD`.
+   - Change `POSTGRES_PASSWORD`. Use only letters and digits, for example `openssl rand -hex 16`: characters such as `@` or `/` break the database connection URL.
    - Optional: set `OPENAI_API_KEY` and `OPENAI_MODEL` to use the AI feature. Without them, the AI route answers 503 and everything else works.
    - Optional: set `SEED_PASSWORD` (at least 8 characters) to create test accounts.
 2. Start PostgreSQL and the API:
