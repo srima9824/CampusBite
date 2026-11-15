@@ -420,3 +420,84 @@ def test_return_request_downgrade_to_base_then_upgrade_again(tmp_path):
     assert remaining == set()
     assert up.returncode == 0, up.stderr
     assert RETURN_COLUMNS <= set(columns)
+
+
+def reminder_shape(url: str) -> dict:
+    engine = create_engine(url)
+    inspector = inspect(engine)
+    tables = set(inspector.get_table_names())
+    shape = {"tables": tables}
+    if "admin_reminder_logs" in tables:
+        shape["columns"] = {c["name"]: c for c in inspector.get_columns("admin_reminder_logs")}
+        shape["uniques"] = {
+            (u["name"], tuple(u["column_names"]))
+            for u in inspector.get_unique_constraints("admin_reminder_logs")
+        }
+        shape["indexes"] = {
+            tuple(i["column_names"]) for i in inspector.get_indexes("admin_reminder_logs")
+        }
+        shape["fks"] = {
+            (f["constrained_columns"][0], f["referred_table"])
+            for f in inspector.get_foreign_keys("admin_reminder_logs")
+        }
+    engine.dispose()
+    return shape
+
+
+def test_reminders_migration_creates_table_with_constraints_and_indexes(tmp_path):
+    url = f"sqlite:///{tmp_path / 'reminders.db'}"
+
+    upgrade = run_alembic(url, "upgrade", "head")
+    shape = reminder_shape(url)
+
+    assert upgrade.returncode == 0, upgrade.stderr
+    assert "admin_reminder_logs" in shape["tables"]
+    assert set(shape["columns"]) == {
+        "id",
+        "order_id",
+        "restaurant_id",
+        "order_status",
+        "created_at",
+    }
+    assert all(not shape["columns"][c]["nullable"] for c in shape["columns"])
+    assert ("uq_admin_reminder_logs_order_status", ("order_id", "order_status")) in shape["uniques"]
+    assert {("order_id",), ("restaurant_id",)} <= shape["indexes"]
+    assert shape["fks"] == {("order_id", "orders"), ("restaurant_id", "restaurants")}
+
+
+def test_reminders_downgrade_to_0006_removes_the_table(tmp_path):
+    url = f"sqlite:///{tmp_path / 'reminders_down.db'}"
+    assert run_alembic(url, "upgrade", "head").returncode == 0
+
+    downgrade = run_alembic(url, "downgrade", "0006")
+    shape = reminder_shape(url)
+
+    assert downgrade.returncode == 0, downgrade.stderr
+    assert "admin_reminder_logs" not in shape["tables"]
+    assert {"orders", "reviews"} <= shape["tables"]
+    assert run_alembic(url, "upgrade", "head").returncode == 0
+    assert "admin_reminder_logs" in reminder_shape(url)["tables"]
+
+
+def test_reminders_downgrade_to_base_drops_everything(tmp_path):
+    url = f"sqlite:///{tmp_path / 'reminders_base.db'}"
+    assert run_alembic(url, "upgrade", "head").returncode == 0
+
+    downgrade = run_alembic(url, "downgrade", "base")
+
+    assert downgrade.returncode == 0, downgrade.stderr
+    assert reminder_shape(url)["tables"] - {"alembic_version"} == set()
+
+
+def test_migrated_reminders_enforce_one_per_order_and_status(migrated_engine):
+    sql = (
+        "INSERT INTO admin_reminder_logs (order_id, restaurant_id, order_status, created_at) "
+        "VALUES (1, 1, :s, CURRENT_TIMESTAMP)"
+    )
+    with migrated_engine.begin() as conn:
+        insert_order(conn)
+        conn.execute(text(sql), {"s": "PLACED"})
+        conn.execute(text(sql), {"s": "ACCEPTED"})
+
+    with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
+        conn.execute(text(sql), {"s": "PLACED"})
