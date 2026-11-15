@@ -1,177 +1,459 @@
 # CampusBite
 
-A full-stack restaurant ordering and delivery application for campus. Customers browse restaurants, order with a dummy payment, track their orders, review them and ask an AI assistant about their order history. Restaurant owners manage their menu and kitchen queue. Delivery partners handle their assigned deliveries.
+CampusBite is a full-stack restaurant ordering and delivery application for a campus. Customers browse restaurants, order with a dummy payment, track their orders, review them, request returns and ask an AI assistant about their order history. Restaurant owners manage their menu, their kitchen queue and return requests. Delivery partners handle the orders assigned to them.
 
-## Features
+Three roles, one app: **Customer**, **Restaurant Owner** and **Delivery Partner**. Every permission is enforced by the backend, not only hidden in the interface.
 
-**Everyone**
-- Browse restaurants and menus, search dishes by name and price range, filter veg or non-veg, with pagination.
-- Read public restaurant and dish reviews, and see each restaurant's average rating.
-- Register and log in. Only `@masaischool.ac.in` email addresses are accepted. Passwords are hashed with bcrypt and sessions use JWT tokens.
+## Contents
 
-**Customer**
-- Place an order from one restaurant with a dummy payment (the order is marked `mock_paid` and a payment record is saved).
-- See order history with status and date filters, and track each order's status.
-- Cancel an order while it is still `PLACED`.
-- Rate and review an order after it is delivered (one review per order).
-- Ask for a return and refund after delivery, with a reason (one request per order).
-- Ask questions about their own orders in plain language, answered by OpenAI.
+1. [Quick start](#quick-start)
+2. [Technologies](#technologies)
+3. [Features](#features)
+4. [Run the backend (Docker Compose)](#run-the-backend-docker-compose)
+5. [Run the frontend](#run-the-frontend)
+6. [Seed data and test accounts](#seed-data-and-test-accounts)
+7. [Testing](#testing)
+8. [Environment variables](#environment-variables)
+9. [API documentation](#api-documentation)
+10. [How it works](#how-it-works)
+11. [Troubleshooting](#troubleshooting)
+12. [Limitations](#limitations)
+13. [Repository layout](#repository-layout)
 
-**Restaurant owner**
-- Add dishes, edit them and mark them available or unavailable.
-- See incoming orders with status and date filters, accept them and move them to preparing and ready.
-- Assign a delivery partner to a ready order.
-- Approve or reject return requests (an approved return refunds the payment and marks the order `REFUNDED`).
-- See basic restaurant statistics and reminders for orders that have waited more than 15 minutes without an update.
+## Quick start
 
-**Delivery partner**
-- See only the orders assigned to them, with the customer's delivery details.
-- Mark an order out for delivery and delivered, and see their delivery history.
+You need **Docker** (with Docker Compose) and **Node.js 20 or newer**. From the repository root:
 
-Access to each of these is enforced on the backend by role, not only hidden in the interface.
+```bash
+# 1. Create your settings file
+cp .env.example .env
+#    Open .env and set JWT_SECRET, POSTGRES_PASSWORD and SEED_PASSWORD (see the table below)
 
-## Technologies
+# 2. Start PostgreSQL and the API (migrations run automatically)
+docker compose up --build -d
 
-| Layer | Technology |
-|---|---|
-| Frontend | React, JavaScript (ES6+), Hooks, React Router DOM, Fetch API, Vite |
-| Backend | Python, FastAPI, Pydantic, SQLAlchemy, Alembic, JWT, bcrypt |
-| Database | PostgreSQL (runtime), SQLite (automated tests only) |
-| AI | OpenAI API through the official `openai` SDK |
-| Packaging | Docker and Docker Compose |
-
-## Repository layout
-
-```
-backend/    FastAPI application, migrations and tests
-frontend/   React application
-docs/       Problem statement, specification, UX notes
-docker-compose.yml   Backend and PostgreSQL
-.env.example         Names of all settings, placeholder values only
-```
-
-## Run the backend with Docker Compose
-
-You need Docker. From the repository root:
-
-1. Create your settings file and fill it in:
-   ```
-   cp .env.example .env
-   ```
-   Then edit `.env`:
-   - Set `JWT_SECRET` to a long random value: `openssl rand -hex 32`. The app refuses to start with a short secret.
-   - Change `POSTGRES_PASSWORD`. Use only letters and digits, for example `openssl rand -hex 16`: characters such as `@` or `/` break the database connection URL.
-   - Optional: set `OPENAI_API_KEY` and `OPENAI_MODEL` to use the AI feature. Without them, the AI route answers 503 and everything else works.
-   - Optional: set `SEED_PASSWORD` (at least 8 characters) to create test accounts.
-2. Start PostgreSQL and the API:
-   ```
-   docker compose up --build
-   ```
-   Database migrations run automatically on start. Run it again with `--build` after changing code, because the code is copied into the image.
-3. Check it: http://localhost:8000/health should return `{"status":"ok","database":"up"}`.
-4. Stop it with `docker compose down`. Add `-v` to also delete the database data.
-
-The `.env` file is ignored by git. Never commit it.
-
-### Database setup
-
-- PostgreSQL runs in the `db` container, with its data in the `db_data` volume. Credentials come from `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB` in `.env`.
-- The schema is managed by Alembic migrations in `backend/alembic/versions`. They apply on every start (`alembic upgrade head`).
-- Tables: `users`, `restaurants`, `menu_items`, `orders`, `order_items`, `reviews`, `payment_ledger` and `admin_reminder_logs`.
-- To start from an empty database: `docker compose down -v`, then `docker compose up --build`.
-
-### Test accounts
-
-With `SEED_PASSWORD` set in `.env` and the stack running:
-
-```
+# 3. Create the test accounts, the 4 restaurants and sample order history
 docker compose run --rm backend python -m app.seed
-```
 
-This creates the accounts below, the 4 restaurants and their dishes, and a short past order history with reviews for maya and leo (so order lists, reviews and AI insights have something to show). It is safe to run again: anything that exists is skipped. All accounts use the password you set. For local use only.
-
-| Email | Role |
-|---|---|
-| maya@masaischool.ac.in, leo@masaischool.ac.in | Customer |
-| owner1@masaischool.ac.in (Dosa Dash), owner3@masaischool.ac.in (Burger Barn), owner5@masaischool.ac.in (Taco Tuesday), owner7@masaischool.ac.in (Chai & Chill) | Restaurant owner |
-| sam@masaischool.ac.in, priya@masaischool.ac.in, jonah@masaischool.ac.in | Delivery partner |
-
-### Run the backend tests
-
-The tests use an in-memory SQLite database and need no OpenAI key:
-
-```
-docker compose run --rm --no-deps -e DATABASE_URL=sqlite:///:memory: backend pytest
-docker compose run --rm --no-deps backend ruff check .
-```
-
-## Environment variables
-
-All names are in `.env.example`. Values there are placeholders only.
-
-| Variable | Purpose | Default |
-|---|---|---|
-| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Database credentials. Compose builds `DATABASE_URL` from them | none |
-| `BACKEND_PORT` | Host port for the API | 8000 |
-| `JWT_SECRET` | Key for signing login tokens, at least 32 characters | none (required) |
-| `JWT_ALGORITHM` | Signing algorithm, only `HS256` is allowed | HS256 |
-| `JWT_EXPIRE_MINUTES` | How long a login token lasts | 60 |
-| `OPENAI_API_KEY`, `OPENAI_MODEL` | OpenAI key and model name for AI insights. The key stays in the backend only | empty |
-| `AI_QUESTIONS_PER_MINUTE` | AI questions allowed per customer per minute | 5 |
-| `CORS_ORIGINS` | Comma separated browser origins allowed to call the API | http://localhost:5173 |
-| `REMINDER_STALE_MINUTES` | Minutes an order may stay `PLACED` or `ACCEPTED` before a reminder | 15 |
-| `REMINDER_CHECK_SECONDS` | How often the background task looks for stale orders (0 turns it off) | 60 |
-| `APP_TIMEZONE` | Time zone for date filters and "today" | Asia/Kolkata |
-| `SEED_PASSWORD` | Password for the test accounts made by the seed script | none |
-
-## API documentation
-
-With the backend running:
-
-- Interactive docs (Swagger UI): http://localhost:8000/docs
-- Alternative docs (ReDoc): http://localhost:8000/redoc
-- Machine-readable schema: http://localhost:8000/openapi.json
-
-Every route has a description, and lists the errors it can return. To try protected routes: call `POST /auth/login`, copy the `access_token`, click **Authorize** and paste the token only, without the word `Bearer`. Tokens last 60 minutes.
-
-Errors use the shape `{"detail": {"code": "...", "message": "..."}}`. Validation errors (422) use FastAPI's standard list shape.
-
-| Area | Routes |
-|---|---|
-| Auth | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` |
-| Browse (public) | `GET /restaurants`, `GET /restaurants/{id}`, `GET /restaurants/{id}/menu` |
-| Reviews (public) | `GET /restaurants/{id}/reviews`, `GET /menu-items/{id}/reviews` |
-| Customer orders | `POST /orders`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/cancel`, `POST /orders/{id}/review`, `POST /orders/{id}/return` |
-| AI insights | `POST /insights` |
-| Owner menu | `GET /owner/menu`, `POST /owner/menu`, `PATCH /owner/menu/{id}`, `PATCH /owner/menu/{id}/availability` |
-| Owner orders | `GET /owner/orders`, `GET /owner/orders/{id}`, `PATCH /owner/orders/{id}/status`, `PATCH /owner/orders/{id}/assign`, `GET /owner/delivery-partners` |
-| Owner returns and more | `GET /owner/returns`, `PATCH /owner/orders/{id}/return`, `GET /owner/reminders`, `GET /owner/stats` |
-| Delivery partner | `GET /delivery/orders`, `GET /delivery/orders/{id}`, `PATCH /delivery/orders/{id}/status` |
-| System | `GET /health` |
-
-### Order lifecycle
-
-`PLACED` → `ACCEPTED` → `PREPARING` → `READY` → `ASSIGNED` → `OUT_FOR_DELIVERY` → `DELIVERED`, plus `CANCELLED` and `REFUNDED`.
-
-- A customer can cancel only while `PLACED`. The payment is then marked `refunded`.
-- The owner moves an order from `PLACED` to `READY` one step at a time, then assigns a delivery partner, which sets `ASSIGNED`.
-- The delivery partner moves `ASSIGNED` to `OUT_FOR_DELIVERY` to `DELIVERED`, and only for orders assigned to them.
-- After delivery, the customer can review once and ask for a return once. If the owner approves the return, the order becomes `REFUNDED`. If the owner rejects it, the order stays `DELIVERED`.
-- Any other step is refused by the backend with a `409`.
-
-## Frontend
-
-The React application is in `frontend/`. To run it:
-
-```
+# 4. Start the frontend in a second terminal
 cd frontend
 npm install
 npm run dev
 ```
 
-Then open http://localhost:5173. Other commands: `npm run build`, `npm run lint` and `npm test`.
+Open http://localhost:5173 and log in with `maya@masaischool.ac.in` and the `SEED_PASSWORD` you set.
 
-Every screen uses the real API. Start the backend first (see above), then log in with a seeded account such as `maya@masaischool.ac.in` and the `SEED_PASSWORD` you set. The API address comes from `VITE_API_BASE_URL` in `frontend/.env.example` (default `http://localhost:8000`).
+Minimum values to put in `.env`:
+
+| Setting | What to put |
+|---|---|
+| `JWT_SECRET` | A random value of at least 32 characters. Generate one with `openssl rand -hex 32` |
+| `POSTGRES_PASSWORD` | Letters and digits only, for example `openssl rand -hex 16`. Symbols such as `@` or `/` break the database URL |
+| `SEED_PASSWORD` | Any password of 8 or more characters. All test accounts use it |
+| `OPENAI_API_KEY`, `OPENAI_MODEL` | Optional. Needed only for the AI Insights page |
+
+## Technologies
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, JavaScript (ES6+), React Hooks, React Router DOM, Fetch API, Vite, CSS modules |
+| Backend | Python, FastAPI, Pydantic v2, SQLAlchemy 2 ORM, Alembic migrations, JWT (PyJWT), bcrypt |
+| Database | PostgreSQL 16 at runtime, SQLite in memory for automated tests only |
+| AI | OpenAI API through the official `openai` Python SDK |
+| Packaging | Docker and Docker Compose (API and database) |
+| Tests | pytest and ruff (backend), Vitest and Testing Library (frontend), ESLint |
+
+## Features
+
+### Everyone (no login needed to browse)
+- Browse the restaurants, with search and pagination, and see each restaurant's average rating and review count.
+- Open a restaurant's menu with dish details. Search dishes by name, filter by price range with two sliders, and filter vegetarian or non-vegetarian. Unavailable dishes are shown as unavailable.
+- Read public reviews of a restaurant (newest first, paginated, filter by star rating) and of each dish (the reviews of delivered orders that included the dish). Reviewer names are shown as first name and last initial, for example "Maya P.".
+- Register and log in. Only `@masaischool.ac.in` email addresses are accepted. Passwords are hashed with bcrypt. Login uses a JWT token, stored in `localStorage` and sent with every protected request. The session survives a page refresh, and an expired token sends the user back to the login page.
+
+### Customer
+- **Cart:** add dishes, change quantities (1 to 20) or remove them. A cart holds dishes from one restaurant, and the app asks before replacing it with another restaurant's dishes. The cart is kept in the browser.
+- **Checkout and dummy payment:** enter a delivery address and an optional note, then place the order. No real payment happens. The order's payment status becomes `mock_paid` and a payment record is written to the payment ledger. Prices come from the server, never from the browser.
+- **Order history and tracking:** see current and past orders with status and date filters and pagination. Each order shows its progress, its lines, its payment status and its return status.
+- **Cancel:** cancel an order while it is still `PLACED`. The payment is marked `refunded`.
+- **Reviews:** after delivery, rate the order from 1 to 5 stars with an optional comment (one review per order).
+- **Return and refund:** after delivery, request a return with a reason (one request per order). See whether it is requested, approved or rejected.
+- **AI Insights:** ask questions about your own order history in plain language, or request a summary. The answer is generated by the OpenAI API from the customer's real orders.
+
+### Restaurant owner
+- **Menu management:** add dishes, edit them (name, description, category, price, veg or non-veg) and mark them available or unavailable. The customer menu updates at once.
+- **Orders:** see the incoming orders for their own restaurant only, filter by status and date range, paginate. Move each order step by step: accept, start preparing, mark ready.
+- **Delivery partners:** assign a delivery partner to an order that is `READY`.
+- **Returns:** a separate page to approve or reject return requests. Approving refunds the payment and marks the order `REFUNDED`. Rejecting marks the return `REJECTED`.
+- **Reminders:** a "Needs attention" box on the Orders page lists orders that stayed `PLACED` or `ACCEPTED` for more than 15 minutes.
+- **Statistics:** total orders, revenue, orders today, orders by status, top dishes, and the restaurant's average rating.
+
+### Delivery partner
+- See only the orders assigned to them, with a status filter and pagination, and the customer's delivery details (name, address, note, dishes).
+- Mark an order **Out for delivery**, then **Delivered**.
+- See their delivery history.
+
+### Platform
+- **Role-based access control** in the backend and the frontend. A customer who opens an owner page is redirected to the restaurants page, and the API refuses their token with 403.
+- **Data isolation:** a user who asks for another user's order gets 404, so that the order's existence is not revealed.
+- **Request middleware** logs every request's method, path, status and duration, and adds an `X-Process-Time` response header (milliseconds).
+- **Background task** that creates reminder records for stale orders every minute.
+- **Validation and clear errors:** all input is validated, and every error has a code and a readable message that the interface shows.
+- **Interactive API documentation** with a description for every route.
+- **Responsive interface** for desktop and mobile, with loading, empty and error states on every list.
+
+## Run the backend (Docker Compose)
+
+1. **Create the settings file.** From the repository root:
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and set at least `JWT_SECRET`, `POSTGRES_PASSWORD` and `SEED_PASSWORD` (see the table in [Quick start](#quick-start)). The `.env` file is ignored by git. Never commit it.
+
+2. **Start the stack:**
+   ```bash
+   docker compose up --build -d
+   ```
+   This starts two containers, `db` (PostgreSQL) and `backend` (FastAPI on port 8000). The database migrations run on every start (`alembic upgrade head`). Add `--build` after you change backend code, because the code is copied into the image.
+
+3. **Check it:**
+   ```bash
+   curl http://localhost:8000/health
+   ```
+   It should return `{"status":"ok","database":"up"}`. If it does not yet, wait a few seconds and try again.
+
+4. **Useful commands:**
+
+   | Command | What it does |
+   |---|---|
+   | `docker compose logs -f backend` | Follow the API logs (every request is logged) |
+   | `docker compose restart backend` | Restart the API |
+   | `docker compose up -d --force-recreate backend` | Restart the API and re-read `.env` |
+   | `docker compose down` | Stop everything and keep the data |
+   | `docker compose down -v` | Stop everything and delete the database |
+
+### Database setup
+- PostgreSQL runs in the `db` container with its data in the `db_data` volume. Credentials come from `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB` in `.env`.
+- The schema is created and updated by Alembic migrations in `backend/alembic/versions` (0001 to 0007). Nothing needs to be run by hand.
+- Tables: `users`, `restaurants`, `menu_items`, `orders`, `order_items`, `reviews`, `payment_ledger` and `admin_reminder_logs`.
+- To start again from an empty database: `docker compose down -v`, then `docker compose up --build -d`, then seed again.
+- If you change `POSTGRES_PASSWORD` after the first start, the old password stays inside the existing volume. Run `docker compose down -v` to create a fresh database.
+
+## Run the frontend
+
+In a second terminal, with the backend already running:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:5173.
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start the development server with hot reload |
+| `npm run build` | Create the production build in `frontend/dist` |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run the frontend tests |
+
+The frontend finds the backend at `http://localhost:8000`. If you changed `BACKEND_PORT` or host, create `frontend/.env.local` with `VITE_API_BASE_URL=http://localhost:<port>` (see `frontend/.env.example`) and restart `npm run dev`. The backend allows requests from `http://localhost:5173` by default. To use another frontend address, add it to `CORS_ORIGINS` in `.env`.
+
+### Pages
+
+| Who | Page | Route |
+|---|---|---|
+| Everyone | Home, Restaurants, Restaurant menu and reviews, Cart | `/`, `/restaurants`, `/restaurants/:id`, `/cart` |
+| Everyone | Login, Register | `/login`, `/register` |
+| Customer | Checkout, Order confirmation, My orders, Order detail, Insights | `/checkout`, `/order-confirmation/:id`, `/orders`, `/orders/:id`, `/insights` |
+| Owner | Orders, Returns, Stats, Menu, Add or edit dish | `/owner`, `/owner/returns`, `/owner/stats`, `/owner/menu`, `/owner/menu/new`, `/owner/menu/:id/edit` |
+| Delivery partner | Deliveries, History | `/delivery`, `/delivery/history` |
+
+## Seed data and test accounts
+
+The seed script creates test data so you can use every feature straight away. It needs `SEED_PASSWORD` in `.env` and the stack running:
+
+```bash
+docker compose run --rm backend python -m app.seed
+```
+
+Expected output on a fresh database:
+
+```
+Created 9 test accounts, skipped 0.
+Created 4 restaurants and 32 dishes.
+Created 7 past orders for the test customers.
+```
+
+It is safe to run again: anything that already exists is skipped. To reset everything, run `docker compose down -v`, start the stack again and seed again. The test accounts are for local use only.
+
+### Test accounts
+
+All accounts use the password you set in `SEED_PASSWORD`.
+
+| Email | Role | Notes |
+|---|---|---|
+| `maya@masaischool.ac.in` | Customer | Has 5 past orders (4 delivered with reviews, 1 cancelled) |
+| `leo@masaischool.ac.in` | Customer | Has 2 delivered orders with reviews |
+| `owner1@masaischool.ac.in` | Restaurant owner | Dosa Dash |
+| `owner3@masaischool.ac.in` | Restaurant owner | Burger Barn |
+| `owner5@masaischool.ac.in` | Restaurant owner | Taco Tuesday |
+| `owner7@masaischool.ac.in` | Restaurant owner | Chai & Chill |
+| `sam@masaischool.ac.in` | Delivery partner | |
+| `priya@masaischool.ac.in` | Delivery partner | |
+| `jonah@masaischool.ac.in` | Delivery partner | |
+
+You can also register a new customer account with any `@masaischool.ac.in` address. Owners and delivery partners exist only as seeded accounts.
+
+### Seeded restaurants
+
+Dosa Dash (South Indian), Burger Barn (American), Taco Tuesday (Mexican) and Chai & Chill (cafe), 32 dishes in total, both vegetarian and non-vegetarian. Dosa Dash and Burger Barn each have one dish marked unavailable, so you can see the unavailable state. Chai & Chill has no reviews, so it shows "New" instead of a rating.
+
+## Testing
+
+### Backend automated tests
+
+The tests run against an in-memory SQLite database and need no OpenAI key. The OpenAI client is replaced by a fake in the tests.
+
+```bash
+docker compose run --rm --no-deps -e DATABASE_URL=sqlite:///:memory: backend pytest
+docker compose run --rm --no-deps backend ruff check .
+```
+
+There are over 500 test functions (over 1,200 test cases including parametrized ones). They cover authentication, role-based access, data isolation between users, input validation, the order lifecycle and invalid transitions, cancellation, payment records, reviews, returns and refunds, filters and pagination, reminders, the AI route with its error cases, the seed script and the middleware. The full run takes about three minutes. To run part of it, add a path or `-k` expression, for example:
+
+```bash
+docker compose run --rm --no-deps -e DATABASE_URL=sqlite:///:memory: backend pytest tests/test_seed.py -q
+docker compose run --rm --no-deps -e DATABASE_URL=sqlite:///:memory: backend pytest -k "return" -q
+```
+
+### Frontend automated tests
+
+```bash
+cd frontend
+npm test
+npm run lint
+npm run build
+```
+
+The frontend tests are deliberately few and cover the critical features: the API client (token sending and error mapping), login, session and logout, protected routes by role, checkout placing an order and showing the confirmation, and the cart totals and quantities.
+
+### Manual test walkthrough
+
+Seed the data first. Run these steps in order, because later steps use the orders created earlier. The password is your `SEED_PASSWORD`.
+
+**1. Accounts and access**
+1. Open http://localhost:5173/register and try `name@@masaischool.ac.in`. You should see "Enter a valid email address, like name@masaischool.ac.in."
+2. Register with a valid `@masaischool.ac.in` address. You are logged in as a customer. Log out and log in again. Refresh the page and you stay logged in.
+3. Logged out, open `/orders`, `/owner` and `/delivery`. Each sends you to the login page.
+4. Logged in as a customer, open `/owner`. You are redirected away, and no owner page loads.
+
+**2. Customer: `maya@masaischool.ac.in`**
+1. **Restaurants:** 4 restaurants with ratings. Search "burger".
+2. **Menu:** open Dosa Dash. Use the price sliders and the veg and non-veg chips. One dish is marked unavailable.
+3. **Order:** add two dishes, change a quantity in the cart, check out with an address, press **Pay now**. The confirmation shows the order number and the total.
+4. **My orders:** the new order is `PLACED`. Try the status and date filters.
+5. **Cancel:** place a second order and cancel it. It becomes `CANCELLED` and its payment shows `refunded`.
+6. Place one more order for the next step and leave it.
+
+**3. Owner: `owner1@masaischool.ac.in` (Dosa Dash)**
+1. **Orders:** Maya's new order is listed. Filter by status and date. Click **Accept**, **Start preparing**, **Mark ready**, then assign `sam`.
+2. **Menu:** add a dish (for example "Ghee Podi Dosa"), edit its price, and mark another dish unavailable. Check that Maya can see the change on the Dosa Dash page.
+3. **Stats** and **Returns** open. Returns is empty for now.
+4. **Reminders:** leave an order in `PLACED`. After the stale time it appears in the "Needs attention" box. To test quickly, set `REMINDER_STALE_MINUTES=1` in `.env` and run `docker compose up -d --force-recreate backend`.
+
+**4. Delivery partner: `sam@masaischool.ac.in`**
+1. **Deliveries:** only the assigned order is listed. Click **Out for delivery**, then **Mark delivered**.
+2. **History:** the order appears.
+3. Log in as `priya` and check that Sam's order is not visible.
+
+**5. Customer again: reviews and returns**
+1. Open **My orders**, then the delivered order. Leave a rating and a comment.
+2. Open the restaurant page. The average rating and count changed, and the star filter and each dish's **Reviews** button work.
+3. Request a return with a reason. Try to request a second return on the same order. It is refused.
+
+**6. Owner again: return decision**
+1. **Returns:** approve the request. As the customer, the order is now `REFUNDED` and the payment shows `refunded`.
+2. Do it again with another delivered order, and reject it. The return shows `REJECTED` and the payment stays paid.
+
+**7. Permissions**
+- Log in as `leo` and as `owner3`. They cannot see Maya's or Owner 1's orders.
+
+**8. Mobile**
+- Make the browser about 400 px wide. Navigation, cart, checkout and the tables stay usable.
+
+### Testing the AI Insights page
+
+1. Add `OPENAI_API_KEY` and `OPENAI_MODEL` to `.env`, then run `docker compose up -d --force-recreate backend`.
+2. Log in as `maya@masaischool.ac.in` and open **Insights**.
+3. Ask the example questions, or click **Summarize my orders**:
+   - "Summarize my last five orders."
+   - "Which of my orders are still not delivered?"
+   - "How much did I spend this week?"
+   - "Which food items have I ordered most frequently?"
+4. The answer should use Maya's real orders. Questions about other customers get no data, because the backend sends the model only the signed-in customer's orders.
+5. Ask more than 5 questions in one minute. You should see a "too many questions" message.
+
+You can also test the route directly:
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"maya@masaischool.ac.in","password":"<your SEED_PASSWORD>"}' \
+  | python3 -c 'import sys,json; print(json.load(sys.stdin)["access_token"])')
+
+curl -X POST http://localhost:8000/insights \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"question":"Summarize my last five orders."}'
+```
+
+**No paid OpenAI credit?** The `openai` SDK reads an optional `OPENAI_BASE_URL` variable, so you can point the same code at any OpenAI-compatible service for local testing. For example, with a free Google Gemini key:
+
+```
+OPENAI_API_KEY=<your Gemini key>
+OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+OPENAI_MODEL=<a current Gemini model name>
+```
+
+Providers rename and retire model names often, so check the provider's model list if you get "model not found". For the real product, use an OpenAI key and leave `OPENAI_BASE_URL` unset.
+
+### Testing the API directly
+
+Open http://localhost:8000/docs, call `POST /auth/login`, copy the `access_token`, click **Authorize** and paste the token only, without the word `Bearer`. Then try the protected routes. Log in as a customer and call an `/owner/...` route to see the 403, or ask for another customer's order to see the 404.
+
+## Environment variables
+
+All names are in `.env.example`, except the optional `OPENAI_BASE_URL`. The values there are placeholders only. Real values go in `.env`, which is never committed. The API key and the JWT secret stay in the backend and are never sent to the browser or baked into the Docker image.
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Database credentials. Compose builds `DATABASE_URL` from them | `campusbite` / none / `campusbite` |
+| `BACKEND_PORT` | Host port for the API | `8000` |
+| `JWT_SECRET` | Key for signing login tokens, at least 32 characters | none (required) |
+| `JWT_ALGORITHM` | Signing algorithm. Only `HS256` is allowed | `HS256` |
+| `JWT_EXPIRE_MINUTES` | How long a login lasts | `60` |
+| `OPENAI_API_KEY` | OpenAI key for AI insights. Without it the AI route answers 503 and everything else works | empty |
+| `OPENAI_MODEL` | Model name used for AI insights | empty |
+| `OPENAI_BASE_URL` | Optional. Point the SDK at another OpenAI-compatible service (testing only) | unset |
+| `AI_QUESTIONS_PER_MINUTE` | AI questions allowed per customer per minute | `5` |
+| `CORS_ORIGINS` | Comma-separated browser origins allowed to call the API | `http://localhost:5173` |
+| `REMINDER_STALE_MINUTES` | Minutes an order may stay `PLACED` or `ACCEPTED` before it gets a reminder | `15` |
+| `REMINDER_CHECK_SECONDS` | How often the background task looks for stale orders. `0` turns it off | `60` |
+| `APP_TIMEZONE` | Time zone for the date filters and "today" | `Asia/Kolkata` |
+| `SEED_PASSWORD` | Password for the test accounts created by the seed script | none |
+
+Frontend (`frontend/.env.local`, optional):
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `VITE_API_BASE_URL` | Address of the backend API | `http://localhost:8000` |
+
+## API documentation
+
+With the backend running:
+
+- Interactive documentation (Swagger UI): http://localhost:8000/docs
+- Alternative documentation (ReDoc): http://localhost:8000/redoc
+- Machine-readable schema: http://localhost:8000/openapi.json
+
+Every route has a description and lists the errors it can return. Errors use the shape `{"detail": {"code": "...", "message": "..."}}`. Validation errors (422) use FastAPI's standard list shape. Protected routes need the header `Authorization: Bearer <token>`.
+
+| Area | Routes | Who |
+|---|---|---|
+| Auth | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` | Public, then any user |
+| Browse | `GET /restaurants`, `GET /restaurants/{id}`, `GET /restaurants/{id}/menu` | Public |
+| Reviews | `GET /restaurants/{id}/reviews`, `GET /menu-items/{id}/reviews` | Public |
+| Customer orders | `POST /orders`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/cancel`, `POST /orders/{id}/review`, `POST /orders/{id}/return` | Customer |
+| AI insights | `POST /insights` | Customer |
+| Owner menu | `GET /owner/menu`, `POST /owner/menu`, `PATCH /owner/menu/{id}`, `PATCH /owner/menu/{id}/availability` | Owner |
+| Owner orders | `GET /owner/orders`, `GET /owner/orders/{id}`, `PATCH /owner/orders/{id}/status`, `PATCH /owner/orders/{id}/assign`, `GET /owner/delivery-partners` | Owner |
+| Owner returns and more | `GET /owner/returns`, `PATCH /owner/orders/{id}/return`, `GET /owner/reminders`, `GET /owner/stats` | Owner |
+| Delivery | `GET /delivery/orders`, `GET /delivery/orders/{id}`, `PATCH /delivery/orders/{id}/status` | Delivery partner |
+| System | `GET /health` | Public |
+
+List routes take `page` and `page_size`, and return `{items, total, page, page_size}`. Order lists also take `status` (one status or a comma-separated list) and `date_from` and `date_to` (`YYYY-MM-DD`, both days included).
+
+## How it works
+
+### Order lifecycle
+
+`PLACED` → `ACCEPTED` → `PREPARING` → `READY` → `ASSIGNED` → `OUT_FOR_DELIVERY` → `DELIVERED`, plus `CANCELLED` and `REFUNDED`.
+
+| Step | Who can do it | Rule |
+|---|---|---|
+| Place | Customer | Dishes must be available and from one restaurant. Payment becomes `mock_paid` |
+| Cancel | Customer | Only while `PLACED`. Payment becomes `refunded` |
+| `PLACED` to `ACCEPTED` to `PREPARING` to `READY` | Owner of that restaurant | One step at a time |
+| Assign partner (sets `ASSIGNED`) | Owner | Only when `READY`. No reassignment |
+| `ASSIGNED` to `OUT_FOR_DELIVERY` to `DELIVERED` | The assigned delivery partner | Only for their own orders |
+| Review | Customer | Only when `DELIVERED`, once per order |
+| Return request | Customer | Only when `DELIVERED`, with a reason, once per order |
+| Approve return | Owner | Order becomes `REFUNDED`, payment becomes `refunded`, a refund record is written |
+| Reject return | Owner | Return status becomes `REJECTED`, order stays `DELIVERED` |
+
+The backend refuses any other move with a 409 `invalid_transition`. Delivered orders cannot be cancelled.
+
+### Design decisions worth knowing
+- **Authorization is in the backend.** Every route checks the token and the role, and every query is limited to the caller's own data (a customer's orders, an owner's restaurant, a partner's assignments). The frontend hides what a role cannot use, but it is not what protects the data.
+- **Prices are computed by the server.** The browser sends only dish ids and quantities. The order stores a copy of each dish's name and price, so later menu changes do not alter past orders. Money is whole rupees.
+- **No double changes.** Order state changes lock the order row (`SELECT ... FOR UPDATE`), so two people acting at once cannot both succeed on the same step.
+- **Payment ledger.** Every payment event (the dummy payment, and a refund) adds a row to `payment_ledger`.
+- **Reminders.** A background loop that starts with the API checks every `REMINDER_CHECK_SECONDS` for orders in `PLACED` or `ACCEPTED` older than `REMINDER_STALE_MINUTES`, and writes one reminder per order and status to `admin_reminder_logs`. The owner dashboard shows them. There are no WebSockets.
+- **AI feature.** The backend loads only the signed-in customer's most recent 50 orders from the database and sends them with the question to OpenAI, so a customer cannot reach another customer's data through the AI. Questions are limited per customer per minute. OpenAI errors map to clear codes: 503 `ai_not_configured`, 429 `too_many_questions` or `ai_rate_limited`, 502 `ai_unavailable`.
+- **Time zones.** Dates are stored in UTC. Date filters and "orders today" use calendar days in `APP_TIMEZONE`.
+- **Security basics.** bcrypt password hashing, HS256 JWTs pinned to one algorithm, a secret of at least 32 characters, validated request bodies, and secrets kept out of the repository and the image.
+
+### Data model
+
+`users` (role: customer, restaurant owner, delivery partner) · `restaurants` (each owned by one owner) · `menu_items` · `orders` (customer, restaurant, optional delivery partner, status, payment status, return fields) · `order_items` (price and name snapshots) · `reviews` (one per delivered order) · `payment_ledger` (many per order) · `admin_reminder_logs`.
+
+## Troubleshooting
+
+| Problem | Cause and fix |
+|---|---|
+| Backend exits at start with a settings error | `JWT_SECRET` is missing or shorter than 32 characters. Set it in `.env` |
+| Database connection errors | `POSTGRES_PASSWORD` has symbols, or was changed after the first start. Use letters and digits, then `docker compose down -v` and start again |
+| `port is already allocated` | Another program uses port 8000 or 5432. Change `BACKEND_PORT` in `.env` and set `VITE_API_BASE_URL` to match |
+| Browser says "We could not reach the server" or shows a CORS error | The backend is not running, or the frontend address is not in `CORS_ORIGINS`. Check `curl http://localhost:8000/health` |
+| Old data or "Please log in" after changes | Clear the browser's site data (DevTools, Application, Clear site data) and refresh. It removes old tokens and carts |
+| Code changes to the backend do not show | Run `docker compose up --build -d` |
+| Changes to `.env` do not show | Run `docker compose up -d --force-recreate backend`. A plain restart does not re-read `.env` |
+| Seeded accounts cannot log in | `SEED_PASSWORD` was changed after seeding. Run `docker compose down -v`, start, and seed again |
+| Insights page shows an error | 503: `OPENAI_API_KEY` or `OPENAI_MODEL` is not set. 429: too many questions, or the OpenAI account has no credit. 502: OpenAI was unreachable, the model name is wrong, or the request timed out. Run `docker compose logs backend --tail 20` to see which |
+| Customer has no orders on the Insights page | Run the seed script, or place an order first |
+
+## Limitations
+
+- The payment is a dummy, by design. No real money moves.
+- Order timelines show the current status only. The backend does not record when each step happened.
+- Owners see an order's customer name and address only. Delivery partners do not see prices.
+- Owners cannot delete dishes (they mark them unavailable) and cannot reassign a delivery partner.
+- Delivery history has no date filter.
+- Owners and delivery partners cannot register in the app. They are created by the seed script.
+- The AI rate limit counts questions in the API process's memory, so it resets when the API restarts.
+- Order lists do not refresh by themselves. Reload to see changes made by other users.
+
+## Repository layout
+
+```
+backend/                 FastAPI application
+  app/                   routers, services, schemas, models, middleware, reminders, seed
+  alembic/versions/      database migrations 0001 to 0007
+  tests/                 backend tests
+  Dockerfile
+frontend/                React application
+  src/api/               all calls to the backend (Fetch API)
+  src/pages/             one file per page
+  src/components/        reusable components
+  src/context/           login session and cart state (React Context)
+  src/hooks/             data-loading hooks
+  src/routes/            protected routes by role
+docs/                    problem statement, specification, UX notes
+docker-compose.yml       PostgreSQL and the backend
+.env.example             all settings, placeholder values only
+```
 
 ## Documentation
 
