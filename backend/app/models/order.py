@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 from app.models.restaurant import Restaurant, utc_now
+from app.models.user import User
 
 
 class OrderStatus(enum.Enum):
@@ -58,6 +59,7 @@ class Order(Base):
     )
 
     restaurant: Mapped[Restaurant] = relationship()
+    customer: Mapped[User] = relationship()
     items: Mapped[list["OrderItem"]] = relationship(back_populates="order", order_by="OrderItem.id")
 
 

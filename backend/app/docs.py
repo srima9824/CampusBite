@@ -25,6 +25,13 @@ TAGS_METADATA: list[dict[str, str]] = [
         "description": "Customers place orders with the dummy payment and look at their own "
         "orders. Customer login required.",
     },
+    {
+        "name": "owner orders",
+        "description": (
+            "Restaurant owners see and move the orders of their own restaurant. "
+            "Owner login required."
+        ),
+    },
     {"name": "system", "description": "Service status."},
 ]
 
