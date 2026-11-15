@@ -25,6 +25,12 @@ class OrderStatus(enum.Enum):
     REFUNDED = "REFUNDED"
 
 
+class ReturnStatus(enum.Enum):
+    REQUESTED = "REQUESTED"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+
 class PaymentStatus(enum.Enum):
     MOCK_PAID = "mock_paid"
     REFUNDED = "refunded"
@@ -58,6 +64,11 @@ class Order(Base):
     payment_status: Mapped[PaymentStatus] = mapped_column(
         payment_status_column(), default=PaymentStatus.MOCK_PAID
     )
+    return_status: Mapped[ReturnStatus | None] = mapped_column(
+        Enum(ReturnStatus, native_enum=False, length=20), index=True
+    )
+    return_reason: Mapped[str | None] = mapped_column(String(300))
+    return_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
