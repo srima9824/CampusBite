@@ -3,7 +3,7 @@ import { validateMenuItem, DESCRIPTION_MAX } from '../lib/menuItemForm.js'
 import { Button, Input } from './ui'
 import styles from './MenuItemForm.module.css'
 
-const EMPTY_VALUES = { name: '', description: '', category: '', price: '', is_available: true, is_veg: true }
+const EMPTY_VALUES = { name: '', description: '', category: '', price: '', is_veg: true }
 
 // `onSubmit(payload)` rejects with an ApiError; `fields` of a 422 or 409 land under the matching inputs.
 export default function MenuItemForm({ initialValues = EMPTY_VALUES, categories = [], submitLabel, onSubmit, onCancel }) {
@@ -78,20 +78,12 @@ export default function MenuItemForm({ initialValues = EMPTY_VALUES, categories 
       </datalist>
       <Input
         label="Price (Rs.)"
-        inputMode="decimal"
+        inputMode="numeric"
         value={values.price}
         onChange={update('price')}
         error={errors.price}
         autoComplete="off"
       />
-      <label className={styles.check}>
-        <input
-          type="checkbox"
-          checked={values.is_available}
-          onChange={(event) => setValues((current) => ({ ...current, is_available: event.target.checked }))}
-        />
-        Available for ordering
-      </label>
       <label className={styles.check}>
         <input
           type="checkbox"

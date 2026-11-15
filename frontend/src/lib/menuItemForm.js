@@ -1,11 +1,11 @@
-export const NAME_LIMITS = { min: 2, max: 80 }
+export const NAME_LIMITS = { min: 1, max: 80 }
 export const DESCRIPTION_MAX = 300
 export const CATEGORY_MAX = 40
-export const PRICE_MAX = 10000
+export const PRICE_MAX = 100000
 
-const TWO_DECIMALS = /^\d+(\.\d{1,2})?$/
+const WHOLE_RUPEES = /^\d+$/
 
-// Returns a map of field name to message; empty when the values are fine. The form and the mock api both use it.
+// Returns a map of field name to message; empty when the values are fine. Mirrors the backend limits.
 export function validateMenuItem({ name, description, category, price }) {
   const errors = {}
   const trimmedName = String(name ?? '').trim()
@@ -22,8 +22,8 @@ export function validateMenuItem({ name, description, category, price }) {
     errors.category = `Keep the category to ${CATEGORY_MAX} characters or fewer.`
   }
   const text = String(price ?? '').trim()
-  if (!TWO_DECIMALS.test(text) || Number(text) <= 0 || Number(text) > PRICE_MAX) {
-    errors.price = `Enter a price above 0 and up to ${PRICE_MAX}, with at most two decimals.`
+  if (!WHOLE_RUPEES.test(text) || Number(text) <= 0 || Number(text) > PRICE_MAX) {
+    errors.price = `Enter a price above 0 and up to ${PRICE_MAX}, in whole rupees.`
   }
   return errors
 }
