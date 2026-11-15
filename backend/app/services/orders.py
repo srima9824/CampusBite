@@ -145,8 +145,7 @@ def local_day_start_utc(day: date) -> datetime:
     return datetime.combine(day, time.min, tzinfo=zone).astimezone(UTC)
 
 
-def customer_orders_query(customer: User, filters: OrderFilters) -> Select[tuple[Order]]:
-    query = select(Order).where(Order.customer_id == customer.id)
+def apply_order_filters(query: Select[tuple[Order]], filters: OrderFilters) -> Select[tuple[Order]]:
     if filters.statuses:
         query = query.where(Order.status.in_(filters.statuses))
     if filters.date_from is not None:
@@ -155,6 +154,10 @@ def customer_orders_query(customer: User, filters: OrderFilters) -> Select[tuple
         day_after = filters.date_to + timedelta(days=1)
         query = query.where(Order.created_at < local_day_start_utc(day_after))
     return query
+
+
+def customer_orders_query(customer: User, filters: OrderFilters) -> Select[tuple[Order]]:
+    return apply_order_filters(select(Order).where(Order.customer_id == customer.id), filters)
 
 
 def list_orders_for_customer(
