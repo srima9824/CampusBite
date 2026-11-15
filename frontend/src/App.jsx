@@ -12,6 +12,7 @@ import DeliveryHistory from './pages/DeliveryHistory.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import OrderDetail from './pages/OrderDetail.jsx'
 import Orders from './pages/Orders.jsx'
+import Insights from './pages/Insights.jsx'
 import Checkout from './pages/Checkout.jsx'
 import Cart from './pages/Cart.jsx'
 import OrderConfirmation from './pages/OrderConfirmation.jsx'
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="checkout" element={<Checkout />} />
           <Route path="orders" element={<Orders />} />
           <Route path="orders/:orderId" element={<OrderDetail />} />
+          <Route path="insights" element={<Insights />} />
           <Route path="order-confirmation/:orderId" element={<OrderConfirmation />} />
         </Route>
         <Route element={<ProtectedRoute roles={['OWNER']} />}>

@@ -10,7 +10,7 @@ export const ROLE_LINKS = {
     { to: '/login', label: 'Log in' },
     { to: '/register', label: 'Sign up' },
   ],
-  CUSTOMER: [RESTAURANTS_LINK, { to: '/orders', label: 'My orders' }, CART_LINK],
+  CUSTOMER: [RESTAURANTS_LINK, { to: '/orders', label: 'My orders' }, { to: '/insights', label: 'Insights' }, CART_LINK],
   OWNER: [
     { to: '/owner', label: 'Orders', end: true },
     { to: '/owner/returns', label: 'Returns' },

@@ -7,7 +7,7 @@ describe('navLinks', () => {
   })
 
   it.each([
-    ['CUSTOMER', ['Restaurants', 'My orders', 'Cart']],
+    ['CUSTOMER', ['Restaurants', 'My orders', 'Insights', 'Cart']],
     ['OWNER', ['Orders', 'Returns', 'Stats', 'Menu']],
     ['DELIVERY_PARTNER', ['Deliveries', 'History']],
   ])('returns the %s links', (role, labels) => {
