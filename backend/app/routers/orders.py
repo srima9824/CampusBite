@@ -123,6 +123,34 @@ def place_order(data: OrderCreate, customer: Customer, db: DbSession) -> OrderOu
     return OrderOut.model_validate(order)
 
 
+@router.post(
+    "/{order_id}/cancel",
+    summary="Cancel my order",
+    description=(
+        "Cancels one of the logged-in customer's orders. This is only allowed while the order is "
+        "still `PLACED`. The order becomes `CANCELLED`, the payment status becomes `refunded` "
+        "and a refund entry is added to the payment record. Orders that were accepted, are "
+        "being prepared, were delivered or are already cancelled cannot be cancelled."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only customers can use this route.",
+            404: "No order with this id for this customer (`order_not_found`).",
+            409: "The order can no longer be cancelled (`invalid_transition`).",
+        }
+    ),
+)
+def cancel_order(order_id: int, customer: Customer, db: DbSession) -> OrderOut:
+    try:
+        order = service.cancel_order(db, customer, order_id)
+    except service.OrderRejected as rejection:
+        raise api_error(rejection.status_code, rejection.code, rejection.message) from None
+    if order is None:
+        raise api_error(status.HTTP_404_NOT_FOUND, "order_not_found", "Order not found.")
+    return OrderOut.model_validate(order)
+
+
 @router.get(
     "/{order_id}",
     summary="Show one of my orders",
