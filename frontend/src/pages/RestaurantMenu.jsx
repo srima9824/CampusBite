@@ -7,6 +7,7 @@ import PriceSlider from '../components/PriceSlider.jsx'
 import RestaurantLogo from '../components/RestaurantLogo.jsx'
 import { Badge, Button, EmptyState, Input, Skeleton } from '../components/ui'
 import useMenu from '../hooks/useMenu.js'
+import { ratingText } from '../lib/rating.js'
 import styles from './RestaurantMenu.module.css'
 
 const FILTER_DEBOUNCE_MS = 250
@@ -62,6 +63,7 @@ function RestaurantHeader({ restaurant }) {
       <div className={styles.headerText}>
         <h1 className={styles.title}>{restaurant.name}</h1>
         <Badge tone="info">{restaurant.cuisine}</Badge>
+        <p className={styles.rating}>{ratingText(restaurant) ? `★ ${ratingText(restaurant)}` : 'New'}</p>
         <p className={styles.description}>{restaurant.description}</p>
       </div>
     </header>

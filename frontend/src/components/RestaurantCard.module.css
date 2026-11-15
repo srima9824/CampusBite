@@ -38,3 +38,9 @@
   color: var(--color-muted-fg);
   font-size: var(--text-sm);
 }
+
+.rating {
+  color: var(--color-muted-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}

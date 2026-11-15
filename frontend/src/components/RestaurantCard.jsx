@@ -1,11 +1,13 @@
 import { useId } from 'react'
 import { Link } from 'react-router-dom'
+import { ratingText } from '../lib/rating.js'
 import RestaurantLogo from './RestaurantLogo.jsx'
 import { Badge } from './ui'
 import styles from './RestaurantCard.module.css'
 
 export default function RestaurantCard({ restaurant }) {
   const nameId = useId()
+  const rating = ratingText(restaurant)
   return (
     <Link
       className={styles.card}
@@ -18,6 +20,7 @@ export default function RestaurantCard({ restaurant }) {
           {restaurant.name}
         </span>
         <Badge tone="info">{restaurant.cuisine}</Badge>
+        <span className={styles.rating}>{rating ? `★ ${rating}` : 'New'}</span>
         <span className={styles.description}>{restaurant.description}</span>
       </span>
     </Link>
