@@ -91,6 +91,39 @@ def place_order(db: Session, customer: User, data: OrderCreate) -> Order:
     return get_order_for_customer(db, customer, order.id)
 
 
+CANCEL_BLOCKED_MESSAGES = {
+    OrderStatus.CANCELLED: "This order is already cancelled.",
+    OrderStatus.DELIVERED: "Delivered orders cannot be cancelled.",
+    OrderStatus.REFUNDED: "This order has already been refunded.",
+}
+DEFAULT_CANCEL_BLOCKED = "This order is already being prepared, so it can no longer be cancelled."
+
+
+def cancel_order(db: Session, customer: User, order_id: int) -> Order | None:
+    order = db.scalar(
+        select(Order)
+        .where(Order.id == order_id, Order.customer_id == customer.id)
+        .with_for_update()
+    )
+    if order is None:
+        return None
+    if order.status is not OrderStatus.PLACED:
+        message = CANCEL_BLOCKED_MESSAGES.get(order.status, DEFAULT_CANCEL_BLOCKED)
+        raise OrderRejected(409, "invalid_transition", message)
+    order.status = OrderStatus.CANCELLED
+    order.payment_status = PaymentStatus.REFUNDED
+    db.add(
+        PaymentLedger(
+            order_id=order.id,
+            amount=order.total,
+            method=PAYMENT_METHOD,
+            status=PaymentStatus.REFUNDED,
+        )
+    )
+    db.commit()
+    return get_order_for_customer(db, customer, order.id)
+
+
 def get_order_for_customer(db: Session, customer: User, order_id: int) -> Order | None:
     return db.scalar(
         select(Order)
