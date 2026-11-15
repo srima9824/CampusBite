@@ -6,6 +6,7 @@ import OwnerMenuItemEdit from './pages/OwnerMenuItemEdit.jsx'
 import OwnerMenu from './pages/OwnerMenu.jsx'
 import OwnerStats from './pages/OwnerStats.jsx'
 import OwnerOrders from './pages/OwnerOrders.jsx'
+import OwnerReturns from './pages/OwnerReturns.jsx'
 import DeliveryAssignments from './pages/DeliveryAssignments.jsx'
 import DeliveryHistory from './pages/DeliveryHistory.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
@@ -37,6 +38,7 @@ export default function App() {
         </Route>
         <Route element={<ProtectedRoute roles={['OWNER']} />}>
           <Route path="owner" element={<OwnerOrders />} />
+          <Route path="owner/returns" element={<OwnerReturns />} />
           <Route path="owner/stats" element={<OwnerStats />} />
           <Route path="owner/menu" element={<OwnerMenu />} />
           <Route path="owner/menu/new" element={<OwnerMenuItemEdit />} />
