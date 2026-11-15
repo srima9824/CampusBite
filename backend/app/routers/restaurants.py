@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.docs import described
 from app.errors import api_error
 from app.models import Restaurant
 from app.schemas.restaurants import MenuItemOut, Page, RestaurantOut
@@ -23,7 +24,16 @@ def require_restaurant(db: Session, restaurant_id: int) -> Restaurant:
     return restaurant
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="List restaurants",
+    description=(
+        "Lists the restaurants, 12 per page by default. Anyone can use this route. `q` searches "
+        "the "
+        "restaurant name and the cuisine, ignoring upper and lower case. `total` is the number of "
+        "matching restaurants across all pages."
+    ),
+)
 def list_restaurants(
     db: DbSession,
     q: Annotated[str | None, Query(max_length=80)] = None,
@@ -35,7 +45,13 @@ def list_restaurants(
     return Page(items=items, total=total, page=page, page_size=page_size)
 
 
-@router.get("/{restaurant_id}")
+@router.get(
+    "/{restaurant_id}",
+    summary="Show one restaurant",
+    description="Returns the name, cuisine, description, image keys and open status of one "
+    "restaurant. Anyone can use this route.",
+    responses=described({404: "No restaurant with this id (`restaurant_not_found`)."}),
+)
 def get_restaurant(restaurant_id: int, db: DbSession) -> RestaurantOut:
     return RestaurantOut.model_validate(require_restaurant(db, restaurant_id))
 
@@ -49,7 +65,24 @@ def check_price_range(min_price: int | None, max_price: int | None) -> None:
         )
 
 
-@router.get("/{restaurant_id}/menu")
+@router.get(
+    "/{restaurant_id}/menu",
+    summary="Show a restaurant's menu",
+    description=(
+        "Lists the dishes of one restaurant, including dishes that are currently unavailable "
+        "(`is_available` is false). Anyone can use this route. `q` searches dish names. "
+        "`min_price` and `max_price` are whole rupees and both ends are included. `veg` is `veg` "
+        "or "
+        "`non_veg`; leave it out for both. Filters combine, and results are paginated."
+    ),
+    responses=described(
+        {
+            404: "No restaurant with this id (`restaurant_not_found`).",
+            422: "The minimum price is higher than the maximum (`invalid_price_range`), or a "
+            "value is not valid.",
+        }
+    ),
+)
 def list_menu(
     restaurant_id: int,
     db: DbSession,

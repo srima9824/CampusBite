@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies.auth import require_roles
+from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
 from app.models import OrderStatus, Role, User
 from app.schemas.orders import OrderCreate, OrderOut
@@ -61,7 +62,24 @@ def order_filters(
     return filters
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="List my orders",
+    description=(
+        "Lists the logged-in customer's own orders, newest first, 10 per page by default. "
+        "`status` is one order status or a comma list such as `PLACED,ACCEPTED`. `date_from` and "
+        "`date_to` are `YYYY-MM-DD` days in India time, and both ends are included. Filters "
+        "combine."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only customers can use this route.",
+            422: "Unknown status (`invalid_status`), bad date (`invalid_date`) or start after end "
+            "(`invalid_date_range`).",
+        }
+    ),
+)
 def list_orders(
     customer: Customer,
     db: DbSession,
@@ -74,7 +92,29 @@ def list_orders(
     return Page(items=items, total=total, page=page, page_size=page_size)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    summary="Place an order",
+    description=(
+        "Places an order from one restaurant using the dummy payment. Send dish ids with "
+        "quantities "
+        "(1 to 20 each), a delivery address and optional notes. Prices always come from the "
+        "database, never from the request, and there is no delivery fee. The order starts as "
+        "`PLACED` "
+        "with payment status `mock_paid`, and a payment record is saved with it."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only customers can use this route.",
+            409: "A dish is unavailable (`item_unavailable`) or the restaurant is closed "
+            "(`restaurant_closed`).",
+            422: "A dish does not exist, dishes come from two restaurants (`mixed_restaurants`), "
+            "or a field is not valid.",
+        }
+    ),
+)
 def place_order(data: OrderCreate, customer: Customer, db: DbSession) -> OrderOut:
     try:
         order = service.place_order(db, customer, data)
@@ -83,7 +123,19 @@ def place_order(data: OrderCreate, customer: Customer, db: DbSession) -> OrderOu
     return OrderOut.model_validate(order)
 
 
-@router.get("/{order_id}")
+@router.get(
+    "/{order_id}",
+    summary="Show one of my orders",
+    description="Returns one order with its items, restaurant and payment. Customers can only see "
+    "their own orders.",
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only customers can use this route.",
+            404: "No order with this id for this customer (`order_not_found`).",
+        }
+    ),
+)
 def get_order(order_id: int, customer: Customer, db: DbSession) -> OrderOut:
     order = service.get_order_for_customer(db, customer, order_id)
     if order is None:

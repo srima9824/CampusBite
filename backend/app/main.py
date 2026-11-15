@@ -9,13 +9,23 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.database import get_db
+from app.docs import TAGS_METADATA
 from app.middleware import add_request_middleware
 from app.routers import auth, orders, owner_menu, restaurants
 
 
 def create_app() -> FastAPI:
     logging.basicConfig(level=logging.INFO)
-    app = FastAPI(title="CampusBite API")
+    app = FastAPI(
+        title="CampusBite API",
+        description=(
+            "Restaurant ordering and delivery for campus. Customers browse and order, "
+            "restaurant owners manage menus and orders, and delivery partners handle deliveries. "
+            "Log in with POST /auth/login, then use the Authorize button with the returned token "
+            "(paste the token only, without the word Bearer)."
+        ),
+        openapi_tags=TAGS_METADATA,
+    )
     add_request_middleware(app)
     app.add_middleware(
         CORSMiddleware,
@@ -30,7 +40,15 @@ def create_app() -> FastAPI:
     app.include_router(owner_menu.router)
     app.include_router(orders.router)
 
-    @app.get("/health")
+    @app.get(
+        "/health",
+        tags=["system"],
+        summary="Check the service",
+        description=(
+            "Returns `ok` when the API is running. `database` is `up` when the database answered "
+            "a test query and `down` when it did not. Use it to check a fresh setup."
+        ),
+    )
     def health(db: Annotated[Session, Depends(get_db)]) -> dict[str, str]:
         try:
             db.execute(text("SELECT 1"))
