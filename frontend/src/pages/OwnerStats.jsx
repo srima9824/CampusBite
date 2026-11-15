@@ -4,7 +4,6 @@ import { ORDER_STATUSES, STATUS_LABELS } from '../api/orderStatus.js'
 import BarList from '../components/BarList.jsx'
 import StatCard from '../components/StatCard.jsx'
 import { Button, EmptyState, Skeleton } from '../components/ui'
-import useOwnRestaurant from '../hooks/useOwnRestaurant.js'
 import useRestaurantStats from '../hooks/useRestaurantStats.js'
 import { formatMoney } from '../lib/formatMoney.js'
 import styles from './OwnerStats.module.css'
@@ -21,7 +20,6 @@ function LoadingStats() {
 
 export default function OwnerStats() {
   const { data, status, error, reload } = useRestaurantStats()
-  const { data: restaurant } = useOwnRestaurant()
   const [refreshed, setRefreshed] = useState(false)
 
   function refresh() {
@@ -32,7 +30,7 @@ export default function OwnerStats() {
   return (
     <div className={styles.page}>
       <header className={styles.intro}>
-        <h1 className={styles.title}>{restaurant ? `${restaurant.name} stats` : 'Your stats'}</h1>
+        <h1 className={styles.title}>Your stats</h1>
         <p className={styles.lead}>How the kitchen is doing, counted fresh from your orders.</p>
         <div className={styles.actions}>
           <Button variant="secondary" onClick={refresh} loading={status === 'loading'}>
@@ -69,8 +67,13 @@ export default function OwnerStats() {
         <>
           <dl className={styles.cards}>
             <StatCard label="Total orders" value={data.total_orders} />
-            <StatCard label="Revenue" value={formatMoney(data.revenue)} hint="Cancelled orders not counted" />
+            <StatCard label="Revenue" value={formatMoney(data.revenue)} hint="Cancelled and refunded orders not counted" />
             <StatCard label="Orders today" value={data.orders_today} />
+            <StatCard
+              label="Average rating"
+              value={data.average_rating === null ? 'No reviews yet' : `${data.average_rating.toFixed(1)} / 5`}
+              hint={`${data.review_count} ${data.review_count === 1 ? 'review' : 'reviews'}`}
+            />
             <StatCard label="Waiting for you" value={data.by_status.PLACED} hint="Placed, not yet accepted" />
           </dl>
 
@@ -81,17 +84,17 @@ export default function OwnerStats() {
               </h2>
               <BarList
                 label="Orders by status"
-                rows={ORDER_STATUSES.map((key) => ({ key, label: STATUS_LABELS[key], value: data.by_status[key] }))}
+                rows={ORDER_STATUSES.map((key) => ({ key, label: STATUS_LABELS[key], value: data.by_status[key] ?? 0 }))}
               />
             </section>
             <section className={styles.panel} aria-labelledby="top-sellers">
               <h2 id="top-sellers" className={styles.heading}>
                 Top sellers
               </h2>
-              {data.top_items.length > 0 ? (
+              {data.top_dishes.length > 0 ? (
                 <BarList
                   label="Top sellers by quantity"
-                  rows={data.top_items.map((item) => ({ key: item.menu_item_id, label: item.name, value: item.quantity }))}
+                  rows={data.top_dishes.map((item) => ({ key: item.menu_item_id, label: item.name, value: item.quantity }))}
                 />
               ) : (
                 <p>No dishes sold yet.</p>
