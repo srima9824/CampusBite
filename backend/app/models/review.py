@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 from app.models.order import Order
 from app.models.restaurant import utc_now
+from app.models.user import User
 
 
 class Review(Base):
@@ -24,3 +25,4 @@ class Review(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     order: Mapped[Order] = relationship(back_populates="review")
+    customer: Mapped[User] = relationship()

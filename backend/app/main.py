@@ -18,6 +18,7 @@ from app.routers import (
     owner_delivery_partners,
     owner_menu,
     owner_orders,
+    public_reviews,
     restaurants,
 )
 
@@ -45,6 +46,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth.router)
     app.include_router(restaurants.router)
+    app.include_router(public_reviews.router)
     app.include_router(owner_menu.router)
     app.include_router(orders.router)
     app.include_router(owner_orders.router)
