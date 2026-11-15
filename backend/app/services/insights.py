@@ -16,6 +16,7 @@ logger = logging.getLogger("campusbite.insights")
 
 HISTORY_LIMIT = 50
 REQUEST_TIMEOUT_SECONDS = 20.0
+MAX_ANSWER_TOKENS = 600
 
 SYSTEM_PROMPT = (
     "You are CampusBite's order assistant. Answer the customer's question using only the order "
@@ -51,7 +52,10 @@ class OpenAiChat:
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+            max_tokens=MAX_ANSWER_TOKENS,
         )
+        if not response.choices:
+            return ""
         return response.choices[0].message.content or ""
 
 
