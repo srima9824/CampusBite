@@ -99,3 +99,9 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.rating {
+  margin: 0;
+  color: var(--color-muted-fg);
+  font-weight: var(--weight-medium);
+}
