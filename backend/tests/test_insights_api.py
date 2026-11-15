@@ -521,8 +521,19 @@ def test_openai_chat_returns_the_message_content(content, expected):
                 {"role": "system", "content": "sys"},
                 {"role": "user", "content": "usr"},
             ],
+            "max_tokens": service.MAX_ANSWER_TOKENS,
         }
     ]
+
+
+def test_openai_chat_survives_a_response_without_choices():
+    chat = service.OpenAiChat("sk-placeholder", "gpt-test")
+    empty = SimpleNamespace(choices=[])
+    chat.client = SimpleNamespace(
+        chat=SimpleNamespace(completions=SimpleNamespace(create=lambda **_: empty))
+    )
+
+    assert chat.complete("sys", "usr") == ""
 
 
 def test_build_client_uses_settings(monkeypatch):
