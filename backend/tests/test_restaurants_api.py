@@ -4,7 +4,17 @@ from app import seed
 
 PASSWORD = "seed-pass-1234"
 
-LIST_FIELDS = {"id", "name", "cuisine", "description", "logo_key", "image_key", "is_open"}
+LIST_FIELDS = {
+    "id",
+    "name",
+    "cuisine",
+    "description",
+    "logo_key",
+    "image_key",
+    "is_open",
+    "average_rating",
+    "review_count",
+}
 
 
 @pytest.fixture
@@ -93,13 +103,15 @@ def test_search_term_over_max_length_is_rejected(seeded_client):
     assert seeded_client.get("/restaurants", params={"q": "x" * 81}).status_code == 422
 
 
-def test_detail_returns_restaurant_without_owner_or_rating(seeded_client):
+def test_detail_returns_restaurant_with_rating_but_without_owner(seeded_client):
     response = seeded_client.get("/restaurants/1")
 
     body = response.json()
     assert response.status_code == 200
     assert set(body) == LIST_FIELDS
     assert body["name"] == "Dosa Dash"
+    assert body["average_rating"] is None
+    assert body["review_count"] == 0
     assert "owner_id" not in body
     assert "rating" not in body
 

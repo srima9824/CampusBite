@@ -11,6 +11,7 @@ from pydantic import (
 )
 
 from app.models import OrderStatus, PaymentStatus
+from app.schemas.reviews import ReviewOut
 
 DeliveryAddress = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=5, max_length=200)
@@ -92,3 +93,4 @@ class OrderCore(BaseModel):
 
 class OrderOut(OrderCore):
     restaurant: OrderRestaurantOut
+    review: ReviewOut | None

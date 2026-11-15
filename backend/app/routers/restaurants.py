@@ -24,14 +24,20 @@ def require_restaurant(db: Session, restaurant_id: int) -> Restaurant:
     return restaurant
 
 
+def rated_restaurant_out(rated: service.RatedRestaurant) -> RestaurantOut:
+    return RestaurantOut.model_validate(rated.restaurant).model_copy(
+        update={"average_rating": rated.average_rating, "review_count": rated.review_count}
+    )
+
+
 @router.get(
     "",
     summary="List restaurants",
     description=(
         "Lists the restaurants, 12 per page by default. Anyone can use this route. `q` searches "
-        "the "
-        "restaurant name and the cuisine, ignoring upper and lower case. `total` is the number of "
-        "matching restaurants across all pages."
+        "the restaurant name and the cuisine, ignoring upper and lower case. `total` is the "
+        "number of matching restaurants across all pages. Each restaurant shows its "
+        "`average_rating` (one decimal, `null` until it has reviews) and its `review_count`."
     ),
 )
 def list_restaurants(
@@ -41,19 +47,24 @@ def list_restaurants(
     page_size: Annotated[int, Query(ge=1, le=50)] = 12,
 ) -> Page[RestaurantOut]:
     rows, total = service.search_restaurants(db, q, page, page_size)
-    items = [RestaurantOut.model_validate(row) for row in rows]
+    items = [rated_restaurant_out(row) for row in rows]
     return Page(items=items, total=total, page=page, page_size=page_size)
 
 
 @router.get(
     "/{restaurant_id}",
     summary="Show one restaurant",
-    description="Returns the name, cuisine, description, image keys and open status of one "
-    "restaurant. Anyone can use this route.",
+    description="Returns the name, cuisine, description, image keys, open status, average rating "
+    "and review count of one restaurant. Anyone can use this route.",
     responses=described({404: "No restaurant with this id (`restaurant_not_found`)."}),
 )
 def get_restaurant(restaurant_id: int, db: DbSession) -> RestaurantOut:
-    return RestaurantOut.model_validate(require_restaurant(db, restaurant_id))
+    rated = service.get_rated_restaurant(db, restaurant_id)
+    if rated is None:
+        raise api_error(
+            status.HTTP_404_NOT_FOUND, "restaurant_not_found", "This restaurant does not exist."
+        )
+    return rated_restaurant_out(rated)
 
 
 def check_price_range(min_price: int | None, max_price: int | None) -> None:

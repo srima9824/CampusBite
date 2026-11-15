@@ -282,3 +282,87 @@ def test_migrated_orders_reject_an_unknown_delivery_partner(migrated_engine):
     with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
         conn.execute(text("PRAGMA foreign_keys=ON"))
         conn.execute(text("UPDATE orders SET delivery_partner_id = 999 WHERE id = 1"))
+
+
+def test_reviews_migration_creates_table_with_constraints_and_downgrades(tmp_path):
+    url = f"sqlite:///{tmp_path / 'reviews.db'}"
+
+    upgrade = run_alembic(url, "upgrade", "head")
+    engine = create_engine(url)
+    inspector = inspect(engine)
+    tables = set(inspector.get_table_names())
+    uniques = inspector.get_unique_constraints("reviews") if "reviews" in tables else []
+    checks = inspector.get_check_constraints("reviews") if "reviews" in tables else []
+    foreign_keys = inspector.get_foreign_keys("reviews") if "reviews" in tables else []
+    engine.dispose()
+    downgrade = run_alembic(url, "downgrade", "0004")
+    engine = create_engine(url)
+    after = set(inspect(engine).get_table_names())
+    engine.dispose()
+
+    assert upgrade.returncode == 0, upgrade.stderr
+    assert "reviews" in tables
+    assert {"name": "uq_reviews_order_id", "column_names": ["order_id"]} in [
+        {"name": u["name"], "column_names": u["column_names"]} for u in uniques
+    ]
+    assert any(
+        c["name"] == "ck_reviews_rating_range" and "BETWEEN 1 AND 5" in c["sqltext"]
+        for c in checks
+    )
+    assert {(f["constrained_columns"][0], f["referred_table"]) for f in foreign_keys} == {
+        ("order_id", "orders"),
+        ("customer_id", "users"),
+        ("restaurant_id", "restaurants"),
+    }
+    assert downgrade.returncode == 0, downgrade.stderr
+    assert "reviews" not in after
+    assert ORDER_TABLES <= after
+
+
+def test_reviews_downgrade_to_base_drops_everything(tmp_path):
+    url = f"sqlite:///{tmp_path / 'reviews_base.db'}"
+    assert run_alembic(url, "upgrade", "head").returncode == 0
+
+    downgrade = run_alembic(url, "downgrade", "base")
+    engine = create_engine(url)
+    remaining = set(inspect(engine).get_table_names()) - {"alembic_version"}
+    engine.dispose()
+
+    assert downgrade.returncode == 0, downgrade.stderr
+    assert remaining == set()
+
+
+def insert_review(conn, order_id: int = 1, rating: int = 5) -> None:
+    conn.execute(
+        text(
+            "INSERT INTO reviews (order_id, customer_id, restaurant_id, rating, created_at) "
+            "VALUES (:o, 1, 1, :r, CURRENT_TIMESTAMP)"
+        ),
+        {"o": order_id, "r": rating},
+    )
+
+
+@pytest.mark.parametrize("rating", [0, 6, -1])
+def test_migrated_reviews_reject_ratings_outside_1_to_5(migrated_engine, rating):
+    with migrated_engine.begin() as conn:
+        insert_order(conn)
+
+    with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
+        insert_review(conn, rating=rating)
+
+
+def test_migrated_reviews_allow_one_review_per_order(migrated_engine):
+    with migrated_engine.begin() as conn:
+        insert_order(conn, 1)
+        insert_order(conn, 2)
+        insert_review(conn, 1)
+        insert_review(conn, 2, rating=1)
+
+    with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
+        insert_review(conn, 1, rating=3)
+
+
+def test_migrated_reviews_reject_an_unknown_order(migrated_engine):
+    with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
+        conn.execute(text("PRAGMA foreign_keys=ON"))
+        insert_review(conn, 999)

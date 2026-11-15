@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from sqlalchemy import ColumnElement, Select, func, select
 from sqlalchemy.orm import Session
 
-from app.models import MenuItem, Restaurant
+from app.models import MenuItem, Restaurant, Review
 
 LIKE_ESCAPE = "\\"
 
@@ -21,19 +21,52 @@ def count_rows[T](db: Session, query: Select[tuple[T]]) -> int:
     return db.scalar(select(func.count()).select_from(query.order_by(None).subquery())) or 0
 
 
+@dataclass(frozen=True)
+class RatedRestaurant:
+    restaurant: Restaurant
+    average_rating: float | None
+    review_count: int
+
+
 def get_restaurant(db: Session, restaurant_id: int) -> Restaurant | None:
     return db.get(Restaurant, restaurant_id)
 
 
+def rated_restaurants_query() -> Select[tuple[Restaurant, float | None, int | None]]:
+    ratings = (
+        select(
+            Review.restaurant_id.label("restaurant_id"),
+            func.avg(Review.rating).label("average"),
+            func.count(Review.id).label("count"),
+        )
+        .group_by(Review.restaurant_id)
+        .subquery()
+    )
+    return select(Restaurant, ratings.c.average, ratings.c.count).outerjoin(
+        ratings, ratings.c.restaurant_id == Restaurant.id
+    )
+
+
+def as_rated(row: tuple[Restaurant, float | None, int | None]) -> RatedRestaurant:
+    restaurant, average, count = row
+    rounded = None if average is None else round(float(average), 1)
+    return RatedRestaurant(restaurant, rounded, count or 0)
+
+
+def get_rated_restaurant(db: Session, restaurant_id: int) -> RatedRestaurant | None:
+    row = db.execute(rated_restaurants_query().where(Restaurant.id == restaurant_id)).first()
+    return None if row is None else as_rated(row)
+
+
 def search_restaurants(
     db: Session, q: str | None, page: int, page_size: int
-) -> tuple[list[Restaurant], int]:
-    query = select(Restaurant)
+) -> tuple[list[RatedRestaurant], int]:
+    query = rated_restaurants_query()
     if q:
         query = query.where(contains(Restaurant.name, q) | contains(Restaurant.cuisine, q))
     total = count_rows(db, query)
-    rows = db.scalars(query.order_by(Restaurant.id).limit(page_size).offset((page - 1) * page_size))
-    return list(rows), total
+    rows = db.execute(query.order_by(Restaurant.id).limit(page_size).offset((page - 1) * page_size))
+    return [as_rated(row) for row in rows], total
 
 
 @dataclass(frozen=True)

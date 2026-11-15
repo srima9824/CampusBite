@@ -128,7 +128,11 @@ def get_order_for_customer(db: Session, customer: User, order_id: int) -> Order 
     return db.scalar(
         select(Order)
         .where(Order.id == order_id, Order.customer_id == customer.id)
-        .options(selectinload(Order.items), selectinload(Order.restaurant))
+        .options(
+            selectinload(Order.items),
+            selectinload(Order.restaurant),
+            selectinload(Order.review),
+        )
         .execution_options(populate_existing=True)
     )
 
@@ -166,7 +170,11 @@ def list_orders_for_customer(
     query = customer_orders_query(customer, filters)
     total = count_rows(db, query)
     rows = db.scalars(
-        query.options(selectinload(Order.items), selectinload(Order.restaurant))
+        query.options(
+            selectinload(Order.items),
+            selectinload(Order.restaurant),
+            selectinload(Order.review),
+        )
         .order_by(Order.created_at.desc(), Order.id.desc())
         .limit(page_size)
         .offset((page - 1) * page_size)

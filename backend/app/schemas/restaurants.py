@@ -11,6 +11,8 @@ class RestaurantOut(BaseModel):
     logo_key: str
     image_key: str
     is_open: bool
+    average_rating: float | None = None
+    review_count: int = 0
 
 
 class MenuItemOut(BaseModel):

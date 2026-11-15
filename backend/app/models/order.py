@@ -1,5 +1,6 @@
 import enum
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -7,6 +8,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 from app.models.restaurant import Restaurant, utc_now
 from app.models.user import User
+
+if TYPE_CHECKING:
+    from app.models.review import Review
 
 
 class OrderStatus(enum.Enum):
@@ -63,6 +67,7 @@ class Order(Base):
     customer: Mapped[User] = relationship(foreign_keys=[customer_id])
     delivery_partner: Mapped[User | None] = relationship(foreign_keys=[delivery_partner_id])
     items: Mapped[list["OrderItem"]] = relationship(back_populates="order", order_by="OrderItem.id")
+    review: Mapped["Review | None"] = relationship(back_populates="order")
 
 
 class OrderItem(Base):
