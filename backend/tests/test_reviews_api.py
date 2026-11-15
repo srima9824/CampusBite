@@ -183,13 +183,14 @@ def test_invalid_rating_is_422_and_creates_no_row(seeded, db_session, body):
     assert rows(db_session) == []
 
 
-def test_numeric_string_rating_follows_pydantic_lax_mode(seeded, db_session):
+@pytest.mark.parametrize("rating", ["5", "five", 5.0, True])
+def test_rating_must_be_a_whole_number_not_text_or_float(seeded, db_session, rating):
     order_id = delivered(seeded, db_session)
 
-    response = review(seeded, db_session, order_id, {"rating": "5"})
+    response = review(seeded, db_session, order_id, {"rating": rating})
 
-    assert response.status_code == 201
-    assert response.json()["rating"] == 5
+    assert response.status_code == 422
+    assert rows(db_session) == []
 
 
 def test_comment_of_500_characters_is_accepted_and_501_is_not(seeded, db_session):
