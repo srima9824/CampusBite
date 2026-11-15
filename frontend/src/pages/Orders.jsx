@@ -8,6 +8,7 @@ import useOrderFilters from '../hooks/useOrderFilters.js'
 import useOrders from '../hooks/useOrders.js'
 import { formatDateTime } from '../lib/formatDate.js'
 import { formatMoney } from '../lib/formatMoney.js'
+import { PAYMENT_LABELS, returnLabel } from '../lib/orderLabels.js'
 import styles from './Orders.module.css'
 
 const PAGE_SIZE = 10
@@ -49,6 +50,8 @@ export default function Orders() {
     { key: 'items', header: 'Items', render: countItems },
     { key: 'total', header: 'Total', render: (order) => formatMoney(order.total) },
     { key: 'status', header: 'Status', render: (order) => <OrderStatusBadge status={order.status} /> },
+    { key: 'payment', header: 'Payment', render: (order) => PAYMENT_LABELS[order.payment_status] ?? order.payment_status },
+    { key: 'return', header: 'Return', render: returnLabel },
     {
       key: 'actions',
       header: 'Actions',
