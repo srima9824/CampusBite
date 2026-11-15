@@ -4,8 +4,6 @@ import OrderSummary from '../components/OrderSummary.jsx'
 import { Button, Input } from '../components/ui'
 import { useCart } from '../context/CartContext.jsx'
 import usePlaceOrder from '../hooks/usePlaceOrder.js'
-import { DELIVERY_FEE } from '../lib/constants.js'
-import { roundMoney } from '../lib/cartTotals.js'
 import styles from './Checkout.module.css'
 
 const MIN_ADDRESS = 5
@@ -40,7 +38,6 @@ export default function Checkout() {
     setAddressError(problem)
     if (problem) return
     const order = await submit({
-      restaurant_id: cart.restaurantId,
       items: cart.lines.map(({ menu_item_id: id, quantity }) => ({ menu_item_id: id, quantity })),
       delivery_address: address,
       note,
@@ -50,7 +47,7 @@ export default function Checkout() {
 
   const lines = cart.lines.map((line) => ({
     ...line,
-    line_total: roundMoney(line.unit_price * line.quantity),
+    line_total: line.unit_price * line.quantity,
   }))
 
   return (
@@ -96,9 +93,7 @@ export default function Checkout() {
           </h2>
           <OrderSummary
             lines={lines}
-            subtotal={cart.subtotal}
-            deliveryFee={DELIVERY_FEE}
-            total={roundMoney(cart.subtotal + DELIVERY_FEE)}
+            total={cart.subtotal}
           />
         </section>
 

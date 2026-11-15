@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom'
 import QuantityStepper from '../components/QuantityStepper.jsx'
 import { Button, ConfirmDialog, EmptyState, useToast } from '../components/ui'
 import { useCart } from '../context/CartContext.jsx'
-import { roundMoney } from '../lib/cartTotals.js'
-import { DELIVERY_FEE } from '../lib/constants.js'
 import { formatMoney } from '../lib/formatMoney.js'
 import styles from './Cart.module.css'
 
@@ -72,17 +70,9 @@ export default function Cart() {
           Summary
         </h2>
         <dl className={styles.totals}>
-          <div className={styles.totalRow}>
-            <dt>Subtotal</dt>
-            <dd>{formatMoney(cart.subtotal)}</dd>
-          </div>
-          <div className={styles.totalRow}>
-            <dt>Delivery fee</dt>
-            <dd>{formatMoney(DELIVERY_FEE)}</dd>
-          </div>
           <div className={`${styles.totalRow} ${styles.grandTotal}`}>
             <dt>Total</dt>
-            <dd>{formatMoney(roundMoney(cart.subtotal + DELIVERY_FEE))}</dd>
+            <dd>{formatMoney(cart.subtotal)}</dd>
           </div>
         </dl>
         <div className={styles.actions}>
