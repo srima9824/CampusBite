@@ -3,10 +3,17 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.models import OrderStatus
-from app.schemas.orders import OrderItemOut, OrderRestaurantOut
+from app.schemas.orders import OrderRestaurantOut
 from app.schemas.owner_orders import OrderCustomerOut
 
 DELIVERY_STEPS = {OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED}
+
+
+class DeliveryItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    quantity: int
 
 
 class DeliveryOrderOut(BaseModel):
@@ -20,7 +27,7 @@ class DeliveryOrderOut(BaseModel):
     updated_at: datetime
     restaurant: OrderRestaurantOut
     customer: OrderCustomerOut
-    items: list[OrderItemOut]
+    items: list[DeliveryItemOut]
 
 
 class DeliveryStatusUpdate(BaseModel):
