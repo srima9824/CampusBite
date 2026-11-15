@@ -6,11 +6,13 @@ from app.models.order import (
     PaymentStatus,
     ReturnStatus,
 )
+from app.models.reminder import AdminReminderLog
 from app.models.restaurant import MenuItem, Restaurant
 from app.models.review import Review
 from app.models.user import Role, User
 
 __all__ = [
+    "AdminReminderLog",
     "MenuItem",
     "Order",
     "OrderItem",
