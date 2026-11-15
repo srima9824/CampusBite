@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60
     openai_api_key: str = ""
     openai_model: str = ""
+    ai_questions_per_minute: Annotated[int, Field(ge=1)] = 5
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
     reminder_stale_minutes: int = 15
     reminder_check_seconds: Annotated[int, Field(ge=0)] = 60
