@@ -10,10 +10,16 @@ from app.dependencies.owner import owned_restaurant
 from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
 from app.models import Role, User
-from app.schemas.owner_orders import AssignDeliveryPartner, OrderStatusUpdate, OwnerOrderOut
+from app.schemas.owner_orders import (
+    AssignDeliveryPartner,
+    OrderStatusUpdate,
+    OwnerOrderOut,
+    ReturnDecision,
+)
 from app.schemas.restaurants import Page
 from app.services import orders as order_service
 from app.services import owner_orders as service
+from app.services import owner_returns as return_service
 
 router = APIRouter(prefix="/owner/orders", tags=["owner orders"])
 
@@ -135,6 +141,38 @@ def assign_order(
     restaurant = owned_restaurant(db, owner)
     try:
         order = service.assign_delivery_partner(db, restaurant, order_id, data.delivery_partner_id)
+    except order_service.OrderRejected as rejection:
+        raise api_error(rejection.status_code, rejection.code, rejection.message) from None
+    if order is None:
+        raise order_not_found()
+    return OwnerOrderOut.model_validate(order)
+
+
+@router.patch(
+    "/{order_id}/return",
+    summary="Approve or reject a return request",
+    description=(
+        "Decides a customer's return request. Send `APPROVED` or `REJECTED`. Approving marks the "
+        "order `REFUNDED`, sets the payment to `refunded` and adds a refund entry for the full "
+        "amount to the payment record. Rejecting sets the return status to `REJECTED` and leaves "
+        "the order `DELIVERED` and paid. Only a request that is still `REQUESTED` can be decided."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: OWNER_ONLY,
+            404: ORDER_NOT_FOUND,
+            409: "The order has no return waiting for a decision (`return_not_pending`).",
+            422: "The decision must be `APPROVED` or `REJECTED`.",
+        }
+    ),
+)
+def decide_order_return(
+    order_id: int, data: ReturnDecision, owner: Owner, db: DbSession
+) -> OwnerOrderOut:
+    restaurant = owned_restaurant(db, owner)
+    try:
+        order = return_service.decide_return(db, restaurant, order_id, data.status)
     except order_service.OrderRejected as rejection:
         raise api_error(rejection.status_code, rejection.code, rejection.message) from None
     if order is None:

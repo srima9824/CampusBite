@@ -1,6 +1,8 @@
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models import OrderStatus
+from app.models import OrderStatus, ReturnStatus
 from app.schemas.orders import OrderCore
 
 KITCHEN_STEPS = {OrderStatus.ACCEPTED, OrderStatus.PREPARING, OrderStatus.READY}
@@ -41,3 +43,13 @@ class AssignDeliveryPartner(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     delivery_partner_id: int = Field(ge=1)
+
+
+class ReturnDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["APPROVED", "REJECTED"]
+
+    @property
+    def status(self) -> ReturnStatus:
+        return ReturnStatus(self.decision)
