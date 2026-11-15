@@ -15,6 +15,7 @@ from app.reminders import lifespan
 from app.routers import (
     auth,
     delivery_orders,
+    insights,
     orders,
     owner_delivery_partners,
     owner_menu,
@@ -52,6 +53,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(restaurants.router)
     app.include_router(public_reviews.router)
+    app.include_router(insights.router)
     app.include_router(owner_menu.router)
     app.include_router(orders.router)
     app.include_router(owner_orders.router)
