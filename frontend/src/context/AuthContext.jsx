@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { auth } from '../api'
+import { SESSION_EXPIRED_EVENT } from '../api/http.js'
 import { clearSession, getSession, saveSession } from '../api/session.js'
 
 const AuthContext = createContext(null)
@@ -28,20 +29,30 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const login = useCallback(async (credentials) => {
-    const { access_token: token, user: signedIn } = await auth.login(credentials)
+  useEffect(() => {
+    const handleExpired = () => {
+      setUser(null)
+      setStatus('anonymous')
+    }
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleExpired)
+  }, [])
+
+  const startSession = useCallback(({ access_token: token, user: signedIn }) => {
     saveSession({ token, user: signedIn })
     setUser(signedIn)
     setStatus('authenticated')
     return signedIn
   }, [])
 
+  const login = useCallback(
+    async (credentials) => startSession(await auth.login(credentials)),
+    [startSession],
+  )
+
   const register = useCallback(
-    async ({ name, email, password }) => {
-      await auth.register({ name, email, password })
-      return login({ email, password })
-    },
-    [login],
+    async ({ name, email, password }) => startSession(await auth.register({ name, email, password })),
+    [startSession],
   )
 
   const logout = useCallback(() => {
