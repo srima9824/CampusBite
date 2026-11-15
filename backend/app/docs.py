@@ -39,6 +39,13 @@ TAGS_METADATA: list[dict[str, str]] = [
         ),
     },
     {
+        "name": "insights",
+        "description": (
+            "Customers ask questions about their own order history, answered by OpenAI. "
+            "Customer login required."
+        ),
+    },
+    {
         "name": "delivery",
         "description": (
             "Delivery partners see and update only the orders assigned to them. "
