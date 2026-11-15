@@ -11,6 +11,7 @@ from app.config import get_settings
 from app.database import get_db
 from app.docs import TAGS_METADATA
 from app.middleware import add_request_middleware
+from app.reminders import lifespan
 from app.routers import (
     auth,
     delivery_orders,
@@ -18,6 +19,7 @@ from app.routers import (
     owner_delivery_partners,
     owner_menu,
     owner_orders,
+    owner_reminders,
     owner_returns,
     owner_stats,
     public_reviews,
@@ -36,6 +38,7 @@ def create_app() -> FastAPI:
             "(paste the token only, without the word Bearer)."
         ),
         openapi_tags=TAGS_METADATA,
+        lifespan=lifespan,
     )
     add_request_middleware(app)
     app.add_middleware(
@@ -53,6 +56,7 @@ def create_app() -> FastAPI:
     app.include_router(orders.router)
     app.include_router(owner_orders.router)
     app.include_router(owner_returns.router)
+    app.include_router(owner_reminders.router)
     app.include_router(owner_stats.router)
     app.include_router(owner_delivery_partners.router)
     app.include_router(delivery_orders.router)
