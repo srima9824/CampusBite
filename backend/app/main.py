@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.database import get_db
 from app.docs import TAGS_METADATA
+from app.errors import database_input_handler
 from app.middleware import add_request_middleware
 from app.reminders import lifespan
 from app.routers import (
@@ -49,6 +50,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
         expose_headers=["X-Process-Time"],
     )
+
+    app.add_exception_handler(SQLAlchemyError, database_input_handler)
 
     app.include_router(auth.router)
     app.include_router(restaurants.router)
