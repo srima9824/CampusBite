@@ -12,7 +12,10 @@ ROUTES = [
     ("GET", "/owner/orders", None),
     ("GET", "/owner/orders/{id}", None),
     ("PATCH", "/owner/orders/{id}/status", {"status": "ACCEPTED"}),
+    ("PATCH", "/owner/orders/{id}/assign", {"delivery_partner_id": 1}),
+    ("GET", "/owner/delivery-partners", None),
 ]
+RESTAURANT_ROUTES = [route for route in ROUTES if route[1] != "/owner/delivery-partners"]
 
 
 @pytest.fixture
@@ -70,7 +73,7 @@ def test_customer_and_delivery_partner_are_403(seeded, db_session, local_part, m
     assert db_session.get(Order, order.id).status is OrderStatus.PLACED
 
 
-@pytest.mark.parametrize(("method", "path", "body"), ROUTES)
+@pytest.mark.parametrize(("method", "path", "body"), RESTAURANT_ROUTES)
 def test_owner_without_restaurant_is_404(seeded, db_session, method, path, body):
     db_session.add(
         User(
@@ -117,3 +120,24 @@ def test_owner_cannot_read_or_advance_another_restaurants_order(
     assert response.json()["detail"]["code"] == "order_not_found"
     db_session.expire_all()
     assert db_session.get(Order, theirs.id).status is OrderStatus.PLACED
+
+
+def test_owner_cannot_assign_on_another_restaurants_order(seeded, db_session):
+    theirs = order_at(db_session, "owner3", OrderStatus.READY)
+    sam = db_session.scalar(select(User.id).where(User.email == "sam@masaischool.ac.in"))
+
+    response = call(
+        seeded,
+        "PATCH",
+        "/owner/orders/{id}/assign",
+        {"delivery_partner_id": sam},
+        auth(db_session, "owner1"),
+        theirs.id,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "order_not_found"
+    db_session.expire_all()
+    order = db_session.get(Order, theirs.id)
+    assert order.status is OrderStatus.READY
+    assert order.delivery_partner_id is None

@@ -10,7 +10,7 @@ from app.dependencies.owner import owned_restaurant
 from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
 from app.models import Role, User
-from app.schemas.owner_orders import OrderStatusUpdate, OwnerOrderOut
+from app.schemas.owner_orders import AssignDeliveryPartner, OrderStatusUpdate, OwnerOrderOut
 from app.schemas.restaurants import Page
 from app.services import orders as order_service
 from app.services import owner_orders as service
@@ -103,6 +103,38 @@ def update_order_status(
     restaurant = owned_restaurant(db, owner)
     try:
         order = service.advance_order(db, restaurant, order_id, data.status)
+    except order_service.OrderRejected as rejection:
+        raise api_error(rejection.status_code, rejection.code, rejection.message) from None
+    if order is None:
+        raise order_not_found()
+    return OwnerOrderOut.model_validate(order)
+
+
+@router.patch(
+    "/{order_id}/assign",
+    summary="Assign a delivery partner",
+    description=(
+        "Hands a `READY` order to a delivery partner. Pick the partner's id from "
+        "`GET /owner/delivery-partners`. The order becomes `ASSIGNED` and only that partner can "
+        "take it from here. An order that is not `READY` cannot be assigned, and an assigned "
+        "order cannot be given to someone else."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: OWNER_ONLY,
+            404: ORDER_NOT_FOUND,
+            409: "The order is not `READY`, or it already has a partner (`invalid_transition`).",
+            422: "The id is not a delivery partner (`delivery_partner_not_found`).",
+        }
+    ),
+)
+def assign_order(
+    order_id: int, data: AssignDeliveryPartner, owner: Owner, db: DbSession
+) -> OwnerOrderOut:
+    restaurant = owned_restaurant(db, owner)
+    try:
+        order = service.assign_delivery_partner(db, restaurant, order_id, data.delivery_partner_id)
     except order_service.OrderRejected as rejection:
         raise api_error(rejection.status_code, rejection.code, rejection.message) from None
     if order is None:

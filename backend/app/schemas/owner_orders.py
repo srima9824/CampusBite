@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models import OrderStatus
 from app.schemas.orders import OrderCore
@@ -12,8 +12,16 @@ class OrderCustomerOut(BaseModel):
     name: str
 
 
+class DeliveryPartnerOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+
+
 class OwnerOrderOut(OrderCore):
     customer: OrderCustomerOut
+    delivery_partner: DeliveryPartnerOut | None
 
 
 class OrderStatusUpdate(BaseModel):
@@ -27,3 +35,9 @@ class OrderStatusUpdate(BaseModel):
         if value not in KITCHEN_STEPS:
             raise ValueError("The status must be ACCEPTED, PREPARING or READY.")
         return value
+
+
+class AssignDeliveryPartner(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    delivery_partner_id: int = Field(ge=1)

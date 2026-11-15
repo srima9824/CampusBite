@@ -42,6 +42,7 @@ class Order(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     restaurant_id: Mapped[int] = mapped_column(ForeignKey("restaurants.id"), index=True)
+    delivery_partner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True)
     status: Mapped[OrderStatus] = mapped_column(
         Enum(OrderStatus, native_enum=False, length=20),
         default=OrderStatus.PLACED,
@@ -59,7 +60,8 @@ class Order(Base):
     )
 
     restaurant: Mapped[Restaurant] = relationship()
-    customer: Mapped[User] = relationship()
+    customer: Mapped[User] = relationship(foreign_keys=[customer_id])
+    delivery_partner: Mapped[User | None] = relationship(foreign_keys=[delivery_partner_id])
     items: Mapped[list["OrderItem"]] = relationship(back_populates="order", order_by="OrderItem.id")
 
 

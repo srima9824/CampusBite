@@ -155,7 +155,11 @@ def test_orders_migration_creates_and_drops_tables(tmp_path):
 
     assert upgrade.returncode == 0, upgrade.stderr
     assert ORDER_TABLES <= after_upgrade
-    assert foreign_keys["orders"] == {("customer_id", "users"), ("restaurant_id", "restaurants")}
+    assert foreign_keys["orders"] == {
+        ("customer_id", "users"),
+        ("restaurant_id", "restaurants"),
+        ("delivery_partner_id", "users"),
+    }
     assert foreign_keys["order_items"] == {("order_id", "orders"), ("menu_item_id", "menu_items")}
     assert foreign_keys["payment_ledger"] == {("order_id", "orders")}
     assert downgrade.returncode == 0, downgrade.stderr
@@ -166,7 +170,7 @@ def test_downgrade_one_step_from_head_keeps_menu_tables(tmp_path):
     url = f"sqlite:///{tmp_path / 'step.db'}"
     assert run_alembic(url, "upgrade", "head").returncode == 0
 
-    downgrade = run_alembic(url, "downgrade", "-1")
+    downgrade = run_alembic(url, "downgrade", "0002")
     engine = create_engine(url)
     remaining = set(inspect(engine).get_table_names())
     engine.dispose()
@@ -244,3 +248,37 @@ def test_migrated_order_tables_accept_valid_rows(migrated_engine):
         insert_order(conn)
         insert_order_item(conn, quantity=20, unit_price=10, line_total=200)
         insert_ledger(conn)
+
+
+def test_delivery_partner_migration_adds_and_drops_column_and_index(tmp_path):
+    url = f"sqlite:///{tmp_path / 'partner.db'}"
+
+    upgrade = run_alembic(url, "upgrade", "head")
+    engine = create_engine(url)
+    inspector = inspect(engine)
+    column = next(c for c in inspector.get_columns("orders") if c["name"] == "delivery_partner_id")
+    indexed = [i["column_names"] for i in inspector.get_indexes("orders")]
+    engine.dispose()
+    downgrade = run_alembic(url, "downgrade", "0003")
+    engine = create_engine(url)
+    inspector = inspect(engine)
+    columns_after = {c["name"] for c in inspector.get_columns("orders")}
+    indexed_after = [i["column_names"] for i in inspector.get_indexes("orders")]
+    engine.dispose()
+
+    assert upgrade.returncode == 0, upgrade.stderr
+    assert column["nullable"] is True
+    assert ["delivery_partner_id"] in indexed
+    assert downgrade.returncode == 0, downgrade.stderr
+    assert "delivery_partner_id" not in columns_after
+    assert ["delivery_partner_id"] not in indexed_after
+    assert "customer_id" in columns_after
+
+
+def test_migrated_orders_reject_an_unknown_delivery_partner(migrated_engine):
+    with migrated_engine.begin() as conn:
+        insert_order(conn)
+
+    with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
+        conn.execute(text("PRAGMA foreign_keys=ON"))
+        conn.execute(text("UPDATE orders SET delivery_partner_id = 999 WHERE id = 1"))
