@@ -2,17 +2,15 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { owner } from '../api'
 import MenuItemForm from '../components/MenuItemForm.jsx'
 import { Button, EmptyState, Skeleton, useToast } from '../components/ui'
-import { useAuth } from '../context/AuthContext.jsx'
-import useMenu from '../hooks/useMenu.js'
+import { useOwnerMenu } from '../hooks/useOwnerData.js'
 import styles from './OwnerMenuItemEdit.module.css'
 
 // One page for /owner/menu/new and /owner/menu/:itemId/edit.
 export default function OwnerMenuItemEdit() {
   const { itemId } = useParams()
-  const { user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
-  const { data, status, error, reload } = useMenu(user.restaurant_id, {})
+  const { data, status, error, reload } = useOwnerMenu()
   const isEdit = itemId !== undefined
   const item = isEdit ? data?.items.find((candidate) => String(candidate.id) === itemId) : null
 
