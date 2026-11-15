@@ -4,8 +4,9 @@ import AddToCartButton from '../components/AddToCartButton.jsx'
 import DietChips from '../components/DietChips.jsx'
 import MenuItemCard from '../components/MenuItemCard.jsx'
 import PriceSlider from '../components/PriceSlider.jsx'
+import ReviewList from '../components/ReviewList.jsx'
 import RestaurantLogo from '../components/RestaurantLogo.jsx'
-import { Badge, Button, EmptyState, Input, Skeleton } from '../components/ui'
+import { Badge, Button, EmptyState, Input, Modal, Skeleton } from '../components/ui'
 import useMenu from '../hooks/useMenu.js'
 import { ratingText } from '../lib/rating.js'
 import styles from './RestaurantMenu.module.css'
@@ -75,6 +76,7 @@ export default function RestaurantMenu() {
   const [params, setParams] = useSearchParams()
   const applied = readFilters(params)
   const [filters, setFilters] = useState(applied)
+  const [reviewedDish, setReviewedDish] = useState(null)
   const rangeInvalid = hasInvalidRange(applied)
   // An inverted range is never sent to the api; the inline error explains it instead.
   const query = rangeInvalid ? { ...applied, min_price: '', max_price: '', veg: '' } : applied
@@ -190,9 +192,12 @@ export default function RestaurantMenu() {
                   <MenuItemCard
                     item={item}
                     action={
-                      item.is_available && (
-                        <AddToCartButton item={item} restaurant={data.restaurant} />
-                      )
+                      <>
+                        <Button variant="secondary" onClick={() => setReviewedDish(item)}>
+                          Reviews
+                        </Button>
+                        {item.is_available && <AddToCartButton item={item} restaurant={data.restaurant} />}
+                      </>
                     }
                   />
                 </li>
@@ -200,6 +205,25 @@ export default function RestaurantMenu() {
             </ul>
           </section>
         ))}
+
+      {status === 'success' && (
+        <section className={styles.category} aria-labelledby="restaurant-reviews-title">
+          <h2 id="restaurant-reviews-title" className={styles.categoryTitle}>
+            Reviews{ratingText(data.restaurant) ? `: ${ratingText(data.restaurant)}` : ''}
+          </h2>
+          <ReviewList kind="restaurant" id={restaurantId} />
+        </section>
+      )}
+
+      {reviewedDish && (
+        <Modal
+          title={`Reviews for ${reviewedDish.name}`}
+          onClose={() => setReviewedDish(null)}
+          actions={<Button variant="secondary" onClick={() => setReviewedDish(null)}>Close</Button>}
+        >
+          <ReviewList kind="dish" id={reviewedDish.id} />
+        </Modal>
+      )}
     </div>
   )
 }
