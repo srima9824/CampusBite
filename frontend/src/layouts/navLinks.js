@@ -13,6 +13,7 @@ export const ROLE_LINKS = {
   CUSTOMER: [RESTAURANTS_LINK, { to: '/orders', label: 'My orders' }, CART_LINK],
   OWNER: [
     { to: '/owner', label: 'Orders', end: true },
+    { to: '/owner/returns', label: 'Returns' },
     { to: '/owner/stats', label: 'Stats' },
     { to: '/owner/menu', label: 'Menu' },
   ],

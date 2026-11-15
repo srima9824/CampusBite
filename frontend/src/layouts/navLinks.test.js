@@ -8,7 +8,7 @@ describe('navLinks', () => {
 
   it.each([
     ['CUSTOMER', ['Restaurants', 'My orders', 'Cart']],
-    ['OWNER', ['Orders', 'Stats', 'Menu']],
+    ['OWNER', ['Orders', 'Returns', 'Stats', 'Menu']],
     ['DELIVERY_PARTNER', ['Deliveries', 'History']],
   ])('returns the %s links', (role, labels) => {
     expect(roleLinksFor({ role }).map((link) => link.label)).toEqual(labels)
