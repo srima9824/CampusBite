@@ -296,5 +296,5 @@ def test_statement_count_is_constant_in_number_of_orders(seeded, db_session):
     many = count_statements(seeded, db_session, 18)  # 20 orders in total
 
     assert few == many
-    # one login lookup plus count, orders, restaurants and order lines
-    assert many <= 5
+    # one login lookup plus count, orders, restaurants, order lines and reviews
+    assert many <= 6
