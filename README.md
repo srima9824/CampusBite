@@ -171,7 +171,7 @@ npm run dev
 
 Then open http://localhost:5173. Other commands: `npm run build`, `npm run lint` and `npm test`.
 
-**Status:** the frontend currently runs on built-in in-memory data and is not yet connected to the backend API. Its login accounts use the password `bite-fixture-1`. Connecting it to the API is the next step.
+**Status:** the frontend is being connected to the backend one area at a time. Login, register and logout already use the real API. Start the backend first (see above), then log in with a seeded account such as `maya@masaischool.ac.in` and the `SEED_PASSWORD` you set. The other screens still show built-in sample data until their turn. The API address comes from `VITE_API_BASE_URL` in `frontend/.env.example` (default `http://localhost:8000`).
 
 ## Documentation
 
