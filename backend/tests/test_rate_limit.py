@@ -104,3 +104,4 @@ def test_concurrent_hits_never_exceed_the_limit():
 
     assert len(results) == 160
     assert results.count(0) == 10
+

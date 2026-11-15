@@ -2,6 +2,7 @@ import logging
 import re
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 
 import httpx
 import openai
@@ -608,3 +609,9 @@ def test_insights_route_is_documented():
     assert operation["summary"]
     assert "401" in operation["responses"]
     assert operation["tags"] == ["insights"]
+
+
+def test_naive_datetimes_are_read_as_utc_not_host_time():
+    naive = datetime(2026, 11, 14, 18, 30)
+
+    assert service.placed_at_text(naive, ZoneInfo("Asia/Kolkata")) == "2026-11-15 00:00"
