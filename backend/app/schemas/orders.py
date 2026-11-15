@@ -66,7 +66,7 @@ class PaymentOut(BaseModel):
     status: PaymentStatus
 
 
-class OrderOut(BaseModel):
+class OrderCore(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -76,7 +76,6 @@ class OrderOut(BaseModel):
     notes: str | None
     created_at: datetime
     updated_at: datetime
-    restaurant: OrderRestaurantOut
     items: list[OrderItemOut]
     payment: PaymentOut
 
@@ -89,3 +88,7 @@ class OrderOut(BaseModel):
             **{name: getattr(order, name) for name in cls.model_fields if name != "payment"},
             "payment": {"method": "mock", "status": order.payment_status},
         }
+
+
+class OrderOut(OrderCore):
+    restaurant: OrderRestaurantOut
