@@ -7,7 +7,7 @@ from app.models import Role
 from app.schemas.request import RequestModel
 
 EMAIL_PATTERN = re.compile(r"[^\s@]+@masaischool\.ac\.in")
-EMAIL_MESSAGE = "Use your @masaischool.ac.in email address."
+EMAIL_MESSAGE = "Enter a valid email address, like name@masaischool.ac.in."
 
 
 def normalize_email(value: str) -> str:
