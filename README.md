@@ -88,7 +88,7 @@ With `SEED_PASSWORD` set in `.env` and the stack running:
 docker compose run --rm backend python -m app.seed
 ```
 
-This creates the accounts below, the 4 restaurants and their dishes. It is safe to run again: anything that exists is skipped. All accounts use the password you set. For local use only.
+This creates the accounts below, the 4 restaurants and their dishes, and a short past order history with reviews for maya and leo (so order lists, reviews and AI insights have something to show). It is safe to run again: anything that exists is skipped. All accounts use the password you set. For local use only.
 
 | Email | Role |
 |---|---|
