@@ -138,3 +138,22 @@ def test_main_seeds_and_reports_created_count(
 
     assert "Created 9" in capsys.readouterr().out
     assert count_users(db_session) == 9
+
+
+def test_sample_orders_give_the_test_customers_history_and_are_idempotent(db_session):
+    from app.models import Order, OrderStatus, PaymentStatus, Review
+
+    seed.seed_users(db_session, PASSWORD)
+    seed.seed_restaurants(db_session)
+
+    created = seed.seed_sample_orders(db_session)
+    again = seed.seed_sample_orders(db_session)
+
+    orders = list(db_session.scalars(select(Order)))
+    assert created == len(seed.SAMPLE_ORDERS) == len(orders)
+    assert again == 0
+    delivered = [o for o in orders if o.status is OrderStatus.DELIVERED]
+    assert all(o.delivery_partner_id is not None for o in delivered)
+    cancelled = [o for o in orders if o.status is OrderStatus.CANCELLED]
+    assert [o.payment_status for o in cancelled] == [PaymentStatus.REFUNDED]
+    assert db_session.scalar(select(func.count()).select_from(Review)) == len(delivered)

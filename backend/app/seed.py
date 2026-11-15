@@ -1,14 +1,18 @@
 import os
 import sys
 from dataclasses import asdict
+from datetime import timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
-from app.models import MenuItem, Restaurant, Role, User
+from app.models import MenuItem, Order, OrderStatus, Restaurant, Review, Role, User
+from app.models.restaurant import utc_now
+from app.schemas.orders import OrderCreate, OrderLineIn
 from app.security import hash_password
 from app.seed_data import RESTAURANTS, RestaurantSeed
+from app.services.orders import cancel_order, place_order
 
 MIN_PASSWORD_LENGTH = 8
 DOMAIN = "masaischool.ac.in"
@@ -76,6 +80,74 @@ def seed_restaurants(db: Session) -> tuple[int, int]:
     return restaurants_created, dishes_created
 
 
+# (customer, restaurant, dishes, days ago, final status, rating, review comment)
+SampleOrder = tuple[str, str, tuple[tuple[str, int], ...], int, OrderStatus, int | None, str | None]
+
+SAMPLE_ORDERS: tuple[SampleOrder, ...] = (
+    ("maya", "Dosa Dash", (("Masala Dosa", 2), ("Filter Coffee", 2)), 6,
+     OrderStatus.DELIVERED, 5, "Crisp dosas and the coffee was perfect."),
+    ("maya", "Burger Barn", (("Classic Cheeseburger", 1), ("Double Stack", 1)), 4,
+     OrderStatus.DELIVERED, 4, "Juicy burgers, arrived a little late."),
+    ("maya", "Dosa Dash", (("Idli Sambar", 2), ("Medu Vada", 1)), 3,
+     OrderStatus.DELIVERED, 5, "Fresh and hot, great value."),
+    ("maya", "Taco Tuesday", (("Veg Burrito", 1), ("Churros", 1)), 2,
+     OrderStatus.CANCELLED, None, None),
+    ("maya", "Dosa Dash", (("Ghee Roast Dosa", 1), ("Mango Lassi", 1)), 1,
+     OrderStatus.DELIVERED, 3, "Good, but the lassi was too sweet."),
+    ("leo", "Burger Barn", (("Double Stack", 2), ("Peri Peri Fries", 1)), 5,
+     OrderStatus.DELIVERED, 5, "Best burgers on campus."),
+    ("leo", "Taco Tuesday", (("Crunchy Tacos", 2), ("Horchata", 1)), 2,
+     OrderStatus.DELIVERED, 4, "Tasty tacos."),
+)
+
+
+def seed_sample_orders(db: Session) -> int:
+    """Order history for the two test customers so order lists, reviews and insights have data."""
+    users = {u.email.split("@")[0]: u for u in db.scalars(select(User))}
+    partner = users["sam"]
+    has_orders = {
+        name: db.scalar(select(Order.id).where(Order.customer_id == users[name].id)) is not None
+        for name in ("maya", "leo")
+    }
+    created = 0
+    for customer, restaurant_name, lines, days_ago, status, rating, comment in SAMPLE_ORDERS:
+        if has_orders[customer]:
+            continue
+        restaurant = db.scalar(select(Restaurant).where(Restaurant.name == restaurant_name))
+        dishes = {
+            d.name: d.id
+            for d in db.scalars(select(MenuItem).where(MenuItem.restaurant_id == restaurant.id))
+        }
+        request = OrderCreate(
+            items=[OrderLineIn(menu_item_id=dishes[name], quantity=qty) for name, qty in lines],
+            delivery_address="Hostel Block B, Room 204",
+        )
+        order = place_order(db, users[customer], request)
+        placed_at = utc_now() - timedelta(days=days_ago)
+        order.created_at = placed_at
+        order.updated_at = placed_at + timedelta(minutes=45)
+        if status is OrderStatus.CANCELLED:
+            cancel_order(db, users[customer], order.id)
+        else:
+            order.status = status
+        if status is OrderStatus.DELIVERED:
+            order.delivery_partner_id = partner.id
+        if rating is not None:
+            db.add(
+                Review(
+                    order_id=order.id,
+                    customer_id=order.customer_id,
+                    restaurant_id=order.restaurant_id,
+                    rating=rating,
+                    comment=comment,
+                    created_at=placed_at + timedelta(hours=2),
+                )
+            )
+        db.commit()
+        created += 1
+    return created
+
+
 def main() -> int:
     password = os.environ.get("SEED_PASSWORD", "")
     if len(password) < MIN_PASSWORD_LENGTH:
@@ -84,8 +156,10 @@ def main() -> int:
     with SessionLocal() as db:
         created = seed_users(db, password)
         restaurants_created, dishes_created = seed_restaurants(db)
+        orders_created = seed_sample_orders(db)
     print(f"Created {created} test accounts, skipped {len(TEST_ACCOUNTS) - created}.")
     print(f"Created {restaurants_created} restaurants and {dishes_created} dishes.")
+    print(f"Created {orders_created} past orders for the test customers.")
     return 0
 
 
