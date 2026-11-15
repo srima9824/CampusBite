@@ -366,3 +366,57 @@ def test_migrated_reviews_reject_an_unknown_order(migrated_engine):
     with pytest.raises(IntegrityError), migrated_engine.begin() as conn:
         conn.execute(text("PRAGMA foreign_keys=ON"))
         insert_review(conn, 999)
+
+
+RETURN_COLUMNS = {"return_status", "return_reason", "return_requested_at"}
+
+
+def orders_shape(url: str) -> tuple[dict, list]:
+    engine = create_engine(url)
+    inspector = inspect(engine)
+    columns = {c["name"]: c for c in inspector.get_columns("orders")}
+    indexes = [i["column_names"] for i in inspector.get_indexes("orders")]
+    engine.dispose()
+    return columns, indexes
+
+
+def test_return_request_migration_adds_columns_and_index(tmp_path):
+    url = f"sqlite:///{tmp_path / 'returns.db'}"
+
+    upgrade = run_alembic(url, "upgrade", "head")
+    columns, indexes = orders_shape(url)
+
+    assert upgrade.returncode == 0, upgrade.stderr
+    assert RETURN_COLUMNS <= set(columns)
+    assert all(columns[name]["nullable"] is True for name in RETURN_COLUMNS)
+    assert ["return_status"] in indexes
+
+
+def test_return_request_downgrade_to_0005_removes_columns_and_index(tmp_path):
+    url = f"sqlite:///{tmp_path / 'returns_down.db'}"
+    assert run_alembic(url, "upgrade", "head").returncode == 0
+
+    downgrade = run_alembic(url, "downgrade", "0005")
+    columns, indexes = orders_shape(url)
+
+    assert downgrade.returncode == 0, downgrade.stderr
+    assert RETURN_COLUMNS.isdisjoint(columns)
+    assert ["return_status"] not in indexes
+    assert {"customer_id", "delivery_partner_id"} <= set(columns)
+
+
+def test_return_request_downgrade_to_base_then_upgrade_again(tmp_path):
+    url = f"sqlite:///{tmp_path / 'returns_base.db'}"
+    assert run_alembic(url, "upgrade", "head").returncode == 0
+
+    down = run_alembic(url, "downgrade", "base")
+    engine = create_engine(url)
+    remaining = set(inspect(engine).get_table_names()) - {"alembic_version"}
+    engine.dispose()
+    up = run_alembic(url, "upgrade", "head")
+    columns, _ = orders_shape(url)
+
+    assert down.returncode == 0, down.stderr
+    assert remaining == set()
+    assert up.returncode == 0, up.stderr
+    assert RETURN_COLUMNS <= set(columns)

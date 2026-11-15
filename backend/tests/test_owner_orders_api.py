@@ -22,6 +22,9 @@ ORDER_KEYS = {
     "payment",
     "customer",
     "delivery_partner",
+    "return_status",
+    "return_reason",
+    "return_requested_at",
 }
 
 
