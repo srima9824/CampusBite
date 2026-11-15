@@ -13,6 +13,7 @@ from app.docs import TAGS_METADATA
 from app.middleware import add_request_middleware
 from app.routers import (
     auth,
+    delivery_orders,
     orders,
     owner_delivery_partners,
     owner_menu,
@@ -48,6 +49,7 @@ def create_app() -> FastAPI:
     app.include_router(orders.router)
     app.include_router(owner_orders.router)
     app.include_router(owner_delivery_partners.router)
+    app.include_router(delivery_orders.router)
 
     @app.get(
         "/health",
