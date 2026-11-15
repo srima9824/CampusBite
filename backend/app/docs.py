@@ -32,6 +32,13 @@ TAGS_METADATA: list[dict[str, str]] = [
             "Owner login required."
         ),
     },
+    {
+        "name": "delivery",
+        "description": (
+            "Delivery partners see and update only the orders assigned to them. "
+            "Delivery partner login required."
+        ),
+    },
     {"name": "system", "description": "Service status."},
 ]
 
