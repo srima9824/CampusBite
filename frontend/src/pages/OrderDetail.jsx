@@ -5,18 +5,22 @@ import CancelOrderDialog from '../components/CancelOrderDialog.jsx'
 import OrderStatusBadge from '../components/OrderStatusBadge.jsx'
 import OrderSummary from '../components/OrderSummary.jsx'
 import OrderTimeline from '../components/OrderTimeline.jsx'
+import ReturnForm from '../components/ReturnForm.jsx'
+import ReviewForm from '../components/ReviewForm.jsx'
 import { Button, EmptyState, Skeleton } from '../components/ui'
 import useAsync from '../hooks/useAsync.js'
+import { formatDateTime } from '../lib/formatDate.js'
+import { PAYMENT_LABELS, returnLabel } from '../lib/orderLabels.js'
 import styles from './OrderDetail.module.css'
 
-function DetailBody({ order }) {
+function DetailBody({ order, onChanged }) {
   return (
     <>
       <section className={styles.card} aria-labelledby="order-progress-title">
         <h2 id="order-progress-title" className={styles.cardTitle}>
           Where your food is
         </h2>
-        <OrderTimeline status={order.status} history={order.status_history} />
+        <OrderTimeline status={order.status} />
       </section>
 
       <section className={styles.card} aria-labelledby="order-items-title">
@@ -45,15 +49,52 @@ function DetailBody({ order }) {
             </div>
           )}
           <div>
-            <dt>Rider</dt>
-            <dd>{order.delivery_partner?.name ?? 'No rider yet'}</dd>
+            <dt>Payment</dt>
+            <dd>{PAYMENT_LABELS[order.payment_status] ?? order.payment_status}</dd>
           </div>
           <div>
-            <dt>Payment</dt>
-            <dd>Paid (dummy)</dd>
+            <dt>Return</dt>
+            <dd>{returnLabel(order)}</dd>
           </div>
+          {order.return_reason && (
+            <div>
+              <dt>Return reason</dt>
+              <dd>{order.return_reason}</dd>
+            </div>
+          )}
         </dl>
       </section>
+
+      {order.review && (
+        <section className={styles.card} aria-labelledby="order-review-title">
+          <h2 id="order-review-title" className={styles.cardTitle}>
+            Your review
+          </h2>
+          <p>
+            <span aria-label={`${order.review.rating} out of 5 stars`}>{'★'.repeat(order.review.rating)}{'☆'.repeat(5 - order.review.rating)}</span>
+          </p>
+          {order.review.comment && <p>{order.review.comment}</p>}
+          <p className={styles.updated}>{formatDateTime(order.review.created_at)}</p>
+        </section>
+      )}
+
+      {order.status === 'DELIVERED' && !order.review && (
+        <section className={styles.card} aria-labelledby="order-review-form-title">
+          <h2 id="order-review-form-title" className={styles.cardTitle}>
+            How was it?
+          </h2>
+          <ReviewForm orderId={order.id} onDone={onChanged} />
+        </section>
+      )}
+
+      {order.status === 'DELIVERED' && !order.return_status && (
+        <section className={styles.card} aria-labelledby="order-return-title">
+          <h2 id="order-return-title" className={styles.cardTitle}>
+            Return or refund
+          </h2>
+          <ReturnForm orderId={order.id} onDone={onChanged} />
+        </section>
+      )}
     </>
   )
 }
@@ -137,7 +178,7 @@ export default function OrderDetail() {
         </div>
       )}
 
-      {status === 'success' && <DetailBody order={order} />}
+      {status === 'success' && <DetailBody order={order} onChanged={reload} />}
 
       {cancelling && (
         <CancelOrderDialog order={order} onClose={() => setCancelling(false)} onDone={finishCancel} />
