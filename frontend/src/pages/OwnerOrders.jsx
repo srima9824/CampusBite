@@ -4,9 +4,8 @@ import OrderStatusBadge from '../components/OrderStatusBadge.jsx'
 import OwnerOrderActions from '../components/OwnerOrderActions.jsx'
 import { Button, EmptyState, Pagination, Skeleton, Table } from '../components/ui'
 import useOrderFilters from '../hooks/useOrderFilters.js'
-import useOrders from '../hooks/useOrders.js'
-import useOwnRestaurant from '../hooks/useOwnRestaurant.js'
-import usePartners from '../hooks/usePartners.js'
+import Reminders from '../components/Reminders.jsx'
+import { useOwnerOrders, useOwnerPartners } from '../hooks/useOwnerData.js'
 import { formatDateTime } from '../lib/formatDate.js'
 import { formatMoney } from '../lib/formatMoney.js'
 import styles from './OwnerOrders.module.css'
@@ -52,9 +51,8 @@ function LoadingRows() {
 export default function OwnerOrders() {
   const { filters, page, rangeInvalid, isFiltered, query, applyFilters, goToPage, backToFirstPage, clearFilters } =
     useOrderFilters()
-  const { data, status, error, reload } = useOrders(query)
-  const { data: restaurant } = useOwnRestaurant()
-  const { data: partners } = usePartners()
+  const { data, status, error, reload } = useOwnerOrders(query)
+  const { data: partners } = useOwnerPartners()
   const titleRef = useRef(null)
 
   // A row can disappear (filtered out) or its buttons swap, so hand focus to the heading.
@@ -81,10 +79,12 @@ export default function OwnerOrders() {
     <div className={styles.page}>
       <header className={styles.intro}>
         <h1 className={styles.title} ref={titleRef} tabIndex={-1}>
-          {restaurant ? `${restaurant.name} orders` : 'Incoming orders'}
+          Incoming orders
         </h1>
         <p className={styles.lead}>Tickets for your kitchen, newest first. Move each one along when you are ready.</p>
       </header>
+
+      <Reminders />
 
       <OrderFilters
         values={filters}

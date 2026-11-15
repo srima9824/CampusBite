@@ -3,9 +3,11 @@ export const ORDER_STATUSES = [
   'ACCEPTED',
   'PREPARING',
   'READY',
+  'ASSIGNED',
   'OUT_FOR_DELIVERY',
   'DELIVERED',
   'CANCELLED',
+  'REFUNDED',
 ]
 
 export const STATUS_LABELS = {
@@ -13,9 +15,11 @@ export const STATUS_LABELS = {
   ACCEPTED: 'Accepted',
   PREPARING: 'Preparing',
   READY: 'Ready',
+  ASSIGNED: 'Assigned',
   OUT_FOR_DELIVERY: 'Out for delivery',
   DELIVERED: 'Delivered',
   CANCELLED: 'Cancelled',
+  REFUNDED: 'Refunded',
 }
 
 export const NEXT_STATUS = {
