@@ -21,6 +21,7 @@ ORDER_KEYS = {
     "items",
     "payment",
     "customer",
+    "delivery_partner",
 }
 
 
@@ -98,6 +99,7 @@ def test_list_shape_has_customer_name_only(seeded, db_session):
     assert set(order) == ORDER_KEYS
     assert order["id"] == order_id
     assert order["customer"] == {"name": "Maya Patel"}
+    assert order["delivery_partner"] is None
     assert order["notes"] == "No onions"
     assert order["delivery_address"] == "Hostel 4"
     assert set(order["payment"]) == {"method", "status"}
@@ -219,6 +221,7 @@ def test_detail_returns_the_same_shape(seeded, db_session):
     assert response.status_code == 200
     assert set(body) == ORDER_KEYS
     assert body["customer"] == {"name": "Maya Patel"}
+    assert body["delivery_partner"] is None
     assert len(body["items"]) == 2
     assert "maya@" not in response.text
 
@@ -251,6 +254,7 @@ def test_owner_moves_an_order_one_step(seeded, db_session, start, target):
     assert set(body) == ORDER_KEYS
     assert body["status"] == target.value
     assert body["customer"] == {"name": "Maya Patel"}
+    assert body["delivery_partner"] is None
     db_session.expire_all()
     order = db_session.get(Order, order_id)
     assert order.status is target
