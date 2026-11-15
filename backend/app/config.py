@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     openai_model: str = ""
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
     reminder_stale_minutes: int = 15
+    reminder_check_seconds: Annotated[int, Field(ge=0)] = 60
     app_timezone: str = "Asia/Kolkata"
 
     @field_validator("app_timezone")
