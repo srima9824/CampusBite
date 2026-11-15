@@ -10,7 +10,7 @@ from pydantic import (
     model_validator,
 )
 
-from app.models import OrderStatus, PaymentStatus
+from app.models import OrderStatus, PaymentStatus, ReturnStatus
 from app.schemas.reviews import ReviewOut
 
 DeliveryAddress = Annotated[
@@ -77,6 +77,9 @@ class OrderCore(BaseModel):
     notes: str | None
     created_at: datetime
     updated_at: datetime
+    return_status: ReturnStatus | None
+    return_reason: str | None
+    return_requested_at: datetime | None
     items: list[OrderItemOut]
     payment: PaymentOut
 

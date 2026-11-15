@@ -11,8 +11,10 @@ from app.errors import api_error
 from app.models import Role, User
 from app.schemas.orders import OrderCreate, OrderOut
 from app.schemas.restaurants import Page
+from app.schemas.returns import ReturnRequestCreate
 from app.schemas.reviews import ReviewCreate, ReviewOut
 from app.services import orders as service
+from app.services import returns as return_service
 from app.services import reviews as review_service
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -103,6 +105,39 @@ def place_order(data: OrderCreate, customer: Customer, db: DbSession) -> OrderOu
 def cancel_order(order_id: int, customer: Customer, db: DbSession) -> OrderOut:
     try:
         order = service.cancel_order(db, customer, order_id)
+    except service.OrderRejected as rejection:
+        raise api_error(rejection.status_code, rejection.code, rejection.message) from None
+    if order is None:
+        raise api_error(status.HTTP_404_NOT_FOUND, "order_not_found", "Order not found.")
+    return OrderOut.model_validate(order)
+
+
+@router.post(
+    "/{order_id}/return",
+    status_code=status.HTTP_201_CREATED,
+    summary="Ask for a return and refund",
+    description=(
+        "Asks the restaurant for a return and refund of a delivered order. A reason of 5 to 300 "
+        "characters is required. Only the customer who placed the order can ask, only once the "
+        "order is `DELIVERED`, and only once per order. There is no time limit. The order's "
+        "`return_status` becomes `REQUESTED`; the restaurant then approves or rejects it."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only customers can use this route.",
+            404: "No order with this id for this customer (`order_not_found`).",
+            409: "The order is not delivered yet (`return_not_allowed`) or a return was already "
+            "requested (`return_exists`).",
+            422: "The reason must have 5 to 300 characters.",
+        }
+    ),
+)
+def request_order_return(
+    order_id: int, data: ReturnRequestCreate, customer: Customer, db: DbSession
+) -> OrderOut:
+    try:
+        order = return_service.request_return(db, customer, order_id, data)
     except service.OrderRejected as rejection:
         raise api_error(rejection.status_code, rejection.code, rejection.message) from None
     if order is None:
