@@ -17,7 +17,7 @@ ORDER_KEYS = {
     "customer",
     "items",
 }
-ITEM_KEYS = {"menu_item_id", "name", "unit_price", "quantity", "line_total"}
+ITEM_KEYS = {"name", "quantity"}
 FORBIDDEN_KEYS = {"total", "payment", "delivery_partner", "customer_id", "email"}
 
 
@@ -273,14 +273,16 @@ def test_detail_returns_the_same_shape(seeded, db_session):
     assert "maya@" not in response.text
 
 
-def test_detail_item_lines_add_up(seeded, db_session):
+def test_detail_items_show_only_name_and_quantity(seeded, db_session):
     order_id = assigned(seeded, db_session, lines=2)
 
-    items = detail(seeded, db_session, order_id).json()["items"]
+    response = detail(seeded, db_session, order_id)
 
+    items = response.json()["items"]
     assert len(items) == 2
-    assert all(i["quantity"] == 2 for i in items)
-    assert all(float(i["line_total"]) == float(i["unit_price"]) * i["quantity"] for i in items)
+    assert all(set(i) == ITEM_KEYS and i["quantity"] == 2 for i in items)
+    for hidden in ("unit_price", "line_total", "menu_item_id", "total"):
+        assert hidden not in response.text
 
 
 @pytest.mark.parametrize("status", [s for s in OrderStatus if s is not OrderStatus.ASSIGNED])
