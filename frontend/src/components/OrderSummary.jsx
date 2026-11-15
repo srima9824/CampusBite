@@ -1,7 +1,7 @@
 import { formatMoney } from '../lib/formatMoney.js'
 import styles from './OrderSummary.module.css'
 
-export default function OrderSummary({ lines, subtotal, deliveryFee, total }) {
+export default function OrderSummary({ lines, total }) {
   return (
     <div className={styles.summary}>
       <ul className={styles.lines}>
@@ -15,14 +15,6 @@ export default function OrderSummary({ lines, subtotal, deliveryFee, total }) {
         ))}
       </ul>
       <dl className={styles.totals}>
-        <div className={styles.row}>
-          <dt>Subtotal</dt>
-          <dd>{formatMoney(subtotal)}</dd>
-        </div>
-        <div className={styles.row}>
-          <dt>Delivery fee</dt>
-          <dd>{formatMoney(deliveryFee)}</dd>
-        </div>
         <div className={`${styles.row} ${styles.total}`}>
           <dt>Total</dt>
           <dd>{formatMoney(total)}</dd>

@@ -25,8 +25,6 @@ function DetailBody({ order }) {
         </h2>
         <OrderSummary
           lines={order.items}
-          subtotal={order.subtotal}
-          deliveryFee={order.delivery_fee}
           total={order.total}
         />
       </section>
