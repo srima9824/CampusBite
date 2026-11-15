@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import UTC, datetime
 from typing import Protocol
 from zoneinfo import ZoneInfo
 
@@ -71,10 +72,16 @@ def load_history(db: Session, customer: User) -> list[Order]:
     return list(db.scalars(query))
 
 
+def placed_at_text(created_at: datetime, zone: ZoneInfo) -> str:
+    if created_at.tzinfo is None:
+        created_at = created_at.replace(tzinfo=UTC)
+    return created_at.astimezone(zone).strftime("%Y-%m-%d %H:%M")
+
+
 def describe_order(order: Order, zone: ZoneInfo) -> dict:
     return {
         "order_id": order.id,
-        "placed_at": order.created_at.astimezone(zone).strftime("%Y-%m-%d %H:%M"),
+        "placed_at": placed_at_text(order.created_at, zone),
         "restaurant": order.restaurant.name,
         "status": order.status.value,
         "payment": order.payment_status.value,
