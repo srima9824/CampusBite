@@ -6,7 +6,7 @@ export const SESSION_EXPIRED_EVENT = 'campusbite:session-expired'
 
 const NETWORK_MESSAGE = 'We could not reach the server. Check your connection and try again.'
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again in a moment.'
-const DOMAIN_MESSAGE_START = 'Use your @'
+const DOMAIN_MESSAGE_START = 'Enter a valid email address'
 
 function buildUrl(path, query) {
   const url = new URL(`${API_URL}${path}`)

@@ -22,6 +22,6 @@ describe('isAllowedEmail', () => {
   })
 
   it('words the message with the allowed domain', () => {
-    expect(EMAIL_DOMAIN_MESSAGE).toBe('Use your @masaischool.ac.in email address.')
+    expect(EMAIL_DOMAIN_MESSAGE).toBe('Enter a valid email address, like name@masaischool.ac.in.')
   })
 })

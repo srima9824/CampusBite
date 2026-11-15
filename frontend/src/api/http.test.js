@@ -41,14 +41,14 @@ describe('api client', () => {
 
   it('turns a validation list into field messages and recognises the email domain rule', async () => {
     const detail = [
-      { loc: ['body', 'email'], msg: 'Value error, Use your @masaischool.ac.in email address.' },
+      { loc: ['body', 'email'], msg: 'Value error, Enter a valid email address, like name@masaischool.ac.in.' },
     ]
     vi.stubGlobal('fetch', () => reply(422, { detail }))
 
     await expect(request('/auth/login')).rejects.toMatchObject({
       status: 422,
       code: 'email_domain_not_allowed',
-      fields: { email: 'Use your @masaischool.ac.in email address.' },
+      fields: { email: 'Enter a valid email address, like name@masaischool.ac.in.' },
     })
   })
 

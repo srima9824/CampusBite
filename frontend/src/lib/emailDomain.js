@@ -1,5 +1,5 @@
 export const ALLOWED_EMAIL_DOMAIN = 'masaischool.ac.in'
-export const EMAIL_DOMAIN_MESSAGE = `Use your @${ALLOWED_EMAIL_DOMAIN} email address.`
+export const EMAIL_DOMAIN_MESSAGE = `Enter a valid email address, like name@${ALLOWED_EMAIL_DOMAIN}.`
 
 const ALLOWED_EMAIL_PATTERN = /^[^\s@]+@masaischool\.ac\.in$/
 
