@@ -10,6 +10,7 @@ from app.dependencies.owner import owned_restaurant
 from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
 from app.models import Role, User
+from app.pagination import MAX_PAGE
 from app.schemas.owner_orders import (
     AssignDeliveryPartner,
     OrderStatusUpdate,
@@ -59,7 +60,7 @@ def list_restaurant_orders(
     owner: Owner,
     db: DbSession,
     filters: Annotated[order_service.OrderFilters, Depends(order_filters)],
-    page: Annotated[int, Query(ge=1)] = 1,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 10,
 ) -> Page[OwnerOrderOut]:
     restaurant = owned_restaurant(db, owner)

@@ -7,6 +7,7 @@ from app.database import get_db
 from app.docs import described
 from app.errors import api_error
 from app.models import MenuItem, Restaurant
+from app.pagination import MAX_PAGE
 from app.schemas.public_reviews import PublicReviewOut
 from app.schemas.restaurants import Page
 from app.services import public_reviews as service
@@ -15,7 +16,7 @@ router = APIRouter(tags=["reviews"])
 
 DbSession = Annotated[Session, Depends(get_db)]
 Rating = Annotated[int | None, Query(ge=1, le=5)]
-PageNumber = Annotated[int, Query(ge=1)]
+PageNumber = Annotated[int, Query(ge=1, le=MAX_PAGE)]
 PageSize = Annotated[int, Query(ge=1, le=50)]
 
 PRIVACY_NOTE = (

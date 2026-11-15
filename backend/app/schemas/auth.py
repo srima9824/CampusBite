@@ -4,6 +4,7 @@ from typing import Annotated
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 
 from app.models import Role
+from app.schemas.request import RequestModel
 
 EMAIL_PATTERN = re.compile(r"[^\s@]+@masaischool\.ac\.in")
 EMAIL_MESSAGE = "Use your @masaischool.ac.in email address."
@@ -27,13 +28,13 @@ LoginPassword = Annotated[str, AfterValidator(reject_long_password)]
 NewPassword = Annotated[LoginPassword, Field(min_length=8)]
 
 
-class RegisterRequest(BaseModel):
+class RegisterRequest(RequestModel):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)]
     email: Email
     password: NewPassword
 
 
-class LoginRequest(BaseModel):
+class LoginRequest(RequestModel):
     email: Email
     password: LoginPassword
 

@@ -9,6 +9,7 @@ from app.dependencies.auth import require_roles
 from app.dependencies.owner import owned_restaurant
 from app.docs import NOT_LOGGED_IN, described
 from app.models import AdminReminderLog, Order, Role, User
+from app.pagination import MAX_PAGE
 from app.schemas.reminders import ReminderOut
 from app.schemas.restaurants import Page
 from app.services import reminders as service
@@ -54,7 +55,7 @@ def as_reminder(reminder: AdminReminderLog, order: Order, now: datetime) -> Remi
 def list_reminders(
     owner: Owner,
     db: DbSession,
-    page: Annotated[int, Query(ge=1)] = 1,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 10,
 ) -> Page[ReminderOut]:
     restaurant = owned_restaurant(db, owner)

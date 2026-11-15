@@ -11,6 +11,7 @@ from pydantic import (
 )
 
 from app.models import OrderStatus, PaymentStatus, ReturnStatus
+from app.schemas.request import RequestModel
 from app.schemas.reviews import ReviewOut
 
 DeliveryAddress = Annotated[
@@ -18,14 +19,14 @@ DeliveryAddress = Annotated[
 ]
 
 
-class OrderLineIn(BaseModel):
+class OrderLineIn(RequestModel):
     model_config = ConfigDict(extra="forbid")
 
     menu_item_id: Annotated[int, Field(ge=1)]
     quantity: Annotated[int, Field(ge=1, le=20)]
 
 
-class OrderCreate(BaseModel):
+class OrderCreate(RequestModel):
     model_config = ConfigDict(extra="forbid")
 
     items: Annotated[list[OrderLineIn], Field(min_length=1, max_length=30)]

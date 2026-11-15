@@ -7,6 +7,7 @@ from app.database import get_db
 from app.dependencies.auth import require_roles
 from app.docs import NOT_LOGGED_IN, described
 from app.models import Role, User
+from app.pagination import MAX_PAGE
 from app.schemas.owner_orders import DeliveryPartnerOut
 from app.schemas.restaurants import Page
 from app.services import owner_orders as service
@@ -31,7 +32,7 @@ Owner = Annotated[User, Depends(require_roles(Role.RESTAURANT_OWNER))]
 def list_delivery_partners(
     owner: Owner,
     db: DbSession,
-    page: Annotated[int, Query(ge=1)] = 1,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 50,
 ) -> Page[DeliveryPartnerOut]:
     rows, total = service.list_delivery_partners(db, page, page_size)
