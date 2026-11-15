@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies.auth import require_roles
+from app.dependencies.owner import owned_restaurant
 from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
-from app.models import MenuItem, Restaurant, Role, User
+from app.models import MenuItem, Role, User
 from app.schemas.owner_menu import AvailabilityUpdate, MenuItemCreate, MenuItemUpdate
 from app.schemas.restaurants import MenuItemOut, Page
 from app.services import owner_menu as service
@@ -17,15 +18,6 @@ router = APIRouter(prefix="/owner/menu", tags=["owner menu"])
 
 DbSession = Annotated[Session, Depends(get_db)]
 Owner = Annotated[User, Depends(require_roles(Role.RESTAURANT_OWNER))]
-
-
-def owned_restaurant(db: Session, owner: User) -> Restaurant:
-    restaurant = service.get_owned_restaurant(db, owner)
-    if restaurant is None:
-        raise api_error(
-            status.HTTP_404_NOT_FOUND, "restaurant_not_found", "You do not have a restaurant yet."
-        )
-    return restaurant
 
 
 def owned_item(db: Session, owner: User, item_id: int) -> MenuItem:
