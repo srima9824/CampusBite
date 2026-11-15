@@ -11,7 +11,9 @@ from app.errors import api_error
 from app.models import Role, User
 from app.schemas.orders import OrderCreate, OrderOut
 from app.schemas.restaurants import Page
+from app.schemas.reviews import ReviewCreate, ReviewOut
 from app.services import orders as service
+from app.services import reviews as review_service
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -106,6 +108,39 @@ def cancel_order(order_id: int, customer: Customer, db: DbSession) -> OrderOut:
     if order is None:
         raise api_error(status.HTTP_404_NOT_FOUND, "order_not_found", "Order not found.")
     return OrderOut.model_validate(order)
+
+
+@router.post(
+    "/{order_id}/review",
+    status_code=status.HTTP_201_CREATED,
+    summary="Review a delivered order",
+    description=(
+        "Rates a delivered order from 1 to 5 stars, with an optional comment of up to 500 "
+        "characters. A customer can review only their own orders, only once they are `DELIVERED`, "
+        "and only once per order. A review cannot be edited or deleted. Ratings feed the average "
+        "rating shown on the restaurant."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only customers can use this route.",
+            404: "No order with this id for this customer (`order_not_found`).",
+            409: "The order is not delivered yet (`review_not_allowed`) or already has a review "
+            "(`review_exists`).",
+            422: "The rating must be a whole number from 1 to 5, or the comment is too long.",
+        }
+    ),
+)
+def review_order(
+    order_id: int, data: ReviewCreate, customer: Customer, db: DbSession
+) -> ReviewOut:
+    try:
+        review = review_service.create_review(db, customer, order_id, data)
+    except service.OrderRejected as rejection:
+        raise api_error(rejection.status_code, rejection.code, rejection.message) from None
+    if review is None:
+        raise api_error(status.HTTP_404_NOT_FOUND, "order_not_found", "Order not found.")
+    return ReviewOut.model_validate(review)
 
 
 @router.get(
