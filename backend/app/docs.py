@@ -16,6 +16,12 @@ TAGS_METADATA: list[dict[str, str]] = [
         "needed.",
     },
     {
+        "name": "reviews",
+        "description": (
+            "Public reviews of restaurants and dishes. Anyone can read them, no login needed."
+        ),
+    },
+    {
         "name": "owner menu",
         "description": "Restaurant owners manage the dishes of their own restaurant. Owner login "
         "required.",
