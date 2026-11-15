@@ -9,8 +9,10 @@ from app.dependencies.owner import owned_restaurant
 from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
 from app.models import MenuItem, Role, User
+from app.pagination import MAX_PAGE
 from app.schemas.owner_menu import AvailabilityUpdate, MenuItemCreate, MenuItemUpdate
 from app.schemas.restaurants import MenuItemOut, Page
+from app.search import SearchText
 from app.services import owner_menu as service
 from app.services.restaurants import MenuFilters, search_menu
 
@@ -55,8 +57,8 @@ def dish_name_taken() -> HTTPException:
 def list_own_menu(
     owner: Owner,
     db: DbSession,
-    q: Annotated[str | None, Query(max_length=80)] = None,
-    page: Annotated[int, Query(ge=1)] = 1,
+    q: SearchText = None,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 50,
 ) -> Page[MenuItemOut]:
     restaurant = owned_restaurant(db, owner)

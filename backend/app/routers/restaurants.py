@@ -7,7 +7,9 @@ from app.database import get_db
 from app.docs import described
 from app.errors import api_error
 from app.models import Restaurant
+from app.pagination import MAX_PAGE
 from app.schemas.restaurants import MenuItemOut, Page, RestaurantOut
+from app.search import SearchText
 from app.services import restaurants as service
 
 router = APIRouter(prefix="/restaurants", tags=["restaurants"])
@@ -42,8 +44,8 @@ def rated_restaurant_out(rated: service.RatedRestaurant) -> RestaurantOut:
 )
 def list_restaurants(
     db: DbSession,
-    q: Annotated[str | None, Query(max_length=80)] = None,
-    page: Annotated[int, Query(ge=1)] = 1,
+    q: SearchText = None,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 12,
 ) -> Page[RestaurantOut]:
     rows, total = service.search_restaurants(db, q, page, page_size)
@@ -97,11 +99,11 @@ def check_price_range(min_price: int | None, max_price: int | None) -> None:
 def list_menu(
     restaurant_id: int,
     db: DbSession,
-    q: Annotated[str | None, Query(max_length=80)] = None,
+    q: SearchText = None,
     min_price: Annotated[int | None, Query(ge=0)] = None,
     max_price: Annotated[int | None, Query(ge=0)] = None,
     veg: Literal["veg", "non_veg"] | None = None,
-    page: Annotated[int, Query(ge=1)] = 1,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 50,
 ) -> Page[MenuItemOut]:
     check_price_range(min_price, max_price)

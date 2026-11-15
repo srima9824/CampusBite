@@ -1,6 +1,8 @@
 from typing import Annotated, Self
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+from pydantic import ConfigDict, Field, StringConstraints, model_validator
+
+from app.schemas.request import RequestModel
 
 DishName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)]
 DishCategory = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]
@@ -8,7 +10,7 @@ DishDescription = Annotated[str, StringConstraints(strip_whitespace=True, max_le
 DishPrice = Annotated[int, Field(ge=1, le=100_000)]
 
 
-class MenuItemCreate(BaseModel):
+class MenuItemCreate(RequestModel):
     model_config = ConfigDict(extra="forbid")
 
     name: DishName
@@ -18,7 +20,7 @@ class MenuItemCreate(BaseModel):
     is_veg: bool
 
 
-class MenuItemUpdate(BaseModel):
+class MenuItemUpdate(RequestModel):
     model_config = ConfigDict(extra="forbid")
 
     name: DishName | None = None
@@ -36,7 +38,7 @@ class MenuItemUpdate(BaseModel):
         return self
 
 
-class AvailabilityUpdate(BaseModel):
+class AvailabilityUpdate(RequestModel):
     model_config = ConfigDict(extra="forbid")
 
     is_available: bool

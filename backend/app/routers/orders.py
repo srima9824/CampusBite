@@ -9,6 +9,7 @@ from app.dependencies.order_filters import order_filters
 from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
 from app.models import Role, User
+from app.pagination import MAX_PAGE
 from app.schemas.orders import OrderCreate, OrderOut
 from app.schemas.restaurants import Page
 from app.schemas.returns import ReturnRequestCreate
@@ -45,7 +46,7 @@ def list_orders(
     customer: Customer,
     db: DbSession,
     filters: Annotated[service.OrderFilters, Depends(order_filters)],
-    page: Annotated[int, Query(ge=1)] = 1,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 10,
 ) -> Page[OrderOut]:
     rows, total = service.list_orders_for_customer(db, customer, filters, page, page_size)

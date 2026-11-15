@@ -3,8 +3,10 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.request import RequestModel
 
-class ReviewCreate(BaseModel):
+
+class ReviewCreate(RequestModel):
     model_config = ConfigDict(extra="forbid")
 
     rating: Annotated[int, Field(ge=1, le=5, strict=True)]

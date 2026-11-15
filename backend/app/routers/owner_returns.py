@@ -9,6 +9,7 @@ from app.dependencies.owner import owned_restaurant
 from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
 from app.models import ReturnStatus, Role, User
+from app.pagination import MAX_PAGE
 from app.schemas.owner_orders import OwnerOrderOut
 from app.schemas.restaurants import Page
 from app.services import owner_returns as service
@@ -56,7 +57,7 @@ def list_returns(
     owner: Owner,
     db: DbSession,
     statuses: Annotated[list[ReturnStatus], Depends(parse_return_statuses)],
-    page: Annotated[int, Query(ge=1)] = 1,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 10,
 ) -> Page[OwnerOrderOut]:
     restaurant = owned_restaurant(db, owner)
