@@ -1,16 +1,17 @@
 import { useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { delivery } from '../api'
 import DeliveryOrderCard from '../components/DeliveryOrderCard.jsx'
 import { Button, EmptyState, Pagination, Select, Skeleton } from '../components/ui'
-import useOrderFilters from '../hooks/useOrderFilters.js'
-import useOrders from '../hooks/useOrders.js'
+import useDeliveries from '../hooks/useDeliveries.js'
 import styles from './DeliveryAssignments.module.css'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = delivery.DELIVERY_PAGE_SIZE
 const SKELETON_CARDS = 3
-const ACTIVE_STATUSES = 'READY,OUT_FOR_DELIVERY'
+const ACTIVE_STATUSES = delivery.ACTIVE_DELIVERY_STATUSES
 const STATUS_OPTIONS = [
   { value: '', label: 'All active' },
-  { value: 'READY', label: 'Ready for pickup' },
+  { value: 'ASSIGNED', label: 'Assigned' },
   { value: 'OUT_FOR_DELIVERY', label: 'Out for delivery' },
 ]
 
@@ -25,9 +26,14 @@ function LoadingCards() {
 }
 
 export default function DeliveryAssignments() {
-  const { filters, page, goToPage, applyFilters, backToFirstPage, clearFilters } = useOrderFilters()
-  const status = STATUS_OPTIONS.some((option) => option.value === filters.status) ? filters.status : ''
-  const { data, status: loadStatus, error, reload } = useOrders({ status: status || ACTIVE_STATUSES, page })
+  const [params, setParams] = useSearchParams()
+  const requested = params.get('status') ?? ''
+  const status = STATUS_OPTIONS.some((option) => option.value === requested) ? requested : ''
+  const page = Math.max(1, Number(params.get('page')) || 1)
+  const { data, status: loadStatus, error, reload } = useDeliveries({ status: status || ACTIVE_STATUSES, page })
+  const goToPage = (next) => setParams({ ...(status && { status }), page: String(next) })
+  const backToFirstPage = () => setParams(status ? { status } : {}, { replace: true })
+  const clearFilters = () => setParams({})
   const [refreshed, setRefreshed] = useState(false)
   const titleRef = useRef(null)
 
@@ -48,7 +54,7 @@ export default function DeliveryAssignments() {
         <h1 className={styles.title} ref={titleRef} tabIndex={-1}>
           Your deliveries
         </h1>
-        <p className={styles.lead}>Hot bags waiting on you. Pick up, drop off, repeat.</p>
+        <p className={styles.lead}>Orders assigned to you.</p>
       </header>
 
       <div className={styles.toolbar}>
@@ -56,7 +62,7 @@ export default function DeliveryAssignments() {
           label="Status"
           options={STATUS_OPTIONS}
           value={status}
-          onChange={(event) => applyFilters({ ...filters, status: event.target.value })}
+          onChange={(event) => setParams(event.target.value ? { status: event.target.value } : {})}
         />
         <Button variant="secondary" onClick={refresh}>
           Refresh

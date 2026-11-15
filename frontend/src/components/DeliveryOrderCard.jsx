@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { orders } from '../api'
-import { STATUS_LABELS, deliveryNextAction } from '../api/orderStatus.js'
-import { Button, useToast } from './ui'
-import OrderStatusBadge from './OrderStatusBadge.jsx'
+import { delivery } from '../api'
+import { Badge, Button, useToast } from './ui'
 import styles from './DeliveryOrderCard.module.css'
 
 const DONE_MESSAGES = {
@@ -10,22 +8,16 @@ const DONE_MESSAGES = {
   DELIVERED: () => 'Delivered. Nice legwork.',
 }
 
-function countItems(order) {
-  const count = order.items.reduce((sum, line) => sum + line.quantity, 0)
-  return count === 1 ? '1 item' : `${count} items`
-}
-
 // `onDone` runs after every attempt so the page reloads and shows the truth.
 export default function DeliveryOrderCard({ order, onDone }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
-  const next = deliveryNextAction(order.status)
-  const firstName = order.customer_name.split(' ')[0]
+  const next = delivery.DELIVERY_NEXT[order.status]
 
   async function advance() {
     setBusy(true)
     try {
-      await orders.updateOrderStatus(order.id, { status: next.status })
+      await delivery.updateDeliveryStatus(order.id, next.status)
       toast.success(DONE_MESSAGES[next.status](order.id))
     } catch (error) {
       toast.error(error.message ?? 'That did not go through. Please try again.')
@@ -40,12 +32,12 @@ export default function DeliveryOrderCard({ order, onDone }) {
         <h2 className={styles.title} id={`delivery-${order.id}`}>
           Order #{order.id}
         </h2>
-        <OrderStatusBadge status={order.status} />
+        <Badge tone={order.status === 'DELIVERED' ? 'success' : 'info'}>{delivery.DELIVERY_STATUS_LABELS[order.status]}</Badge>
       </header>
       <dl className={styles.details}>
         <div>
           <dt>Pick up from</dt>
-          <dd>{order.restaurant_name}</dd>
+          <dd>{order.restaurant.name}</dd>
         </div>
         <div>
           <dt>Drop off at</dt>
@@ -53,16 +45,16 @@ export default function DeliveryOrderCard({ order, onDone }) {
         </div>
         <div>
           <dt>For</dt>
-          <dd>{firstName}</dd>
+          <dd>{order.customer.name}</dd>
         </div>
         <div>
           <dt>In the bag</dt>
-          <dd>{countItems(order)}</dd>
+          <dd>{order.items.map((line) => `${line.quantity} x ${line.name}`).join(', ')}</dd>
         </div>
-        {order.note && (
+        {order.notes && (
           <div>
             <dt>Note</dt>
-            <dd>{order.note}</dd>
+            <dd>{order.notes}</dd>
           </div>
         )}
       </dl>
@@ -73,7 +65,7 @@ export default function DeliveryOrderCard({ order, onDone }) {
           </Button>
         </div>
       ) : (
-        <p className={styles.done}>{STATUS_LABELS[order.status]}</p>
+        <p className={styles.done}>{delivery.DELIVERY_STATUS_LABELS[order.status]}</p>
       )}
     </article>
   )
