@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 class ReviewCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    rating: Annotated[int, Field(ge=1, le=5)]
+    rating: Annotated[int, Field(ge=1, le=5, strict=True)]
     comment: Annotated[str | None, Field(max_length=500)] = None
 
     @field_validator("comment")
