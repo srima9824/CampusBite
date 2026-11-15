@@ -6,6 +6,8 @@ const STATUS_TONES = {
   ACCEPTED: 'info',
   PREPARING: 'warning',
   READY: 'warning',
+  ASSIGNED: 'info',
+  REFUNDED: 'danger',
   OUT_FOR_DELIVERY: 'info',
   DELIVERED: 'success',
   CANCELLED: 'danger',

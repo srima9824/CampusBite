@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { orders } from '../api'
+import { owner } from '../api'
 import { STATUS_LABELS, ownerNextAction } from '../api/orderStatus.js'
 import { Button, Select, useToast } from './ui'
 import styles from './OwnerOrderActions.module.css'
@@ -8,7 +8,7 @@ import styles from './OwnerOrderActions.module.css'
 export default function OwnerOrderActions({ order, partners, onDone }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
-  const [partnerId, setPartnerId] = useState(String(order.delivery_partner_id ?? ''))
+  const [partnerId, setPartnerId] = useState('')
   const next = ownerNextAction(order.status)
 
   async function attempt(request, successMessage) {
@@ -25,7 +25,7 @@ export default function OwnerOrderActions({ order, partners, onDone }) {
 
   function advance() {
     attempt(
-      () => orders.updateOrderStatus(order.id, { status: next.status }),
+      () => owner.updateOrderStatus(order.id, { status: next.status }),
       `Order #${order.id} is now ${STATUS_LABELS[next.status].toLowerCase()}`,
     )
   }
@@ -33,7 +33,7 @@ export default function OwnerOrderActions({ order, partners, onDone }) {
   function assign() {
     const partner = partners.find((candidate) => String(candidate.id) === partnerId)
     attempt(
-      () => orders.assignPartner(order.id, { delivery_partner_id: Number(partnerId) }),
+      () => owner.assignPartner(order.id, { delivery_partner_id: Number(partnerId) }),
       `${partner.name} will bring order #${order.id}`,
     )
   }
@@ -53,7 +53,6 @@ export default function OwnerOrderActions({ order, partners, onDone }) {
     ]
     return (
       <div className={styles.assign}>
-        {order.delivery_partner && <p className={styles.current}>Rider: {order.delivery_partner.name}</p>}
         <Select
           label={`Rider for order #${order.id}`}
           options={options}
@@ -64,7 +63,7 @@ export default function OwnerOrderActions({ order, partners, onDone }) {
         <Button
           variant="secondary"
           loading={busy}
-          disabled={!partnerId || partnerId === String(order.delivery_partner_id ?? '')}
+          disabled={!partnerId}
           onClick={assign}
           aria-label={`Assign rider to order #${order.id}`}
         >

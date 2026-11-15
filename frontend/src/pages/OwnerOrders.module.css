@@ -58,3 +58,9 @@
 .lines {
   padding-left: var(--space-4);
 }
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
