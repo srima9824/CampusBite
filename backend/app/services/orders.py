@@ -1,16 +1,23 @@
-from sqlalchemy import select
+from dataclasses import dataclass, field
+from datetime import UTC, date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
+
+from sqlalchemy import Select, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.config import get_settings
 from app.models import (
     MenuItem,
     Order,
     OrderItem,
+    OrderStatus,
     PaymentLedger,
     PaymentStatus,
     Restaurant,
     User,
 )
 from app.schemas.orders import OrderCreate, OrderLineIn
+from app.services.restaurants import count_rows
 
 PAYMENT_METHOD = "mock"
 
@@ -91,3 +98,41 @@ def get_order_for_customer(db: Session, customer: User, order_id: int) -> Order 
         .options(selectinload(Order.items), selectinload(Order.restaurant))
         .execution_options(populate_existing=True)
     )
+
+
+@dataclass(frozen=True)
+class OrderFilters:
+    statuses: list[OrderStatus] = field(default_factory=list)
+    date_from: date | None = None
+    date_to: date | None = None
+
+
+def local_day_start_utc(day: date) -> datetime:
+    zone = ZoneInfo(get_settings().app_timezone)
+    return datetime.combine(day, time.min, tzinfo=zone).astimezone(UTC)
+
+
+def customer_orders_query(customer: User, filters: OrderFilters) -> Select[tuple[Order]]:
+    query = select(Order).where(Order.customer_id == customer.id)
+    if filters.statuses:
+        query = query.where(Order.status.in_(filters.statuses))
+    if filters.date_from is not None:
+        query = query.where(Order.created_at >= local_day_start_utc(filters.date_from))
+    if filters.date_to is not None:
+        day_after = filters.date_to + timedelta(days=1)
+        query = query.where(Order.created_at < local_day_start_utc(day_after))
+    return query
+
+
+def list_orders_for_customer(
+    db: Session, customer: User, filters: OrderFilters, page: int, page_size: int
+) -> tuple[list[Order], int]:
+    query = customer_orders_query(customer, filters)
+    total = count_rows(db, query)
+    rows = db.scalars(
+        query.options(selectinload(Order.items), selectinload(Order.restaurant))
+        .order_by(Order.created_at.desc(), Order.id.desc())
+        .limit(page_size)
+        .offset((page - 1) * page_size)
+    )
+    return list(rows), total

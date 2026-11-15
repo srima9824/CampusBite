@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -16,6 +17,16 @@ class Settings(BaseSettings):
     openai_model: str = ""
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
     reminder_stale_minutes: int = 15
+    app_timezone: str = "Asia/Kolkata"
+
+    @field_validator("app_timezone")
+    @classmethod
+    def check_timezone(cls, value: str) -> str:
+        try:
+            ZoneInfo(value)
+        except (ZoneInfoNotFoundError, ValueError):
+            raise ValueError("APP_TIMEZONE must be a valid time zone name.") from None
+        return value
 
     @field_validator("cors_origins", mode="before")
     @classmethod
