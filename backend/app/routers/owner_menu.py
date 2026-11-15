@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies.auth import require_roles
+from app.docs import NOT_LOGGED_IN, described
 from app.errors import api_error
 from app.models import MenuItem, Restaurant, Role, User
 from app.schemas.owner_menu import AvailabilityUpdate, MenuItemCreate, MenuItemUpdate
@@ -42,7 +43,23 @@ def dish_name_taken() -> HTTPException:
     )
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="List my dishes",
+    description=(
+        "Lists every dish on the logged-in owner's menu, including unavailable ones. The "
+        "restaurant "
+        "is found from the login, so an owner only ever sees their own menu. `q` searches dish "
+        "names."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only restaurant owners can use this route.",
+            404: "This owner has no restaurant yet (`restaurant_not_found`).",
+        }
+    ),
+)
 def list_own_menu(
     owner: Owner,
     db: DbSession,
@@ -56,7 +73,24 @@ def list_own_menu(
     return Page(items=items, total=total, page=page, page_size=page_size)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    summary="Add a dish",
+    description=(
+        "Adds a dish to the logged-in owner's menu. The price is in whole rupees (1 to 100000). "
+        "The new dish starts as available. A dish name can be used only once per restaurant."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only restaurant owners can use this route.",
+            404: "This owner has no restaurant yet (`restaurant_not_found`).",
+            409: "The menu already has a dish with this name (`dish_name_taken`).",
+            422: "A field is not valid, or the body has fields that are not allowed.",
+        }
+    ),
+)
 def add_dish(data: MenuItemCreate, owner: Owner, db: DbSession) -> MenuItemOut:
     try:
         item = service.create_item(db, owned_restaurant(db, owner), data)
@@ -65,7 +99,24 @@ def add_dish(data: MenuItemCreate, owner: Owner, db: DbSession) -> MenuItemOut:
     return MenuItemOut.model_validate(item)
 
 
-@router.patch("/{item_id}")
+@router.patch(
+    "/{item_id}",
+    summary="Edit a dish",
+    description=(
+        "Changes only the fields that are sent: name, description, category, price or veg flag. "
+        "At least one field is needed, and a field cannot be null. Prices on orders that were "
+        "already placed do not change. An owner cannot edit another restaurant's dish."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only restaurant owners can use this route.",
+            404: "This dish is not on the owner's menu (`menu_item_not_found`).",
+            409: "The menu already has a dish with this name (`dish_name_taken`).",
+            422: "A field is not valid, or nothing was sent to change.",
+        }
+    ),
+)
 def edit_dish(item_id: int, data: MenuItemUpdate, owner: Owner, db: DbSession) -> MenuItemOut:
     try:
         item = service.update_item(db, owned_item(db, owner, item_id), data)
@@ -74,7 +125,20 @@ def edit_dish(item_id: int, data: MenuItemUpdate, owner: Owner, db: DbSession) -
     return MenuItemOut.model_validate(item)
 
 
-@router.patch("/{item_id}/availability")
+@router.patch(
+    "/{item_id}/availability",
+    summary="Mark a dish available or unavailable",
+    description=(
+        "Turns a dish on or off. Unavailable dishes still show on the menu but cannot be ordered."
+    ),
+    responses=described(
+        {
+            401: NOT_LOGGED_IN,
+            403: "Only restaurant owners can use this route.",
+            404: "This dish is not on the owner's menu (`menu_item_not_found`).",
+        }
+    ),
+)
 def set_dish_availability(
     item_id: int, data: AvailabilityUpdate, owner: Owner, db: DbSession
 ) -> MenuItemOut:
